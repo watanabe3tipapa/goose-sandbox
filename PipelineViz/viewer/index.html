@@ -350,6 +350,13 @@ code { font-family: var(--mono); border: 2px dashed var(--border); background: v
   min-width: max-content;
   padding: 0.3rem 0;
 }
+.flow.is-long .node {
+  width: 156px;
+  padding: 0.8rem 0.7rem 0.6rem;
+}
+.flow.is-long .node-records { font-size: 1rem; }
+.flow.is-long .connector { min-width: 36px; }
+.flow.is-long .connector-label { font-size: 0.52rem; }
 .node {
   position: relative;
   width: 198px;
@@ -640,6 +647,61 @@ td.mono, .mono { font-family: var(--mono); }
 .meta-card .kv > div { display: block; text-align: left; }
 .meta-card .kv dd { text-align: left; margin-top: 0.02rem; }
 
+.pipeline-select {
+  width: 100%;
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.4rem 0.35rem;
+  cursor: pointer;
+}
+.pipeline-select:disabled { cursor: default; opacity: 1; background: var(--muted-2); }
+.pipeline-note {
+  padding: 0.35rem 0.25rem 0;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.quality {
+  margin-top: 0.75rem;
+  padding: 0.45rem 0.55rem;
+  border: 2px solid var(--border);
+  border-left-width: 8px;
+  border-radius: 2px;
+  background: var(--bg);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+.quality.is-ok { border-left-color: var(--healthy); }
+.quality.is-warning { border-left-color: var(--warning); }
+.quality.is-error { border-left-color: var(--error); }
+.quality-head { font-family: var(--mono); font-size: 0.64rem; font-weight: 700; }
+.issue-list { margin: 0.35rem 0 0; padding-left: 1rem; color: var(--faint); }
+.issue-list li { margin-bottom: 0.2rem; word-break: break-word; }
+.issue-list b { color: var(--fg); font-family: var(--mono); font-size: 0.62rem; }
+.issue-list li.is-error b { color: var(--danger); }
+
+.sr-only {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (min-width: 1200px) {
   .app {
     grid-template-columns: 236px minmax(0, 1fr) 290px;
@@ -687,6 +749,12 @@ td.mono, .mono { font-family: var(--mono); }
   .brand small { display: none; }
   .side-block { margin: 0; }
   .side-label, .side-store, .legend-block { display: none; }
+  .sidebar > .brand { order: 0; }
+  .sidebar > .side-pipelines { order: 1; }
+  .sidebar > .side-block:not(.side-pipelines) { order: 2; }
+  .side-pipelines { flex-shrink: 0; }
+  .side-pipelines .side-label, .pipeline-note { display: none; }
+  .pipeline-select { width: 150px; padding: 0.3rem 0.35rem; }
   #nav { flex-direction: row; gap: 0.3rem; }
   .nav-item { width: auto; white-space: nowrap; padding: 0.3rem 0.45rem; }
   .nav-text small, .nav-badge { display: none; }
@@ -746,7 +814,7 @@ td.mono, .mono { font-family: var(--mono); }
         </button>
         <button class="nav-item" data-persp="error-handler" type="button">
           <span class="status-dot s-external" data-dot="error-handler"></span>
-          <span class="nav-text"><strong>error-handler</strong><small>隔離・再処理</small></span>
+          <span class="nav-text"><strong>error-handler</strong><small>隔離・エラー</small></span>
           <span class="nav-badge" data-badge="error-handler">0</span>
         </button>
         <button class="nav-item" data-persp="performance-metrics" type="button">
@@ -756,12 +824,19 @@ td.mono, .mono { font-family: var(--mono); }
       </nav>
     </div>
 
+    <div class="side-block side-pipelines">
+      <p class="side-label">Pipeline</p>
+      <label class="sr-only" for="pipeline-select">表示するパイプライン</label>
+      <select class="pipeline-select" id="pipeline-select"></select>
+      <p class="pipeline-note" id="pipeline-note">読み込み中…</p>
+    </div>
+
     <div class="side-block side-store">
       <p class="side-label">Store</p>
       <dl>
         <div><dt>path</dt><dd>.omm/</dd></div>
         <div><dt>metrics</dt><dd id="side-metrics-path">data/metrics.json</dd></div>
-        <div><dt>poll</dt><dd>2500 ms</dd></div>
+        <div><dt>poll</dt><dd id="side-poll">2500 ms</dd></div>
         <div><dt>source</dt><dd id="side-source">embedded</dd></div>
       </dl>
     </div>
@@ -780,7 +855,7 @@ td.mono, .mono { font-family: var(--mono); }
     <div>
       <div class="crumb" id="crumb">.omm / <b>data-pipeline</b> / diagram.mmd</div>
       <h1 id="page-title">データ処理パイプライン</h1>
-      <p class="page-sub" id="page-sub">Extract → Transform → Load の実行状態をライブ表示</p>
+      <p class="page-sub" id="page-sub">パイプラインの実行状態をライブ表示</p>
     </div>
     <div class="toolbar">
       <span class="health-pill" id="health-pill"><span class="status-dot s-healthy"></span><span id="health-text">Healthy</span></span>
@@ -801,6 +876,7 @@ td.mono, .mono { font-family: var(--mono); }
 
 </div>
 
+<script src="lib/data-source.js"></script>
 <script>
 const FALLBACK_SNAPSHOT = {
   timestamp: "2026-10-27T09:15:02Z",
@@ -836,7 +912,7 @@ const FALLBACK_PREVIOUS = {
 const PERSPECTIVES = {
   "data-pipeline": {
     title: "データ処理パイプライン",
-    sub: "Extract → Transform → Load の実行状態をライブ表示",
+    sub: "パイプラインの実行状態をライブ表示",
     file: "diagram.mmd"
   },
   "overall-architecture": {
@@ -846,7 +922,7 @@ const PERSPECTIVES = {
   },
   "error-handler": {
     title: "エラーハンドリング",
-    sub: "隔離レコードと再処理待ちの追跡",
+    sub: "隔離レコードとエラーイベントの追跡",
     file: "description.md"
   },
   "performance-metrics": {
@@ -870,7 +946,20 @@ const state = {
   history: [],
   mermaidOpen: false,
   forcedError: false,
-  source: "embedded sample"
+  source: "embedded sample",
+  quality: [],
+  metaIssues: [],
+  config: null,
+  pipelines: [],
+  pipelineId: null,
+  metaSource: "built-in defaults",
+  engine: "simulation",
+  sourceHash: null,
+  sourceSnap: null,
+  filePollingDisabled: false,
+  pollFailures: 0,
+  pendingLoads: 0,
+  loadToken: 0
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -884,35 +973,201 @@ const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const randInt = (min, max) => Math.floor(min + Math.random() * (max - min + 1));
 const statusClass = (status) => String(status || "Healthy").toLowerCase();
 
-function normalizeSnapshot(data) {
-  const snapshot = JSON.parse(JSON.stringify(data || {}));
-  snapshot.timestamp = snapshot.timestamp || new Date().toISOString();
-  snapshot.steps = (snapshot.steps || []).map((step) => ({
-    step_id: step.step_id || step.label || "step",
-    label: step.label || step.step_id || "step",
-    records_in: Number(step.records_in || 0),
-    records_out: Number(step.records_out || 0),
-    elapsed_ms: Number(step.elapsed_ms || 0),
-    status: STATUS_LABEL[step.status] ? step.status : "Healthy",
-    message: step.message || ""
-  }));
-  snapshot.quarantine = {
-    step_id: "error-handler",
-    label: (snapshot.quarantine && snapshot.quarantine.label) || "@error-handler",
-    records_in: Number(snapshot.quarantine && snapshot.quarantine.records_in || 0),
-    records_out: Number(snapshot.quarantine && snapshot.quarantine.records_out || 0),
-    elapsed_ms: Number(snapshot.quarantine && snapshot.quarantine.elapsed_ms || 0),
-    status: "External",
-    message: (snapshot.quarantine && snapshot.quarantine.message) || "隔離レコードを error log に書き込み"
-  };
-  snapshot.errors = Array.isArray(snapshot.errors) ? snapshot.errors.map((error) => ({
-    at: error.at || "--:--:--",
-    step_id: error.step_id || "Transform",
-    kind: error.kind || "error",
-    message: error.message || "",
-    count: Number(error.count || 0)
-  })) : [];
-  return snapshot;
+function adoptSnapshot(data, options = {}) {
+  const result = PipelineData.validateSnapshot(data);
+  if (!options.silent) state.quality = result.issues;
+  return result.snapshot;
+}
+
+function currentPipeline() {
+  return state.pipelines.find((pipeline) => pipeline.id === state.pipelineId) || state.pipelines[0] || null;
+}
+
+function metricsLabel(pipeline) {
+  if (!pipeline) return "—";
+  const match = pipeline.metricsPath.match(/(?:^|\/)(data\/[^/]+\.json)$/);
+  return match ? match[1] : pipeline.metricsPath;
+}
+
+function currentConfig() {
+  return state.config || PipelineData.normalizeConfig(null, window.location.href, window.location.href);
+}
+
+const META_FILE = "../.omm/data-pipeline/meta.yaml";
+let pollTimer = null;
+
+async function fetchText(url) {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.text();
+}
+
+async function loadMeta() {
+  const metaUrl = new URL(META_FILE, window.location.href).href;
+  try {
+    const text = await fetchText(metaUrl);
+    const parsed = PipelineData.parseYaml(text);
+    if (!parsed || !Object.keys(parsed).length) throw new Error("空の YAML");
+    state.config = PipelineData.normalizeConfig(parsed, metaUrl, window.location.href);
+    state.metaSource = ".omm/data-pipeline/meta.yaml";
+    state.metaIssues = [];
+  } catch (error) {
+    state.config = PipelineData.normalizeConfig(null, metaUrl, window.location.href);
+    state.metaSource = "built-in defaults";
+    state.metaIssues = [{
+      level: "warn",
+      path: "meta.yaml",
+      message: `meta.yaml を読み込めませんでした (${error.message})。既定値で動作します。`
+    }];
+  }
+  state.pipelines = state.config.pipelines;
+}
+
+async function loadPipeline(pipeline) {
+  const token = ++state.loadToken;
+  const target = pipeline || state.pipelines[0] || null;
+  state.pipelineId = target ? target.id : null;
+  state.selected = null;
+  state.forcedError = false;
+  state.filePollingDisabled = false;
+  state.pollFailures = 0;
+  state.sourceHash = null;
+  state.metaIssues = state.metaIssues.filter((issue) => issue.path !== "metrics_url");
+
+  let current = null;
+  let previous = null;
+  let source = "embedded";
+  let engine = "simulation";
+  let filePollingDisabled = false;
+  let sourceHash = null;
+
+  if (target && target.metricsUrl) {
+    try {
+      const [currentText, previousText] = await Promise.all([
+        fetchText(target.metricsUrl),
+        target.prevUrl ? fetchText(target.prevUrl).catch(() => null) : Promise.resolve(null)
+      ]);
+      if (token !== state.loadToken) return false;
+      current = JSON.parse(currentText);
+      sourceHash = PipelineData.hashText(currentText);
+      if (previousText) {
+        try {
+          previous = JSON.parse(previousText);
+        } catch (error) {
+          previous = null;
+        }
+      }
+      source = "file";
+      engine = "file poll";
+    } catch (error) {
+      if (token !== state.loadToken) return false;
+      source = "embedded (fetch failed)";
+    }
+  }
+
+  // A newer switch may have started while this response was in flight.
+  if (token !== state.loadToken) return false;
+
+  if (!current) {
+    current = FALLBACK_SNAPSHOT;
+    previous = FALLBACK_PREVIOUS;
+    if (!source.startsWith("embedded")) source = "embedded";
+    filePollingDisabled = true;
+    engine = "simulation";
+  }
+
+  state.source = source;
+  state.engine = engine;
+  state.filePollingDisabled = filePollingDisabled;
+  state.sourceHash = sourceHash;
+  state.snap = adoptSnapshot(current);
+  state.prev = previous ? adoptSnapshot(previous, { silent: true }) : null;
+  state.sourceSnap = state.source === "file" ? state.snap : null;
+  seedHistory();
+  return true;
+}
+
+function pushHistoryPoint(errors) {
+  const first = state.snap.steps[0];
+  const last = state.snap.steps[state.snap.steps.length - 1];
+  const dropped = first && last ? Math.max(0, first.records_out - last.records_out) : 0;
+  state.history.push({
+    time: new Date().toISOString(),
+    throughput: throughputOf(),
+    elapsed: totalElapsed(),
+    errors: errors === undefined ? dropped : errors
+  });
+  state.history = state.history.slice(-40);
+}
+
+async function refreshPipelineFile() {
+  const pipeline = currentPipeline();
+  if (!pipeline || !pipeline.metricsUrl || state.filePollingDisabled || state.sourceHash === null) return false;
+  const token = state.loadToken;
+  const pipelineId = pipeline.id;
+  const isStale = () => token !== state.loadToken || state.pipelineId !== pipelineId;
+  try {
+    const text = await fetchText(pipeline.metricsUrl);
+    if (isStale()) return false;
+    state.pollFailures = 0;
+    const hash = PipelineData.hashText(text);
+    if (hash === state.sourceHash) return false;
+
+    const data = JSON.parse(text);
+    if (isStale()) return false;
+    state.prev = state.sourceSnap || state.snap;
+    state.snap = adoptSnapshot(data);
+    state.sourceSnap = state.snap;
+    state.sourceHash = hash;
+    state.source = "file";
+    state.engine = "file poll";
+    if (state.selected && !findStep(state.selected)) state.selected = null;
+    pushHistoryPoint();
+    renderAll();
+    return true;
+  } catch (error) {
+    if (isStale()) return false;
+    state.pollFailures += 1;
+    if (state.pollFailures >= 3) {
+      state.filePollingDisabled = true;
+      state.source = "embedded (file unavailable)";
+      state.engine = "simulation";
+      state.metaIssues = [...state.metaIssues, {
+        level: "warn",
+        path: "metrics_url",
+        message: "ファイルの再取得または解析に 3 回失敗したため、クライアント側シミュレーションに切り替えました。"
+      }];
+      renderAll();
+    }
+    return false;
+  }
+}
+
+async function onTick() {
+  if (!state.live || state.pendingLoads > 0) return;
+  if (!state.filePollingDisabled && state.sourceHash !== null) {
+    state.pendingLoads += 1;
+    try {
+      const refreshed = await refreshPipelineFile();
+      if (refreshed) return;
+    } finally {
+      state.pendingLoads = Math.max(0, state.pendingLoads - 1);
+    }
+  }
+  tick();
+}
+
+function startPolling() {
+  if (pollTimer) window.clearInterval(pollTimer);
+  pollTimer = window.setInterval(onTick, currentConfig().pollIntervalMs);
+}
+
+async function reloadAll() {
+  await loadMeta();
+  const target = state.pipelines.find((pipeline) => pipeline.id === state.pipelineId) || state.pipelines[0];
+  await loadPipeline(target);
+  renderAll();
+  startPolling();
 }
 
 function allSteps(snapshot = state.snap) {
@@ -1048,6 +1303,8 @@ function renderConnector(label) {
 
 function renderPipeline() {
   const snapshot = state.snap;
+  const firstStep = snapshot.steps[0];
+  const lastStep = snapshot.steps[snapshot.steps.length - 1];
   const nodes = snapshot.steps.map((step, index) => {
     const connector = index > 0
       ? renderConnector(num.format(snapshot.steps[index - 1].records_out))
@@ -1061,13 +1318,13 @@ function renderPipeline() {
       <div class="card-head">
         <div>
           <span class="eyebrow">data-pipeline · live</span>
-          <h2>ETL 本流</h2>
+          <h2>${esc((currentPipeline() || {}).label || "ETL 本流")}</h2>
           <p class="sub">Goose の data stack から出力された実行時メトリクスを反映</p>
         </div>
         <button class="btn btn-ghost" type="button" data-action="toggle-mermaid" aria-expanded="${state.mermaidOpen}">Mermaid ソース</button>
       </div>
       <div class="diagram-scroll">
-        <div class="flow">${nodes}</div>
+        <div class="flow${snapshot.steps.length > 3 ? " is-long" : ""}">${nodes}</div>
         <div class="branch-row">
           <span class="branch-tag">quarantine · ${num.format(quarantine.records_in)} rec</span>
           <span class="branch-dash" aria-hidden="true"></span>
@@ -1082,7 +1339,7 @@ function renderPipeline() {
           <span class="legend-item"><span class="legend-swatch swatch-error"></span>Error</span>
           <span class="legend-item"><span class="legend-swatch swatch-external"></span>External</span>
         </div>
-        <span class="hint">ノードをクリックすると詳細を表示</span>
+        <span class="hint"><span class="scroll-hint" hidden>横にスクロールできます · </span>ノードをクリックすると詳細を表示</span>
       </div>
     </section>
 
@@ -1095,14 +1352,14 @@ function renderPipeline() {
           </div>
         </div>
         <p style="font-size:0.84rem;color:var(--faint);margin-bottom:0.8rem;">
-          Extract で取得したレコードを Transform で検証・変換し、Load で出力シンクへ書き込みます。
+          ${esc(snapshot.steps.map((step) => step.label).join(" → "))} の順にレコードを処理します。
           検証に失敗したレコードは <code>@error-handler</code> に隔離され、本流を止めません。
         </p>
         <div class="metrics-list">
           <div class="metric-row"><span class="k">ステップ数</span><span class="v">${snapshot.steps.length}<small> steps</small></span></div>
           <div class="metric-row"><span class="k">合計処理時間</span><span class="v">${num.format(totalElapsed())}<small> ms</small></span></div>
-          <div class="metric-row"><span class="k">入力レコード</span><span class="v">${num.format(snapshot.steps[0].records_in)}<small> rec</small></span></div>
-          <div class="metric-row"><span class="k">出力レコード</span><span class="v">${num.format(snapshot.steps[snapshot.steps.length - 1].records_out)}<small> rec</small></span></div>
+          <div class="metric-row"><span class="k">入力レコード</span><span class="v">${num.format(firstStep ? firstStep.records_in : 0)}<small> rec</small></span></div>
+          <div class="metric-row"><span class="k">出力レコード</span><span class="v">${num.format(lastStep ? lastStep.records_out : 0)}<small> rec</small></span></div>
         </div>
       </section>
 
@@ -1124,32 +1381,38 @@ function renderPipeline() {
 }
 
 function renderArchitecture() {
+  const steps = state.snap.steps;
+  const first = steps[0] || { records_in: 0 };
+  const last = steps[steps.length - 1] || { records_out: 0 };
+  const inputCount = first.records_in;
+  const outputCount = last.records_out;
+  const elapsed = totalElapsed();
   return `
     <section class="card">
       <div class="card-head">
         <div>
           <span class="eyebrow">overall-architecture</span>
           <h2>全体アーキテクチャ</h2>
-          <p class="sub">Goose が生成した metrics.json を .omm ストア経由でビューアに供給</p>
+          <p class="sub">パイプラインが出力する metrics.json を .omm ストア経由でビューアに供給（試作ではサンプル JSON）</p>
         </div>
       </div>
       <div class="arch-flow">
         <div class="arch-row">
-          ${renderNode({ step_id: "sources", label: "Data sources", records_out: 1240, records_in: 1240, elapsed_ms: 0, status: "External" }, { static: true })}
+          ${renderNode({ step_id: "sources", label: "Data sources", records_out: inputCount, records_in: inputCount, elapsed_ms: 0, status: "External" }, { static: true })}
           ${renderConnector("raw")}
-          ${renderNode({ step_id: "engine", label: "Goose pipeline", records_out: 1180, records_in: 1240, elapsed_ms: 198, status: pipelineStatus() }, { static: true })}
+          ${renderNode({ step_id: "engine", label: "Goose pipeline", records_out: outputCount, records_in: inputCount, elapsed_ms: elapsed, status: pipelineStatus() }, { static: true })}
           ${renderConnector("transformed")}
-          ${renderNode({ step_id: "sink", label: "Output sink", records_out: 1180, records_in: 1180, elapsed_ms: 0, status: "External" }, { static: true })}
+          ${renderNode({ step_id: "sink", label: "Output sink", records_out: outputCount, records_in: outputCount, elapsed_ms: 0, status: "External" }, { static: true })}
         </div>
         <div class="arch-row">
           <span class="arch-caption">↳ metrics.json</span>
           ${renderConnector("write")}
           ${renderNode({ step_id: "store", label: ".omm store", records_out: state.snap.steps.length, records_in: state.snap.steps.length, elapsed_ms: 0, status: "Healthy" }, { static: true })}
-          ${renderConnector("SSE / HTTP")}
+          ${renderConnector("HTTP poll")}
           ${renderNode({ step_id: "viewer", label: "Viewer", records_out: state.snap.steps.length, records_in: state.snap.steps.length, elapsed_ms: 0, status: "External" }, { static: true })}
         </div>
       </div>
-      <p class="arch-note">ビューアは <code>live_metrics_url</code> をポーリングし、Mermaid ノードの色とバッジを動的に更新します。ダイアグラム定義と実行時状態を同じ <code>.omm/</code> 配下で管理する点が本構成の特徴です。</p>
+      <p class="arch-note">ビューアは表示中パイプラインの <code>metrics_url</code>（未指定時は <code>live_metrics_url</code>）をポーリングし、ノードの色とバッジを動的に更新します。設定と実行時状態を同じ <code>.omm/</code> 配下で管理する点が本構成の特徴です。</p>
     </section>
     <section class="card">
       <div class="card-head">
@@ -1162,9 +1425,9 @@ function renderArchitecture() {
         <table>
           <thead><tr><th>層</th><th>役割</th><th>技術要素</th></tr></thead>
           <tbody>
-            <tr><td>収集層</td><td>入力量・出力量・処理時間・エラーを計測</td><td class="mono">Goose struct StepMetrics</td></tr>
-            <tr><td>蓄積層</td><td>メトリクスとダイアグラム定義を統合管理</td><td class="mono">.omm/ + meta.yaml</td></tr>
-            <tr><td>可視化層</td><td>Mermaid の描画とリアルタイム更新</td><td class="mono">viewer + SSE watcher</td></tr>
+            <tr><td>収集層</td><td>入力量・出力量・処理時間・エラーを計測</td><td class="mono">Goose struct StepMetrics（想定）</td></tr>
+            <tr><td>蓄積層</td><td>設定とメトリクスを管理</td><td class="mono">.omm/ + viewer/data</td></tr>
+            <tr><td>可視化層</td><td>パイプライン図の描画とライブ更新</td><td class="mono">viewer + file poll</td></tr>
             <tr><td>ナビゲーション層</td><td>ドリルダウン・diff・参照追跡</td><td class="mono">@step-name / breadcrumb</td></tr>
           </tbody>
         </table>
@@ -1176,6 +1439,10 @@ function renderErrors() {
   const quarantine = state.snap.quarantine;
   const errors = state.snap.errors;
   const total = errors.reduce((sum, error) => sum + error.count, 0);
+  const sourceStep = state.snap.steps.find((step) => step.step_id === (errors[0] && errors[0].step_id))
+    || state.snap.steps[1]
+    || state.snap.steps[0]
+    || { step_id: "unknown", label: "—", records_in: 0, records_out: 0, elapsed_ms: 0, status: "Warning", message: "" };
   const errorItems = errors.length
     ? errors.map((error) => `
         <div class="error-item ${error.kind === "timeout" ? "s-error" : ""}">
@@ -1193,7 +1460,7 @@ function renderErrors() {
       <div class="card-head">
         <div>
           <span class="eyebrow warn">error-handler</span>
-          <h2>隔離と再処理</h2>
+          <h2>隔離とエラー</h2>
           <p class="sub">本流から分離されたレコードの追跡</p>
         </div>
       </div>
@@ -1204,14 +1471,14 @@ function renderErrors() {
       </div>
       <div class="arch-flow">
         <div class="arch-row">
-          ${renderNode(state.snap.steps.find((step) => step.step_id === "Transform") || state.snap.steps[0], { static: true })}
+          ${renderNode(sourceStep, { static: true })}
           ${renderConnector("failed")}
           ${renderNode(quarantine, { static: true })}
           ${renderConnector("log")}
           ${renderNode({ step_id: "error-log", label: "Error log", records_out: total, records_in: total, elapsed_ms: 0, status: "External" }, { static: true })}
         </div>
       </div>
-      <p class="arch-note">隔離されたレコードは本流のスループットに影響しません。再処理は error log から型付きキュー経由で行われます。</p>
+      <p class="arch-note">隔離されたレコードは本流のスループットに影響しません。error log からの再投入は想定設計で、試作では表示のみに対応しています。</p>
     </section>
     <section class="card">
       <div class="card-head">
@@ -1346,6 +1613,14 @@ function renderMain() {
   else content = renderPerformance();
 
   $("#main").innerHTML = strip + content;
+  updateScrollHint();
+}
+
+function updateScrollHint() {
+  const scroller = $(".diagram-scroll");
+  const hint = $(".scroll-hint");
+  if (!scroller || !hint) return;
+  hint.hidden = scroller.scrollWidth <= scroller.clientWidth + 1;
 }
 
 function renderInspector() {
@@ -1411,26 +1686,71 @@ function renderAlertsCard() {
 }
 
 function renderMetaCard() {
+  const config = currentConfig();
+  const pipeline = currentPipeline();
+  const issues = [...state.metaIssues, ...state.quality];
+  const errors = issues.filter((issue) => issue.level === "error").length;
+  const warnings = issues.length - errors;
+  const qualityClass = errors ? "is-error" : warnings ? "is-warning" : "is-ok";
+  const qualityText = errors
+    ? `エラー ${errors} 件 / 警告 ${warnings} 件`
+    : warnings ? `警告 ${warnings} 件` : "スキーマ検証 OK";
+  const issueList = issues.length
+    ? `<ul class="issue-list">${issues.slice(0, 4).map((issue) => `
+        <li class="${issue.level === "error" ? "is-error" : ""}"><b>${esc(issue.path)}</b> ${esc(issue.message)}</li>`).join("")}</ul>
+       ${issues.length > 4 ? `<p class="issue-list">ほか ${issues.length - 4} 件</p>` : ""}`
+    : "";
+
   $("#meta-card").innerHTML = `
     <div class="rail-head">
       <span class="eyebrow info">Meta</span>
       <h3>ストア情報</h3>
     </div>
     <dl class="kv">
+      <div><dt>pipeline</dt><dd>${esc(pipeline ? pipeline.id : "—")} · ${esc(pipeline ? pipeline.label : "—")}</dd></div>
       <div><dt>updated</dt><dd>${esc(fullTime(state.snap.timestamp))}</dd></div>
-      <div><dt>git_commit</dt><dd>a1b2c3d</dd></div>
-      <div><dt>live_metrics_url</dt><dd>./data/metrics.json</dd></div>
-      <div><dt>poll_interval</dt><dd>2500 ms</dd></div>
+      <div><dt>meta_updated</dt><dd>${config.updated ? esc(fullTime(config.updated)) : "—"}</dd></div>
+      <div><dt>git_commit</dt><dd>${esc(config.gitCommit)}</dd></div>
+      <div><dt>meta source</dt><dd>${esc(state.metaSource)}</dd></div>
+      <div><dt>metrics_url</dt><dd>${esc(pipeline ? pipeline.metricsPath : "—")}</dd></div>
+      <div><dt>poll_interval_ms</dt><dd>${num.format(config.pollIntervalMs)} ms</dd></div>
+      <div><dt>update engine</dt><dd>${esc(state.engine)}</dd></div>
       <div><dt>data source</dt><dd>${esc(state.source)}</dd></div>
       <div><dt>diff baseline</dt><dd>${state.prev ? esc(timeOnly(state.prev.timestamp)) : "—"}</dd></div>
-    </dl>`;
+    </dl>
+    <div class="quality ${qualityClass}">
+      <p class="quality-head">データ検証: ${qualityText}</p>
+      ${issueList}
+    </div>
+    <button class="clear-btn" type="button" data-action="reload-meta">meta.yaml を再読込</button>`;
+}
+
+function renderPipelineSelect() {
+  const select = $("#pipeline-select");
+  if (!select) return;
+  const signature = `${state.pipelines.map((pipeline) => `${pipeline.id}:${pipeline.label}`).join("|")}#${state.pipelineId}`;
+  if (select.dataset.signature !== signature) {
+    select.innerHTML = state.pipelines
+      .map((pipeline) => `<option value="${esc(pipeline.id)}"${pipeline.id === state.pipelineId ? " selected" : ""}>${esc(pipeline.label)}</option>`)
+      .join("");
+    select.dataset.signature = signature;
+  }
+  select.disabled = state.pipelines.length < 2;
+  const pipeline = currentPipeline();
+  $("#pipeline-note").textContent = pipeline ? `${pipeline.id} · ${state.source}` : "パイプライン未定義";
 }
 
 function renderHeader() {
   const meta = PERSPECTIVES[state.perspective];
+  const config = currentConfig();
+  const pipeline = currentPipeline();
   $("#crumb").innerHTML = `.omm / <b>${esc(state.perspective)}</b> / ${esc(meta.file)}`;
   $("#page-title").textContent = meta.title;
-  $("#page-sub").textContent = meta.sub;
+  const trail = state.snap.steps.map((step) => step.label).join(" → ");
+  const sub = state.perspective === "data-pipeline"
+    ? (trail ? `${trail} の実行状態をライブ表示` : "表示できるステップがありません")
+    : meta.sub;
+  $("#page-sub").textContent = pipeline ? `${sub} · ${pipeline.label}` : sub;
   $("#updated-time").textContent = timeOnly(state.snap.timestamp);
   const worst = pipelineStatus();
   const pill = $("#health-pill");
@@ -1442,6 +1762,8 @@ function renderHeader() {
   const inject = $("#inject-btn");
   inject.textContent = state.forcedError ? "復旧させる" : "障害を注入";
   inject.classList.toggle("is-on", state.forcedError);
+  $("#side-metrics-path").textContent = metricsLabel(pipeline);
+  $("#side-poll").textContent = `${num.format(config.pollIntervalMs)} ms`;
   $("#side-source").textContent = state.source;
 }
 
@@ -1468,6 +1790,7 @@ function renderNav() {
 function renderAll() {
   renderHeader();
   renderNav();
+  renderPipelineSelect();
   renderMain();
   renderInspector();
   renderAlertsCard();
@@ -1495,13 +1818,14 @@ function mermaidSource() {
     if (index === 0) return;
     lines.push(`    ${state.snap.steps[index - 1].step_id} -->|"${num.format(state.snap.steps[index - 1].records_out)}"| ${step.step_id}`);
   });
-  const transformId = (state.snap.steps[1] && state.snap.steps[1].step_id) || "Transform";
-  lines.push(`    ${transformId} -.->|"${num.format(quarantine.records_in)}"| ErrorLog`);
+  const branchSourceId = (state.snap.steps[1] && state.snap.steps[1].step_id) || "Transform";
+  lines.push(`    ${branchSourceId} -.->|"${num.format(quarantine.records_in)}"| ErrorLog`);
   lines.push("");
-  lines.push('    classDef healthy fill:#8ef0cf,stroke:#0b0b0b,color:#0b0b0b');
-  lines.push('    classDef warning fill:#ffc857,stroke:#0b0b0b,color:#0b0b0b');
-  lines.push('    classDef error fill:#ff6b6b,stroke:#0b0b0b,color:#0b0b0b');
-  lines.push('    classDef external fill:#b8dcff,stroke:#0b0b0b,color:#0b0b0b');
+  const statusMap = currentConfig().statusMap;
+  ["Healthy", "Warning", "Error", "External"].forEach((status) => {
+    const definition = statusMap[status] || PipelineData.DEFAULT_STATUS_MAP[status];
+    lines.push(`    ${/^classDef\s/.test(definition) ? definition : `classDef ${statusClass(status)} ${definition}`}`);
+  });
   return lines.join("\n");
 }
 
@@ -1514,7 +1838,7 @@ function seedHistory() {
     const order = 28 - index;
     const wave = 1 + 0.09 * Math.sin(order * 0.52) + 0.04 * Math.cos(order * 0.21);
     return {
-      time: new Date(now - order * 2500).toISOString(),
+      time: new Date(now - order * currentConfig().pollIntervalMs).toISOString(),
       throughput: Math.round(base * wave),
       elapsed: Math.round(baseLatency * (2 - wave)),
       errors: Math.max(0, Math.round(baseErrors * (2 - wave)))
@@ -1523,49 +1847,47 @@ function seedHistory() {
 }
 
 function tick() {
-  if (!state.snap) return;
+  if (!state.snap || !state.snap.steps.length) return;
   const previous = state.snap;
   const now = new Date();
   const timeLabel = now.toLocaleTimeString("ja-JP", { hour12: false });
-  const extractIn = clamp(previous.steps[0].records_in + randInt(-45, 55), 900, 1600);
   const forceError = state.forcedError;
   const triggerWarning = !forceError && Math.random() < 0.2;
-  const extract = {
-    ...previous.steps[0],
-    records_in: extractIn,
-    records_out: extractIn,
-    elapsed_ms: randInt(38, 58),
-    status: "Healthy",
-    message: ""
-  };
-  const dropped = forceError ? extractIn : triggerWarning ? randInt(45, 95) : randInt(0, 24);
-  const transformOut = Math.max(0, extractIn - dropped);
-  const transformStatus = forceError ? "Error" : triggerWarning ? "Warning" : "Healthy";
-  const transform = {
-    ...previous.steps[1],
-    records_in: extractIn,
-    records_out: transformOut,
-    elapsed_ms: forceError ? randInt(290, 380) : randInt(92, 138),
-    status: transformStatus,
-    message: forceError
-      ? "出力シンクへの接続がタイムアウトしました"
-      : triggerWarning
-        ? `${dropped} 件がスキーマ検証で隔離されました`
+  const targetIndex = previous.steps.length > 1 ? 1 : -1;
+  const firstIn = Math.max(1, previous.steps[0].records_in + randInt(-45, 55));
+  const dropped = targetIndex === -1 ? 0 : forceError ? firstIn : triggerWarning ? randInt(45, 95) : randInt(0, 24);
+  const targetId = targetIndex >= 0 ? previous.steps[targetIndex].step_id : previous.steps[0].step_id;
+
+  let carry = firstIn;
+  const steps = previous.steps.map((step, index) => {
+    const recordsIn = carry;
+    const recordsOut = index === 0 ? recordsIn : Math.max(0, recordsIn - (index === targetIndex ? dropped : 0));
+    carry = recordsOut;
+    const isTarget = index === targetIndex;
+    const elapsed = isTarget && forceError
+      ? randInt(290, 380)
+      : clamp(Math.round((step.elapsed_ms || 100) * (0.88 + Math.random() * 0.24)), 5, 900);
+    return {
+      ...step,
+      records_in: recordsIn,
+      records_out: recordsOut,
+      elapsed_ms: elapsed,
+      status: isTarget ? (forceError ? "Error" : triggerWarning ? "Warning" : "Healthy") : "Healthy",
+      message: isTarget
+        ? forceError
+          ? "出力シンクへの接続がタイムアウトしました"
+          : triggerWarning
+            ? `${dropped} 件がスキーマ検証で隔離されました`
+            : ""
         : ""
-  };
-  const load = {
-    ...previous.steps[2],
-    records_in: transformOut,
-    records_out: transformOut,
-    elapsed_ms: randInt(24, 40),
-    status: "Healthy",
-    message: ""
-  };
+    };
+  });
+
   const errors = [...previous.errors];
   if (dropped > 0 && (forceError || Math.random() < 0.7)) {
     errors.unshift({
       at: timeLabel,
-      step_id: forceError ? "Transform" : Math.random() < 0.6 ? "Transform" : "Extract",
+      step_id: targetId,
       kind: forceError ? "timeout" : Math.random() < 0.7 ? "schema" : "timeout",
       message: forceError ? "出力シンクへの接続がタイムアウトしました" : "スキーマ検証でレコードを隔離",
       count: dropped
@@ -1574,7 +1896,7 @@ function tick() {
   const next = {
     timestamp: now.toISOString(),
     pipeline: previous.pipeline,
-    steps: [extract, transform, load],
+    steps,
     quarantine: {
       ...previous.quarantine,
       records_in: dropped,
@@ -1584,15 +1906,8 @@ function tick() {
     errors: errors.slice(0, 8)
   };
   state.prev = previous;
-  state.snap = normalizeSnapshot(next);
-  const point = {
-    time: now.toISOString(),
-    throughput: throughputOf(state.snap),
-    elapsed: totalElapsed(state.snap),
-    errors: dropped
-  };
-  state.history.push(point);
-  state.history = state.history.slice(-40);
+  state.snap = adoptSnapshot(next);
+  pushHistoryPoint(dropped);
   if (state.selected && !findStep(state.selected)) state.selected = null;
   renderAll();
 }
@@ -1603,30 +1918,15 @@ async function init() {
   if (requested && PERSPECTIVES[requested]) state.perspective = requested;
   if (params.get("diff") === "1") state.diff = true;
   if (params.get("live") === "0") state.live = false;
-  try {
-    const [current, previous] = await Promise.all([
-      fetch("./data/metrics.json", { cache: "no-store" }).then((response) => {
-        if (!response.ok) throw new Error("metrics.json");
-        return response.json();
-      }),
-      fetch("./data/metrics-prev.json", { cache: "no-store" }).then((response) => {
-        if (!response.ok) throw new Error("metrics-prev.json");
-        return response.json();
-      })
-    ]);
-    state.snap = normalizeSnapshot(current);
-    state.prev = normalizeSnapshot(previous);
-    state.source = "metrics.json";
-  } catch (error) {
-    state.snap = normalizeSnapshot(FALLBACK_SNAPSHOT);
-    state.prev = normalizeSnapshot(FALLBACK_PREVIOUS);
-    state.source = "embedded sample";
-  }
-  seedHistory();
+
+  await loadMeta();
+  const requestedPipeline = params.get("pipeline");
+  const pipeline = state.pipelines.find((item) => item.id === requestedPipeline)
+    || state.pipelines.find((item) => item.id === state.config.defaultPipeline)
+    || state.pipelines[0];
+  await loadPipeline(pipeline);
   renderAll();
-  window.setInterval(() => {
-    if (state.live) tick();
-  }, 2500);
+  startPolling();
 }
 
 $("#nav").addEventListener("click", (event) => {
@@ -1635,6 +1935,28 @@ $("#nav").addEventListener("click", (event) => {
   state.perspective = button.dataset.persp;
   state.selected = null;
   renderAll();
+});
+
+$("#pipeline-select").addEventListener("change", async (event) => {
+  const next = state.pipelines.find((pipeline) => pipeline.id === event.target.value);
+  if (!next) return;
+  state.pendingLoads += 1;
+  try {
+    const applied = await loadPipeline(next);
+    // Ignore the result of a request superseded by a newer pipeline switch.
+    if (!applied) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("pipeline", next.id);
+    window.history.replaceState(null, "", url);
+    renderAll();
+  } finally {
+    state.pendingLoads = Math.max(0, state.pendingLoads - 1);
+  }
+});
+
+$("#meta-card").addEventListener("click", (event) => {
+  if (!event.target.closest('[data-action="reload-meta"]')) return;
+  reloadAll();
 });
 
 $("#main").addEventListener("click", (event) => {

@@ -1,0 +1,67 @@
+{
+  "timestamp": "2026-10-27T09:15:02Z",
+  "pipeline": "etl-reporting",
+  "steps": [
+    {
+      "step_id": "Collect",
+      "label": "Collect",
+      "records_in": 8420,
+      "records_out": 8420,
+      "elapsed_ms": 64,
+      "status": "Healthy",
+      "message": ""
+    },
+    {
+      "step_id": "Enrich",
+      "label": "Enrich",
+      "records_in": 8420,
+      "records_out": 8364,
+      "elapsed_ms": 188,
+      "status": "Warning",
+      "message": "56 件が参照データ未一致で隔離されました"
+    },
+    {
+      "step_id": "Aggregate",
+      "label": "Aggregate",
+      "records_in": 8364,
+      "records_out": 8364,
+      "elapsed_ms": 74,
+      "status": "Healthy",
+      "message": ""
+    },
+    {
+      "step_id": "Publish",
+      "label": "Publish",
+      "records_in": 8364,
+      "records_out": 8364,
+      "elapsed_ms": 42,
+      "status": "Healthy",
+      "message": ""
+    }
+  ],
+  "quarantine": {
+    "step_id": "error-handler",
+    "label": "@error-handler",
+    "records_in": 56,
+    "records_out": 56,
+    "elapsed_ms": 9,
+    "status": "External",
+    "message": "未一致レコードを error log に書き込み"
+  },
+  "errors": [
+    {
+      "at": "09:14:55",
+      "step_id": "Enrich",
+      "kind": "lookup",
+      "message": "参照マスタに customer_id が見つかりません",
+      "count": 34
+    },
+    {
+      "at": "09:14:31",
+      "step_id": "Enrich",
+      "kind": "lookup",
+      "message": "参照マスタの読み込みが遅延",
+      "count": 22
+    }
+  ]
+}

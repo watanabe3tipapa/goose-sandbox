@@ -174,6 +174,7 @@ pre {
   line-height: 1.7;
 }
 pre code { border: 0; padding: 0; background: transparent; font-size: inherit; }
+main p code { overflow-wrap: anywhere; }
 
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 8px; }
 .card {
@@ -409,7 +410,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outlin
         </div>
         <div class="preview-title">
           <h3>データ処理パイプライン</h3>
-          <span class="mono">4 steps · 4 perspectives</span>
+          <span class="mono">4 nodes · 4 perspectives</span>
         </div>
         <div class="preview-stats">
           <div class="preview-stat"><strong>1,240</strong><span>RECORDS</span></div>
@@ -453,8 +454,20 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outlin
         <article class="card">
           <span class="card-label">live</span>
           <h3>ライブ更新</h3>
-          <p>2.5 秒間隔でメトリクスを更新。LIVE / PAUSED を切り替えられ、最終更新時刻と全体の健康状態を常時表示します。</p>
+          <p><code>meta.yaml</code> の <code>poll_interval_ms</code> 間隔でメトリクスを再取得。更新がなければブラウザ内シミュレーションで動きを保ち、LIVE / PAUSED を切り替えられます。</p>
           <div class="tags"><span class="tag">polling</span><span class="tag">status</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">meta-driven</span>
+          <h3>meta.yaml 駆動</h3>
+          <p>メトリクス URL、ポーリング間隔、ステータス色、パイプライン一覧を <code>.omm/data-pipeline/meta.yaml</code> から読み込みます。設定変更は「meta.yaml を再読込」で即時反映できます。</p>
+          <div class="tags"><span class="tag">.omm/</span><span class="tag">config</span><span class="tag">multi-pipeline</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">validate</span>
+          <h3>スキーマ検証</h3>
+          <p>必須フィールド、数値、ステータス、前段との件数整合、隔離件数を表示前にチェック。修復結果と警告・エラーを Meta カードに表示します。</p>
+          <div class="tags"><span class="tag">schema</span><span class="tag">quality</span></div>
         </article>
         <article class="card">
           <span class="card-label">diff</span>
@@ -509,14 +522,14 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outlin
 
     <section id="perspectives" aria-labelledby="perspectives-heading">
       <h2 id="perspectives-heading">Perspective 構成</h2>
-      <p class="intro">oh-my-mermaid の考え方に合わせ、視点ごとに構造と状態を整理します。<code>.omm/</code> 配下の構成をそのままダッシュボードのナビゲーションに対応させています。</p>
+      <p class="intro">oh-my-mermaid の考え方に合わせ、視点ごとに構造と状態を整理します。<code>.omm/config.yaml</code> の Perspective 一覧をダッシュボードのナビゲーションに対応させ、各ビューはダッシュボード内に実装しています。</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Perspective</th><th>確認する内容</th><th>ダッシュボードでの表示</th></tr></thead>
           <tbody>
             <tr><td><code>data-pipeline</code></td><td>ETL 本流のステップと隔離分岐</td><td>ノード図、Diff、アラート、インスペクタ</td></tr>
             <tr><td><code>overall-architecture</code></td><td>Goose エンジンと .omm ストア、ビューアの関係</td><td>全体構成図とレイヤー表</td></tr>
-            <tr><td><code>error-handler</code></td><td>隔離・再処理と最近のエラー</td><td>エラー経路図、件数、イベント一覧</td></tr>
+            <tr><td><code>error-handler</code></td><td>隔離と最近のエラー</td><td>エラー経路図、件数、イベント一覧</td></tr>
             <tr><td><code>performance-metrics</code></td><td>スループット、レイテンシ、隔離レコード数の推移</td><td>時系列チャート、ステップ別バー、履歴表</td></tr>
           </tbody>
         </table>
@@ -528,19 +541,18 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outlin
       <ol class="steps">
         <li>
           <h3>ダッシュボードを開く</h3>
-          <p>公開サイトの <a href="viewer/">PipelineViz/viewer/</a> を開きます。ビルドやサーバーは不要です。ローカルで確認する場合は、リポジトリのルートで静的サーバーを起動します。</p>
+          <p>公開サイトの <a href="viewer/">PipelineViz/viewer/</a> を開きます。ビルドは不要です。ローカルで確認する場合は <code>fetch()</code> の制約があるため、リポジトリのルートで静的サーバーを起動してから開きます。</p>
           <pre><code>python3 -m http.server 8000
 # http://localhost:8000/PipelineViz/viewer/</code></pre>
         </li>
         <li>
           <h3>サンプルデータを自分のパイプラインに差し替える</h3>
-          <p><code>viewer/data/metrics.json</code> のステップ名・件数・時間・ステータスを変更します。取得に失敗した場合は、HTML 内の埋め込みサンプルで動作します。</p>
-          <pre><code>{
-  "steps": [
-    { "step_id": "Extract", "records_in": 1240, "records_out": 1240,
-      "elapsed_ms": 46, "status": "Healthy" }
-  ]
-}</code></pre>
+          <p><code>.omm/data-pipeline/meta.yaml</code> の <code>pipelines[]</code> にメトリクス URL を追加し、<code>viewer/data/</code> の JSON を編集します。複数パイプラインはサイドバーのセレクタで切り替えられます。取得に失敗した場合は、HTML 内の埋め込みサンプルで動作します。</p>
+          <pre><code>pipelines:
+  - id: etl-main
+    label: ETL 本流
+    metrics_url: ../../viewer/data/metrics.json
+    prev_url: ../../viewer/data/metrics-prev.json</code></pre>
         </li>
         <li>
           <h3>GitHub Pages に配置する</h3>
@@ -556,20 +568,26 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outlin
 │   ├── index.html                # プロジェクト LP
 │   ├── viewer/
 │   │   ├── index.html            # ダッシュボード試作
+│   │   ├── lib/
+│   │   │   ├── data-source.js    # meta.yaml パーサー・検証
+│   │   │   └── data-source.test.js # Node.js テスト
 │   │   └── data/
-│   │       ├── metrics.json      # 現在のスナップショット
-│   │       └── metrics-prev.json # Diff 用の前回スナップショット
+│   │       ├── metrics.json      # ETL 本流の現在スナップショット
+│   │       ├── metrics-prev.json # 同・Diff 用
+│   │       ├── etl-reporting.json      # 日次レポート
+│   │       └── etl-reporting-prev.json # 同・Diff 用
 │   ├── assets/
 │   │   └── brutalist-doc.css     # ドキュメント共通スタイル
 │   ├── .omm/
-│   │   ├── config.yaml
+│   │   ├── config.yaml           # Perspective 一覧
 │   │   └── data-pipeline/
-│   │       ├── meta.yaml         # live_metrics_url / status_map
-│   │       └── diagram.mmd       # Mermaid 定義
-│   ├── pipeline_viz_proposal.html# 実装提案資料
+│   │       ├── meta.yaml         # live_metrics_url / pipelines / status_map / prev_diagram
+│   │       └── diagram.mmd       # Mermaid 定義サンプル
+│   ├── pipeline_viz_proposal.html # 実装提案資料
 │   ├── goose_language_guide.html # Goose 言語ガイド
 │   └── README.md                 # プロジェクト README
 ├── index.html                    # Sandbox ホーム
+├── README.md                     # Sandbox 全体の README
 ├── .github/workflows/pages.yml   # GitHub Pages デプロイ
 ├── LICENSE                       # MIT
 └── .nojekyll                     # GitHub Pages 用</code></pre>
@@ -582,6 +600,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outlin
         <li>ライブ更新はポーリング方式です。SSE / WebSocket による配信は今後の実装対象です。</li>
         <li>Mermaid の描画は独自の HTML / SVG 表現で、Mermaid ランタイムは読み込んでいません。ソース出力のみ対応しています。</li>
         <li>大規模ダイアグラムの仮想化や、複数パイプラインの同時監視は未対応です。</li>
+        <li>Perspective は 4 種類の固定ビューで、<code>.omm/</code> の各ディレクトリを読み込むわけではありません。パンくずのファイル名も想定パスの表示です。</li>
         <li>oh-my-mermaid 本体への組み込みは未実施で、UI とデータ構造の試作段階です。</li>
       </ul>
     </section>
