@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goose サンプル探訪 — 31 本を、読む順に。</title>
+<meta name="description" content="Goose 公式サンプル 31 本を、カテゴリ・難易度・必要な環境で辿り、解説とソースコードを 1 画面で読める静的サイト。ビルド不要で GitHub Pages に公開。">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23ffffff'/%3E%3Crect x='7' y='7' width='18' height='18' fill='%2300e5a8' stroke='%230b0b0b' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #0b0b0b;
+  --accent: #00e5a8;
+  --accent-ink: #007a5a;
+  --muted: #f2f2f2;
+  --border: #0b0b0b;
+  --faint: #525252;
+  --radius: 4px;
+  --intro: #8ef0cf;
+  --middle: #ffc857;
+  --advanced: #b8dcff;
+  --font-ui: Inter, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Noto Mono", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.75;
+  font-size: 1.0625rem;
+}
+a { color: inherit; }
+.mono { font-family: var(--font-mono); }
+
+.frame {
+  max-width: 980px;
+  margin: 28px auto 48px;
+  padding: 26px 28px 40px;
+  border: 6px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--muted), transparent 40%);
+}
+
+.lp-masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.lp-brand {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  border-radius: 2px;
+  font-weight: 700;
+}
+.lp-brand .mark {
+  display: inline-block;
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border: 2px solid var(--border);
+  margin-right: 7px;
+  vertical-align: 1px;
+}
+.lp-tag {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border: 2px solid var(--border);
+  background: var(--muted);
+  border-radius: 2px;
+}
+
+.lp-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 30px; }
+.lp-nav a {
+  padding: 8px 14px;
+  border: 4px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 2px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+.lp-nav a:hover { background: var(--accent); }
+
+.hero { margin: 0 0 30px; }
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 10px;
+}
+.hero-title {
+  display: inline-block;
+  margin: 0 0 16px;
+  padding: 6px 16px;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  border-radius: 2px;
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.hero-subtitle { font-size: 1.1rem; max-width: 62ch; margin: 0 0 20px; }
+.hero-subtitle strong { font-weight: 700; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border: 4px solid var(--border);
+  background: var(--accent);
+  color: var(--fg);
+  border-radius: 2px;
+  font-weight: 700;
+  font-family: var(--font-ui);
+  text-decoration: none;
+}
+.btn.btn-ghost { background: var(--bg); }
+.btn:hover { background: var(--fg); color: var(--bg); }
+.btn.btn-ghost:hover { background: var(--accent); color: var(--fg); }
+
+section { margin-bottom: 44px; }
+h2 {
+  display: table;
+  padding: 6px 14px;
+  margin: 38px 0 16px;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  border-radius: 2px;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+h2::before {
+  content: "";
+  display: inline-block;
+  width: 11px; height: 11px;
+  margin-right: 9px;
+  vertical-align: 2px;
+  background: var(--accent);
+  border: 3px solid var(--border);
+}
+h3 { font-size: 1.02rem; font-weight: 700; }
+.intro { font-size: 1.02rem; max-width: 72ch; margin-bottom: 18px; }
+
+main p a, main li a {
+  color: var(--fg);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 3px solid var(--border);
+  padding: 0 2px;
+}
+main p a:hover, main li a:hover { background: var(--accent); }
+
+code {
+  font-family: var(--font-mono);
+  background: var(--bg);
+  padding: 1px 6px;
+  border: 2px dashed var(--border);
+  border-radius: 2px;
+  font-size: 0.88em;
+}
+pre {
+  overflow-x: auto;
+  padding: 16px 18px;
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+pre code { border: 0; padding: 0; background: transparent; font-size: inherit; }
+main p code { overflow-wrap: anywhere; }
+
+/* ---------- stats ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  margin: 0 0 34px;
+  overflow: hidden;
+}
+.stat { padding: 14px 16px; border-right: 3px solid var(--border); }
+.stat:last-child { border-right: 0; }
+.stat strong {
+  display: block;
+  font-size: 1.7rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.stat span {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-top: 2px;
+}
+
+/* ---------- preview ---------- */
+.preview {
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  overflow: hidden;
+}
+.preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 3px solid var(--border);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--faint);
+}
+.preview-bar b { color: var(--fg); }
+.preview-body { display: grid; grid-template-columns: 190px minmax(0, 1fr); }
+.preview-side {
+  border-right: 3px solid var(--border);
+  padding: 12px;
+  background: #fafafa;
+  font-size: 0.7rem;
+}
+.preview-side p {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 7px;
+}
+.preview-side ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.preview-side li { display: flex; justify-content: space-between; gap: 6px; padding: 3px 5px; border-radius: 2px; }
+.preview-side li.on { background: var(--accent); border: 1px solid var(--border); font-weight: 700; }
+.preview-side li span:last-child { font-family: var(--font-mono); font-size: 0.6rem; color: var(--faint); }
+.preview-side li.on span:last-child { color: var(--fg); }
+.preview-cards { padding: 12px; display: flex; flex-direction: column; gap: 7px; }
+.preview-card {
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  padding: 7px 10px;
+  box-shadow: 2px 2px 0 var(--border);
+  background: var(--bg);
+}
+.preview-card.on { background: #d9fff4; border-left-width: 5px; }
+.preview-card .top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  color: var(--faint);
+}
+.preview-card .no { background: var(--fg); color: var(--bg); padding: 0 4px; border-radius: 2px; font-weight: 700; }
+.preview-card b { display: block; font-size: 0.8rem; margin: 2px 0 0; line-height: 1.35; }
+.preview-card small { display: block; font-size: 0.64rem; color: var(--faint); line-height: 1.45; }
+
+/* ---------- categories ---------- */
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 12px; }
+.cat {
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 13px 15px;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+.cat:hover { background: var(--accent); }
+.cat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--faint);
+}
+.cat:hover .cat-top { color: var(--fg); }
+.cat-top b { background: var(--fg); color: var(--bg); padding: 0 6px; border-radius: 2px; }
+.cat h3 { margin: 7px 0 4px; font-size: 0.98rem; }
+.cat p { font-size: 0.78rem; color: var(--faint); line-height: 1.55; }
+.cat:hover p { color: var(--fg); }
+
+/* ---------- reading path ---------- */
+.path { display: flex; flex-direction: column; gap: 14px; counter-reset: step; }
+.path li {
+  list-style: none;
+  position: relative;
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 15px 18px 15px 64px;
+}
+.path li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  border: 3px solid var(--border);
+  border-radius: 50%;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.path b { display: block; font-size: 0.98rem; }
+.path p { font-size: 0.84rem; color: var(--faint); margin-top: 2px; }
+
+/* ---------- table ---------- */
+.table-wrap { border: 3px solid var(--border); border-radius: var(--radius); overflow-x: auto; background: var(--bg); }
+table { width: 100%; border-collapse: collapse; font-size: 0.84rem; min-width: 440px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #e4e4e4; vertical-align: top; }
+th {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--muted);
+  border-bottom: 3px solid var(--border);
+}
+tr:last-child td { border-bottom: 0; }
+td.mono { font-size: 0.76rem; }
+
+/* ---------- notes ---------- */
+.note-box {
+  border: 3px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  background: var(--bg);
+  font-size: 0.88rem;
+}
+.note-box p + p { margin-top: 8px; }
+.limits { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.limits li { padding-left: 20px; position: relative; font-size: 0.92rem; }
+.limits li::before { content: "—"; position: absolute; left: 0; font-family: var(--font-mono); color: var(--faint); }
+
+.cta {
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--accent);
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.cta h2 { margin: 0; background: transparent; border: 0; padding: 0; font-size: 1.3rem; }
+.cta h2::before { display: none; }
+.cta p { font-size: 0.88rem; max-width: 46ch; }
+.cta .btn { background: var(--bg); }
+.cta .btn:hover { background: var(--fg); color: var(--bg); }
+
+footer {
+  margin-top: 44px;
+  padding-top: 16px;
+  border-top: 4px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--faint);
+}
+footer a { color: var(--fg); }
+
+@media (max-width: 760px) {
+  .frame { margin: 12px; padding: 18px 16px 30px; border-width: 4px; }
+  .hero-title { font-size: 2rem; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat:nth-child(2) { border-right: 0; }
+  .stat:nth-child(-n + 2) { border-bottom: 3px solid var(--border); }
+  .preview-body { grid-template-columns: 1fr; }
+  .preview-side { border-right: 0; border-bottom: 3px solid var(--border); }
+  .preview-side ul { flex-direction: row; flex-wrap: wrap; }
+  .preview-side li { border: 1px solid var(--border); }
+  .table-wrap { border-width: 2px; }
+  table { min-width: 0; font-size: 0.78rem; }
+  th, td { padding: 7px 8px; }
+  pre { font-size: 0.72rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+@media print {
+  .lp-nav, .hero-cta, .cta .btn { display: none; }
+  .frame { border: 0; margin: 0; padding: 0; }
+  body { font-size: 11pt; }
+  section { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="frame">
+
+  <div class="lp-masthead">
+    <span class="lp-brand"><span class="mark"></span>GooseSamples</span>
+    <span class="lp-tag">project 02 · static site</span>
+  </div>
+
+  <nav class="lp-nav" aria-label="サイト内ナビゲーション">
+    <a href="../">Sandbox</a>
+    <a href="./">GooseSamples</a>
+    <a href="explorer/">探訪ビュー</a>
+    <a href="../PipelineViz/goose_language_guide.html">Goose 解説</a>
+  </nav>
+
+  <header class="hero">
+    <p class="hero-eyebrow">Project 02 / sample atlas</p>
+    <h1 class="hero-title">Goose サンプル探訪</h1>
+    <p class="hero-subtitle">
+      公式サンプル <strong>31 本</strong>を、カテゴリ・難易度・必要な環境で辿り、
+      解説とソースコードを<strong>同じ画面</strong>で読むための静的サイトです。
+      ビルドもサーバーも不要で、GitHub Pages にそのまま公開できます。
+    </p>
+    <div class="hero-cta">
+      <a class="btn" href="explorer/">探訪ビューを開く</a>
+      <a class="btn btn-ghost" href="README.md">README</a>
+      <a class="btn btn-ghost" href="https://github.com/aardappel/goose/tree/master/samples">公式サンプル</a>
+    </div>
+  </header>
+
+  <div class="stats" aria-label="収録データの概要">
+    <div class="stat"><strong>31</strong><span>Samples</span></div>
+    <div class="stat"><strong>8</strong><span>Categories</span></div>
+    <div class="stat"><strong>7,420</strong><span>Lines</span></div>
+    <div class="stat"><strong>0</strong><span>Build steps</span></div>
+  </div>
+
+  <section id="preview" aria-labelledby="preview-heading">
+    <h2 id="preview-heading">探訪ビュー</h2>
+    <p class="intro">
+      左にカテゴリとフィルタ、中央にカード一覧、右に解説とソース。カードを選ぶと、要約・学べること・実行コマンド・行番号付きのコードが並びます。
+      検索、読了チェック、URL での共有にも対応しています。
+    </p>
+    <div class="preview" aria-label="探訪ビューのイメージ">
+      <div class="preview-bar">
+        <span><b>Goose サンプル探訪</b> · 31 samples · annotated</span>
+        <span>0 / 31 読了</span>
+      </div>
+      <div class="preview-body">
+        <div class="preview-side">
+          <p>Categories</p>
+          <ul>
+            <li class="on"><span>基礎</span><span>6</span></li>
+            <li><span>アルゴリズム</span><span>6</span></li>
+            <li><span>データ構造</span><span>4</span></li>
+            <li><span>言語処理</span><span>3</span></li>
+            <li><span>グラフィックス</span><span>4</span></li>
+            <li><span>実践</span><span>3</span></li>
+            <li><span>応用</span><span>3</span></li>
+            <li><span>ゲーム</span><span>2</span></li>
+          </ul>
+        </div>
+        <div class="preview-cards">
+          <div class="preview-card on">
+            <span class="top"><span class="no">18</span><span>言語処理</span><span>中級</span><span>313 行</span></span>
+            <b>JSON パーサー</b>
+            <small>可変モード enum のノードを 1 つのプールに置き、4 バイトの相対リンクで辿る。</small>
+          </div>
+          <div class="preview-card">
+            <span class="top"><span class="no">13</span><span>データ構造</span><span>中級</span><span>113 行</span></span>
+            <b>双方向連結リスト</b>
+            <small>reusable プールと in pool リンクで、アロケータなしに O(1) の挿入・削除。</small>
+          </div>
+          <div class="preview-card">
+            <span class="top"><span class="no">23</span><span>グラフィックス</span><span>発展</span><span>101 行</span></span>
+            <b>マンデルブロ集合（並列）</b>
+            <small>型付きキューでジョブを配るワーカープール。行を並列に描画する。</small>
+          </div>
+          <div class="preview-card">
+            <span class="top"><span class="no">30</span><span>ゲーム</span><span>発展</span><span>1,640 行</span></span>
+            <b>ミニ・マインクラフト</b>
+            <small>アセットなしで地形・テクスチャ・空・フォントまでコードで生成する。</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="categories" aria-labelledby="categories-heading">
+    <h2 id="categories-heading">8 つのカテゴリ</h2>
+    <p class="intro">
+      上流の章立てを、探訪しやすい 8 分類に整理しました。カテゴリを選ぶと、その範囲だけに絞り込んだ一覧が開きます。
+    </p>
+    <div class="cat-grid">
+      <a class="cat" href="explorer/?cat=foundations">
+        <span class="cat-top"><span>01–06</span><b>6</b></span>
+        <h3>基礎</h3>
+        <p>値の幅から参照まで、言語の前提になる 6 本。</p>
+      </a>
+      <a class="cat" href="explorer/?cat=algorithms">
+        <span class="cat-top"><span>07–12</span><b>6</b></span>
+        <h3>アルゴリズム</h3>
+        <p>篩、多倍長、ソート、数独、迷路、ハフマン。</p>
+      </a>
+      <a class="cat" href="explorer/?cat=data-structures">
+        <span class="cat-top"><span>13–16</span><b>4</b></span>
+        <h3>データ構造</h3>
+        <p>プール、相対リンク、スライスをキーにした辞書。</p>
+      </a>
+      <a class="cat" href="explorer/?cat=language">
+        <span class="cat-top"><span>17–19</span><b>3</b></span>
+        <h3>言語処理</h3>
+        <p>電卓、JSON、バイトコード VM。</p>
+      </a>
+      <a class="cat" href="explorer/?cat=graphics">
+        <span class="cat-top"><span>20–23</span><b>4</b></span>
+        <h3>グラフィックス・並列</h3>
+        <p>ライフゲーム、レイトレース、画像カーネル、スレッド。</p>
+      </a>
+      <a class="cat" href="explorer/?cat=practice">
+        <span class="cat-top"><span>24–26</span><b>3</b></span>
+        <h3>実践</h3>
+        <p>C 連携、ファイル形式としての構造体、伸縮するプール。</p>
+      </a>
+      <a class="cat" href="explorer/?cat=applications">
+        <span class="cat-top"><span>27–29</span><b>3</b></span>
+        <h3>応用（GPU/UI）</h3>
+        <p>gfx、physics、ui モジュールとシェーダー。</p>
+      </a>
+      <a class="cat" href="explorer/?cat=games">
+        <span class="cat-top"><span>30–31</span><b>2</b></span>
+        <h3>ゲーム</h3>
+        <p>ボクセル世界と、WAD を読み込む小さな FPS。</p>
+      </a>
+    </div>
+  </section>
+
+  <section id="path" aria-labelledby="path-heading">
+    <h2 id="path-heading">読む順</h2>
+    <p class="intro">
+      番号は上流の推奨順です。最初の 6 本が以降の前提になるので、ここだけは順番に読むのが近道です。
+    </p>
+    <ol class="path">
+      <li>
+        <b>入門 — 01–06</b>
+        <p>言語ツアー、メモリモデル、文字列、エラー、代数的データ型、関数。まずはこの 6 本。</p>
+      </li>
+      <li>
+        <b>中級 — 07–19・24</b>
+        <p>古典アルゴリズム、データ構造、パーサーと VM、C 連携。Goose のリンクとプールに慣れる範囲。</p>
+      </li>
+      <li>
+        <b>発展 — 20–23・25–31</b>
+        <p>グラフィックス、シリアライズ、gfx / physics / ui、そして 2 本のゲーム。</p>
+      </li>
+    </ol>
+  </section>
+
+  <section id="requirements" aria-labelledby="requirements-heading">
+    <h2 id="requirements-heading">必要な環境</h2>
+    <p class="intro">
+      ほとんどは標準ライブラリだけで動きます。gfx / physics / ui / audio を使うサンプルは、対応パッケージ入りのコンパイラが必要です。
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>バッジ</th><th>必要なもの</th><th>該当</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">標準のみ</td><td>Goose の標準ライブラリ</td><td>24 本（01–22, 25, 26）</td></tr>
+          <tr><td class="mono">C ヘッダ</td><td><code>--include call_c.h</code></td><td>24</td></tr>
+          <tr><td class="mono">gfx</td><td>gfx パッケージ入りのコンパイラ</td><td>27, 28, 29, 30, 31</td></tr>
+          <tr><td class="mono">physics</td><td>physics パッケージ入りのコンパイラ</td><td>28</td></tr>
+          <tr><td class="mono">ui</td><td>ui パッケージ入りのコンパイラ</td><td>29</td></tr>
+          <tr><td class="mono">audio</td><td>音声デバイス（失敗時は無音）</td><td>31</td></tr>
+          <tr><td class="mono">WAD</td><td>同梱の Freedoom WAD</td><td>31</td></tr>
+          <tr><td class="mono">入力データ</td><td>標準入力から式を渡す</td><td>17</td></tr>
+          <tr><td class="mono">スレッド</td><td>ハードウェアスレッド数に応じてワーカーを起動</td><td>23</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="data" aria-labelledby="data-heading">
+    <h2 id="data-heading">データと出典</h2>
+    <div class="note-box">
+      <p>
+        収録しているコードは <a href="https://github.com/aardappel/goose">aardappel/goose</a> の
+        <code>samples/</code> を、コミット <code class="mono">64d62fc</code>（2026-10-26）時点で<strong>無改変</strong>のまま収録しています。
+        ライセンスは <strong>Apache-2.0</strong> です。帰属は
+        <a href="THIRD_PARTY_LICENSES.md">THIRD_PARTY_LICENSES.md</a>、
+        ライセンス全文は <a href="LICENSE-APACHE-2.0.txt">LICENSE-APACHE-2.0.txt</a> に置いています。
+      </p>
+      <p>
+        各サンプルの日本語要約・タグ・難易度・必要環境は、このプロジェクトによる整理です。
+        原文の解説コメントは各ファイルの先頭にそのまま残しています。
+      </p>
+    </div>
+  </section>
+
+  <section id="limits" aria-labelledby="limits-heading">
+    <h2 id="limits-heading">現在の制限</h2>
+    <ul class="limits">
+      <li>収録コードは上流のスナップショットです。更新は手動で行います。</li>
+      <li>サンプルの実行環境は提供しません。WASM 実行やビルドは未対応です。</li>
+      <li>シンタックスハイライトは読みやすさのための簡易版で、パーサーではありません。</li>
+      <li>データを <code>fetch()</code> で読むため、<code>file://</code> で直接開くと動作しません。</li>
+      <li>読了状態はブラウザの <code>localStorage</code> にのみ保存されます。</li>
+    </ul>
+  </section>
+
+  <div class="cta">
+    <div>
+      <h2>31 本を、読む順に。</h2>
+      <p>カテゴリから絞り込むのもよし、検索でつまみ食いするのもよし。まずは 01 の言語ツアーから始めましょう。</p>
+    </div>
+    <a class="btn" href="explorer/">探訪ビューへ</a>
+  </div>
+
+  <footer>
+    <span>GooseSamples · 2026 · <a href="https://github.com/watanabe3tipapa/goose-sandbox">goose-sandbox</a></span>
+    <span><a href="../PipelineViz/">Pipeline Viz</a> · <a href="https://aardappel.github.io/goose/">Goose 公式</a></span>
+  </footer>
+
+</div>
+
+</body>
+</html>

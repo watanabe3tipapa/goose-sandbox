@@ -1,0 +1,1287 @@
+{
+  "meta": {
+    "title": "Goose サンプル探訪",
+    "source": "aardappel/goose",
+    "sourceUrl": "https://github.com/aardappel/goose",
+    "commit": "64d62fc7f148eadaed9b1c69be0c33d1da97c82f",
+    "commitShort": "64d62fc",
+    "license": "Apache-2.0",
+    "generated": "2026-10-27",
+    "totalSamples": 31,
+    "totalLines": 7420
+  },
+  "categories": [
+    {
+      "id": "foundations",
+      "label": "基礎",
+      "range": "01–06",
+      "description": "値の幅から参照まで、Goose の全体像を 1 本ずつ確認します。以降のサンプルの前提です。"
+    },
+    {
+      "id": "algorithms",
+      "label": "アルゴリズム",
+      "range": "07–12",
+      "description": "古典的なアルゴリズムを、宣言した幅と境界チェックの除去を意識しながら書きます。"
+    },
+    {
+      "id": "data-structures",
+      "label": "データ構造",
+      "range": "13–16",
+      "description": "プール、相対リンク、スライスをキーにした辞書で、アロケータなしの構造を作ります。"
+    },
+    {
+      "id": "language",
+      "label": "言語処理",
+      "range": "17–19",
+      "description": "パーサー、JSON、バイトコード VM。ネスト関数と return ... from が主役です。"
+    },
+    {
+      "id": "graphics",
+      "label": "グラフィックス・並列",
+      "range": "20–23",
+      "description": "グリッド、レイトレース、画像カーネル、ワーカープール。数値と配列を画面に変えます。"
+    },
+    {
+      "id": "practice",
+      "label": "実践",
+      "range": "24–26",
+      "description": "C との境界、ファイル形式としての構造体、伸縮するプール。実用の部品を組み合わせます。"
+    },
+    {
+      "id": "applications",
+      "label": "応用（GPU/UI）",
+      "range": "27–29",
+      "description": "gfx / physics / ui モジュールを使い、シェーダーと即時モード UI を扱います。"
+    },
+    {
+      "id": "games",
+      "label": "ゲーム",
+      "range": "30–31",
+      "description": "アセットなしのボクセル世界と、WAD を読み込む小さな FPS。全部入りの応用です。"
+    }
+  ],
+  "levels": [
+    {
+      "id": "intro",
+      "label": "入門",
+      "description": "01–06。言語の前提になる 6 本。"
+    },
+    {
+      "id": "intermediate",
+      "label": "中級",
+      "description": "07–19 と 24。アルゴリズム、データ構造、言語処理、C 連携。"
+    },
+    {
+      "id": "advanced",
+      "label": "発展",
+      "description": "20–23 と 25–31。グラフィックス、シリアライズ、モジュール、ゲーム。"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "stdlib",
+      "label": "標準のみ",
+      "description": "Goose の標準ライブラリだけで動きます。"
+    },
+    {
+      "id": "c-header",
+      "label": "C ヘッダ",
+      "description": "同梱の C ヘッダを --include で渡します。"
+    },
+    {
+      "id": "gfx",
+      "label": "gfx",
+      "description": "gfx パッケージ入りのコンパイラが必要です。"
+    },
+    {
+      "id": "physics",
+      "label": "physics",
+      "description": "physics パッケージ入りのコンパイラが必要です。"
+    },
+    {
+      "id": "ui",
+      "label": "ui",
+      "description": "ui パッケージ入りのコンパイラが必要です。"
+    },
+    {
+      "id": "audio",
+      "label": "audio",
+      "description": "音声デバイスを使います（失敗時は無音）。"
+    },
+    {
+      "id": "wad",
+      "label": "WAD",
+      "description": "同梱の Freedoom WAD を読み込みます。"
+    },
+    {
+      "id": "stdin",
+      "label": "入力データ",
+      "description": "同梱の入力ファイルを標準入力から渡します。"
+    },
+    {
+      "id": "threads",
+      "label": "スレッド",
+      "description": "ハードウェアスレッド数に応じてワーカーを起動します。"
+    }
+  ],
+  "features": [
+    {
+      "id": "arrays",
+      "label": "配列"
+    },
+    {
+      "id": "slices",
+      "label": "スライス"
+    },
+    {
+      "id": "structs",
+      "label": "構造体"
+    },
+    {
+      "id": "enums",
+      "label": "列挙型"
+    },
+    {
+      "id": "references",
+      "label": "参照"
+    },
+    {
+      "id": "optionals",
+      "label": "オプショナル"
+    },
+    {
+      "id": "generics",
+      "label": "ジェネリクス"
+    },
+    {
+      "id": "closures",
+      "label": "クロージャ"
+    },
+    {
+      "id": "control-flow",
+      "label": "制御フロー"
+    },
+    {
+      "id": "memory",
+      "label": "メモリモデル"
+    },
+    {
+      "id": "data-stack",
+      "label": "データスタック"
+    },
+    {
+      "id": "pools",
+      "label": "プール"
+    },
+    {
+      "id": "strings",
+      "label": "文字列"
+    },
+    {
+      "id": "format",
+      "label": "整形"
+    },
+    {
+      "id": "utf8",
+      "label": "UTF-8"
+    },
+    {
+      "id": "errors",
+      "label": "エラー処理"
+    },
+    {
+      "id": "match",
+      "label": "パターンマッチ"
+    },
+    {
+      "id": "adts",
+      "label": "代数的データ型"
+    },
+    {
+      "id": "polymorphism",
+      "label": "多態"
+    },
+    {
+      "id": "overloading",
+      "label": "オーバーロード"
+    },
+    {
+      "id": "ufcs",
+      "label": "UFCS"
+    },
+    {
+      "id": "loops",
+      "label": "ループ"
+    },
+    {
+      "id": "bounds-checks",
+      "label": "境界チェック"
+    },
+    {
+      "id": "math",
+      "label": "数値計算"
+    },
+    {
+      "id": "sorting",
+      "label": "ソート"
+    },
+    {
+      "id": "recursion",
+      "label": "再帰"
+    },
+    {
+      "id": "benchmark",
+      "label": "計測"
+    },
+    {
+      "id": "backtracking",
+      "label": "バックトラック"
+    },
+    {
+      "id": "bitmask",
+      "label": "ビットマスク"
+    },
+    {
+      "id": "bfs",
+      "label": "幅優先探索"
+    },
+    {
+      "id": "dijkstra",
+      "label": "最短経路"
+    },
+    {
+      "id": "heap",
+      "label": "ヒープ"
+    },
+    {
+      "id": "huffman",
+      "label": "ハフマン"
+    },
+    {
+      "id": "bit-packing",
+      "label": "ビット演算"
+    },
+    {
+      "id": "trees",
+      "label": "木構造"
+    },
+    {
+      "id": "linked-list",
+      "label": "連結リスト"
+    },
+    {
+      "id": "bst",
+      "label": "二分探索木"
+    },
+    {
+      "id": "dictionary",
+      "label": "辞書"
+    },
+    {
+      "id": "files",
+      "label": "ファイル I/O"
+    },
+    {
+      "id": "records",
+      "label": "レコード"
+    },
+    {
+      "id": "varint",
+      "label": "可変長整数"
+    },
+    {
+      "id": "parsing",
+      "label": "パース"
+    },
+    {
+      "id": "stdin",
+      "label": "標準入力"
+    },
+    {
+      "id": "vm",
+      "label": "VM"
+    },
+    {
+      "id": "interpreters",
+      "label": "インタプリタ"
+    },
+    {
+      "id": "simulation",
+      "label": "シミュレーション"
+    },
+    {
+      "id": "graphics",
+      "label": "グラフィックス"
+    },
+    {
+      "id": "threads",
+      "label": "スレッド"
+    },
+    {
+      "id": "queues",
+      "label": "キュー"
+    },
+    {
+      "id": "interop",
+      "label": "C 連携"
+    },
+    {
+      "id": "ffi",
+      "label": "FFI"
+    },
+    {
+      "id": "c",
+      "label": "C"
+    },
+    {
+      "id": "serialization",
+      "label": "シリアライズ"
+    },
+    {
+      "id": "validation",
+      "label": "検証"
+    },
+    {
+      "id": "gpu",
+      "label": "GPU"
+    },
+    {
+      "id": "shaders",
+      "label": "シェーダー"
+    },
+    {
+      "id": "gfx",
+      "label": "gfx"
+    },
+    {
+      "id": "physics",
+      "label": "物理"
+    },
+    {
+      "id": "ui",
+      "label": "UI"
+    },
+    {
+      "id": "widgets",
+      "label": "ウィジェット"
+    },
+    {
+      "id": "game",
+      "label": "ゲーム"
+    },
+    {
+      "id": "procedural",
+      "label": "手続き生成"
+    },
+    {
+      "id": "save",
+      "label": "セーブ"
+    },
+    {
+      "id": "audio",
+      "label": "オーディオ"
+    }
+  ],
+  "samples": [
+    {
+      "id": "01_tour",
+      "number": 1,
+      "title": "言語ツアー",
+      "originalTitle": "A tour of the core language",
+      "category": "foundations",
+      "level": "intro",
+      "summary": "値の幅、配列ファミリー、スライス、構造体、式としての制御フロー、複数戻り値、オプショナル、参照を 1 本のプログラムで巡ります。",
+      "shows": [
+        "他のサンプルが前提にする言語全体の見取り図",
+        "スライスはあらゆる配列種別と部分範囲をコピーなしで受ける",
+        "参照は `.=` で束縛し `.==` で比較する"
+      ],
+      "features": [
+        "arrays",
+        "slices",
+        "structs",
+        "control-flow",
+        "optionals",
+        "references"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 172,
+      "file": "sources/01_tour.goose",
+      "upstream": "01_tour.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/01_tour.goose",
+      "run": "goose 01_tour.goose",
+      "notes": ""
+    },
+    {
+      "id": "02_memory",
+      "number": 2,
+      "title": "メモリモデル",
+      "originalTitle": "Where values live",
+      "category": "foundations",
+      "level": "intro",
+      "summary": "アロケータを持たない Goose のデータスタックを、実際の数値を示しながら順に確認します。",
+      "shows": [
+        "配列が成長しても要素への参照は有効なまま",
+        "スコープ終了時の 1 回のストアが唯一の解放",
+        "固定長・可変長配列、copy、reusable プールの違い"
+      ],
+      "features": [
+        "memory",
+        "data-stack",
+        "references",
+        "pools",
+        "arrays"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 104,
+      "file": "sources/02_memory.goose",
+      "upstream": "02_memory.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/02_memory.goose",
+      "run": "goose 02_memory.goose",
+      "notes": ""
+    },
+    {
+      "id": "03_strings",
+      "number": 3,
+      "title": "文字列",
+      "originalTitle": "Strings as u8 arrays",
+      "category": "foundations",
+      "level": "intro",
+      "summary": "文字列型はなく、u8 配列・リテラル・ビルダー・スライスで扱います。構築、検索、分割、解析、整形をコピーを避けて実演します。",
+      "shows": [
+        "スライスを安全なビューとして使い、ダングリングを防ぐ",
+        "inline small string を持つ構造体と format オーバーロード",
+        "UTF-8 の扱いと、必要な分だけコピーする文字列操作"
+      ],
+      "features": [
+        "strings",
+        "slices",
+        "format",
+        "utf8"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 126,
+      "file": "sources/03_strings.goose",
+      "upstream": "03_strings.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/03_strings.goose",
+      "run": "goose 03_strings.goose",
+      "notes": ""
+    },
+    {
+      "id": "04_errors",
+      "number": 4,
+      "title": "エラー処理",
+      "originalTitle": "Three error idioms",
+      "category": "foundations",
+      "level": "intro",
+      "summary": "例外も Result 型も持たない Goose の 3 つのイディオムを、場面ごとに使い分けます。assert と abort も扱います。",
+      "shows": [
+        "2 つの結果を返す呼び出しは末尾の bool で受ける",
+        "「見つかったか」はオプショナルを if / guard で絞る",
+        "深い失敗は `return ... from` で 1 箇所に集約する"
+      ],
+      "features": [
+        "errors",
+        "optionals",
+        "control-flow"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 102,
+      "file": "sources/04_errors.goose",
+      "upstream": "04_errors.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/04_errors.goose",
+      "run": "goose 04_errors.goose",
+      "notes": ""
+    },
+    {
+      "id": "05_shapes",
+      "number": 5,
+      "title": "代数的データ型",
+      "originalTitle": "Algebraic data types",
+      "category": "foundations",
+      "level": "intro",
+      "summary": "継承も vtable もない言語で、固定モード／可変モードの enum と case 関数による仮想呼び出しイディオムを示します。",
+      "shows": [
+        "固定モードは最大 variant のサイズで添字アクセスも上書きもできる",
+        "可変モードは値ごとのサイズで、テキストもインラインに持つ",
+        "case 関数は match をオーバーロード集合として書く方法"
+      ],
+      "features": [
+        "enums",
+        "match",
+        "adts",
+        "polymorphism"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 146,
+      "file": "sources/05_shapes.goose",
+      "upstream": "05_shapes.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/05_shapes.goose",
+      "run": "goose 05_shapes.goose",
+      "notes": ""
+    },
+    {
+      "id": "06_functions",
+      "number": 6,
+      "title": "関数",
+      "originalTitle": "Generics, overloading and closures",
+      "category": "foundations",
+      "level": "intro",
+      "summary": "宣言不要のジェネリクス、オーバーロード、UFCS、ループにコンパイルされる関数値、外側のローカルを見るネスト関数を扱います。",
+      "shows": [
+        "型注釈のない引数はジェネリックとして呼び出しごとに実体化",
+        "関数値は関数ポインタではなくプレーンなループに展開",
+        "ネスト関数は外側のローカルを自由変数として使う"
+      ],
+      "features": [
+        "generics",
+        "overloading",
+        "ufcs",
+        "closures"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 106,
+      "file": "sources/06_functions.goose",
+      "upstream": "06_functions.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/06_functions.goose",
+      "run": "goose 06_functions.goose",
+      "notes": ""
+    },
+    {
+      "id": "07_sieve",
+      "number": 7,
+      "title": "エラトステネスの篩",
+      "originalTitle": "The sieve of Eratosthenes",
+      "category": "algorithms",
+      "level": "intermediate",
+      "summary": "宣言した幅のまま走るタイトなループ。コンパイラが全添字の範囲内を証明し、内側ループから境界チェックを除去します。",
+      "shows": [
+        "境界チェックが消え、C と同じ 3 命令になる内側ループ",
+        "ユークリッド剰余と、符号なしハッシュのラップアラウンド",
+        "1,000 万までの篩を現実的な時間で回す"
+      ],
+      "features": [
+        "loops",
+        "bounds-checks",
+        "math"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 65,
+      "file": "sources/07_sieve.goose",
+      "upstream": "07_sieve.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/07_sieve.goose",
+      "run": "goose 07_sieve.goose",
+      "notes": ""
+    },
+    {
+      "id": "08_bignum",
+      "number": 8,
+      "title": "多倍長整数",
+      "originalTitle": "Arbitrary-precision integers",
+      "category": "algorithms",
+      "level": "intermediate",
+      "summary": "u32 の limb 配列と u64 の桁上がりで 100!、fib(500)、2^1000 を計算し、十進で表示します。",
+      "shows": [
+        "幅付き整数で桁上がりを明示的に書く",
+        "成長専用配列を参照で pop して桁を詰める",
+        "format オーバーロードで独自型を表示する"
+      ],
+      "features": [
+        "math",
+        "arrays",
+        "format"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 145,
+      "file": "sources/08_bignum.goose",
+      "upstream": "08_bignum.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/08_bignum.goose",
+      "run": "goose 08_bignum.goose",
+      "notes": ""
+    },
+    {
+      "id": "09_sorting",
+      "number": 9,
+      "title": "ソートと探索",
+      "originalTitle": "Sorting and searching",
+      "category": "algorithms",
+      "level": "intermediate",
+      "summary": "挿入ソート、再帰マージソート、二分探索をスライス上に書き、標準ライブラリ版と 100 万件の計測を比較します。",
+      "shows": [
+        "スライスなら任意の配列種別と部分範囲でそのまま動く",
+        "再帰関数は成長するローカルを持てず、scratch は呼び出し側が持つ",
+        "標準の sort / stable_sort とタイミングの比較"
+      ],
+      "features": [
+        "sorting",
+        "recursion",
+        "slices",
+        "benchmark"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 138,
+      "file": "sources/09_sorting.goose",
+      "upstream": "09_sorting.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/09_sorting.goose",
+      "run": "goose 09_sorting.goose",
+      "notes": ""
+    },
+    {
+      "id": "10_sudoku",
+      "number": 10,
+      "title": "数独ソルバー",
+      "originalTitle": "Backtracking sudoku",
+      "category": "algorithms",
+      "level": "intermediate",
+      "summary": "81 バイトの盤面と u16 ビットマスクで候補を管理し、候補が最少のマスから埋めるバックトラックです。",
+      "shows": [
+        "135 バイトの状態を参照で再帰に渡し、どこにも確保しない",
+        "3 つのビットマスクで行・列・ブロックの使用済み数字を表す",
+        "候補数が最少のマスを選ぶことで探索が桁違いに減る"
+      ],
+      "features": [
+        "backtracking",
+        "bitmask",
+        "recursion"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 114,
+      "file": "sources/10_sudoku.goose",
+      "upstream": "10_sudoku.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/10_sudoku.goose",
+      "run": "goose 10_sudoku.goose",
+      "notes": ""
+    },
+    {
+      "id": "11_maze",
+      "number": 11,
+      "title": "迷路の最短経路",
+      "originalTitle": "BFS and Dijkstra over a grid",
+      "category": "algorithms",
+      "level": "intermediate",
+      "summary": "BFS で最少ステップ、Dijkstra で水のコストを含む最安経路を求めます。成長専用キューと二分ヒープを使います。",
+      "shows": [
+        "フラットなバイト配列を y * W + x で索引する",
+        "読み出し位置を持つ成長専用配列をキューにする",
+        "比較ブロック付きの heap_push / heap_pop で優先度付きキュー"
+      ],
+      "features": [
+        "bfs",
+        "dijkstra",
+        "heap",
+        "arrays"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 135,
+      "file": "sources/11_maze.goose",
+      "upstream": "11_maze.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/11_maze.goose",
+      "run": "goose 11_maze.goose",
+      "notes": ""
+    },
+    {
+      "id": "12_huffman",
+      "number": 12,
+      "title": "ハフマン符号",
+      "originalTitle": "Huffman coding",
+      "category": "algorithms",
+      "level": "intermediate",
+      "summary": "頻度集計から木の構築、符号化、ビット詰め、復号までを一通り。木は 2 バイトの自己相対リンクで 1 配列に収めます。",
+      "shows": [
+        "10 バイトのノードと 2 バイトの自己相対リンク",
+        "重みで heap 順序付けした優先度キュー",
+        "ビットパッキングとラウンドトリップ"
+      ],
+      "features": [
+        "huffman",
+        "heap",
+        "bit-packing",
+        "trees"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 111,
+      "file": "sources/12_huffman.goose",
+      "upstream": "12_huffman.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/12_huffman.goose",
+      "run": "goose 12_huffman.goose",
+      "notes": ""
+    },
+    {
+      "id": "13_linked_list",
+      "number": 13,
+      "title": "双方向連結リスト",
+      "originalTitle": "A doubly-linked list in a pool",
+      "category": "data-structures",
+      "level": "intermediate",
+      "summary": "reusable プールと in pool リンクで、アロケータなしに O(1) の挿入・削除を行う双方向連結リストです。",
+      "shows": [
+        "削除したスロットを次の挿入がそのまま再利用する",
+        "self を指すセンチネルで、空リストの特別扱いをなくす",
+        "参照を使った move-to-front とスロットの返却"
+      ],
+      "features": [
+        "linked-list",
+        "pools",
+        "references"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 113,
+      "file": "sources/13_linked_list.goose",
+      "upstream": "13_linked_list.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/13_linked_list.goose",
+      "run": "goose 13_linked_list.goose",
+      "notes": ""
+    },
+    {
+      "id": "14_bst",
+      "number": 14,
+      "title": "二分探索木",
+      "originalTitle": "A binary search tree in one array",
+      "category": "data-structures",
+      "level": "intermediate",
+      "summary": "成長専用配列にノードを置き、子を 4 バイトの自己相対リンクで結ぶ二分探索木です。",
+      "shows": [
+        "リンクはリンク自身のアドレスからのオフセット",
+        "`.=` で参照を付け替えながら挿入する",
+        "再帰走査の出力配列は呼び出し側が所有する"
+      ],
+      "features": [
+        "bst",
+        "trees",
+        "references",
+        "recursion"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 124,
+      "file": "sources/14_bst.goose",
+      "upstream": "14_bst.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/14_bst.goose",
+      "run": "goose 14_bst.goose",
+      "notes": ""
+    },
+    {
+      "id": "15_word_freq",
+      "number": 15,
+      "title": "単語頻度",
+      "originalTitle": "Word frequencies",
+      "category": "data-structures",
+      "level": "intermediate",
+      "summary": "テキストへのスライスをキーにした辞書で、単語をコピーせずに頻度を数えます。結果はソートして表にします。",
+      "shows": [
+        "テキストを 1 つのバッファに読み、その場で小文字化する",
+        "キーも表もレポートも同じバッファを指す",
+        "辞書とスライスを組み合わせた集計"
+      ],
+      "features": [
+        "dictionary",
+        "slices",
+        "files",
+        "sorting"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "run": "goose 15_word_freq.goose",
+      "notes": "引数を省略すると同梱の `data/alice.txt` を読みます。",
+      "lines": 63,
+      "file": "sources/15_word_freq.goose",
+      "upstream": "15_word_freq.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/15_word_freq.goose"
+    },
+    {
+      "id": "16_records",
+      "number": 16,
+      "title": "可変長レコード",
+      "originalTitle": "Flat variable-size records",
+      "category": "data-structures",
+      "level": "intermediate",
+      "summary": "顧客名と明細リストを持つ注文を、varint 長とインライン文字列で 1 本の連続バイト列に詰めます。",
+      "shows": [
+        "注文ごとに 1 つの連続領域、注文帳全体が 1 つの配列",
+        "可変長の文字列と明細をインラインに持つ",
+        "スライスをキーにした辞書で顧客別に集計する"
+      ],
+      "features": [
+        "records",
+        "varint",
+        "dictionary",
+        "slices"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 108,
+      "file": "sources/16_records.goose",
+      "upstream": "16_records.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/16_records.goose",
+      "run": "goose 16_records.goose",
+      "notes": ""
+    },
+    {
+      "id": "17_calc",
+      "number": 17,
+      "title": "電卓（再帰下降パーサー）",
+      "originalTitle": "An interactive calculator",
+      "category": "language",
+      "level": "intermediate",
+      "summary": "1 行を読み、トークン化し、再帰下降で直接値に変換する対話型電卓です。変数は辞書に保持します。",
+      "shows": [
+        "トークナイザとパーサーを evaluate のネスト関数にする",
+        "深い失敗を `return ... from` で 1 箇所に集約する",
+        "`calc < data/calc.stdin` で非対話実行できる"
+      ],
+      "features": [
+        "parsing",
+        "recursion",
+        "dictionary",
+        "errors",
+        "stdin"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "run": "goose 17_calc.goose < data/calc.stdin",
+      "notes": "標準入力から式を読みます。引数なしで起動すると対話モードになります。",
+      "lines": 189,
+      "file": "sources/17_calc.goose",
+      "upstream": "17_calc.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/17_calc.goose"
+    },
+    {
+      "id": "18_json",
+      "number": 18,
+      "title": "JSON パーサー",
+      "originalTitle": "A JSON parser and printer",
+      "category": "language",
+      "level": "intermediate",
+      "summary": "可変モード enum のノードを 1 つのプールに置き、4 バイトの自己相対リンクで辿る JSON パーサー兼プリンタです。",
+      "shows": [
+        "文書全体が 1 つの連続ブロックに収まる",
+        "子を先に解析し、親のリンクを後から繋ぐ",
+        "深い構文エラーも位置付きでトップへ返す"
+      ],
+      "features": [
+        "parsing",
+        "enums",
+        "pools",
+        "recursion",
+        "errors"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 313,
+      "file": "sources/18_json.goose",
+      "upstream": "18_json.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/18_json.goose",
+      "run": "goose 18_json.goose",
+      "notes": ""
+    },
+    {
+      "id": "19_vm",
+      "number": 19,
+      "title": "スタック VM",
+      "originalTitle": "A stack-machine bytecode VM",
+      "category": "language",
+      "level": "intermediate",
+      "summary": "固定モード enum の命令列を match でディスパッチするスタックマシン。逆アセンブラと 2 つの手組みプログラム付きです。",
+      "shows": [
+        "1 バイトのオペコードとオペランド 1 つからなる命令",
+        "関数ポインタもバイト分解も不要な match ディスパッチ",
+        "ジャンプ先は同じ命令配列の添字"
+      ],
+      "features": [
+        "vm",
+        "enums",
+        "match",
+        "interpreters"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 131,
+      "file": "sources/19_vm.goose",
+      "upstream": "19_vm.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/19_vm.goose",
+      "run": "goose 19_vm.goose",
+      "notes": ""
+    },
+    {
+      "id": "20_life",
+      "number": 20,
+      "title": "ライフゲーム",
+      "originalTitle": "Conway's Game of Life",
+      "category": "graphics",
+      "level": "advanced",
+      "summary": "トーラス上の Conway's Life。2 枚のバイトグリッドを入れ替えながら世代を進めます。",
+      "shows": [
+        "グリッドの役割を入れ替えてセルのコピーを避ける",
+        "ユークリッド剰余で端をラップする",
+        "グライダーとブリンカーを ASCII で表示する"
+      ],
+      "features": [
+        "simulation",
+        "arrays",
+        "math"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 88,
+      "file": "sources/20_life.goose",
+      "upstream": "20_life.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/20_life.goose",
+      "run": "goose 20_life.goose",
+      "notes": ""
+    },
+    {
+      "id": "21_raytrace",
+      "number": 21,
+      "title": "レイトレーサー",
+      "originalTitle": "A small ray tracer",
+      "category": "graphics",
+      "level": "advanced",
+      "summary": "球と床、1 つの光源、ハードシャドウと鏡面反射を vec3 演算で描き、PPM に出力します。",
+      "shows": [
+        "float3 は 3 つの f32 を持つ普通の構造体",
+        "同じ型の構造体同士は要素ごとの演算子で計算できる",
+        "画像を開けない環境向けに ASCII プレビューも出力する"
+      ],
+      "features": [
+        "graphics",
+        "math",
+        "files"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 135,
+      "file": "sources/21_raytrace.goose",
+      "upstream": "21_raytrace.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/21_raytrace.goose",
+      "run": "goose 21_raytrace.goose",
+      "notes": ""
+    },
+    {
+      "id": "22_image_filters",
+      "number": 22,
+      "title": "画像フィルタ",
+      "originalTitle": "Image kernels over row slices",
+      "category": "graphics",
+      "level": "advanced",
+      "summary": "グレースケール画像を生成し、ボックスブラーと Sobel エッジ検出を適用して PGM に書き出します。",
+      "shows": [
+        "行スライスを入力に取るカーネル",
+        "行ごとに長さを 1 回だけ assert する",
+        "ピクセルループの境界チェックを除去する"
+      ],
+      "features": [
+        "graphics",
+        "slices",
+        "bounds-checks",
+        "files"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 128,
+      "file": "sources/22_image_filters.goose",
+      "upstream": "22_image_filters.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/22_image_filters.goose",
+      "run": "goose 22_image_filters.goose",
+      "notes": ""
+    },
+    {
+      "id": "23_mandelbrot_threads",
+      "number": 23,
+      "title": "マンデルブロ集合（並列）",
+      "originalTitle": "Mandelbrot with a worker pool",
+      "category": "graphics",
+      "level": "advanced",
+      "summary": "型付きキューでジョブを配るワーカープール。行を並列に描画し、到着順に関係なく順番に組み立てます。",
+      "shows": [
+        "スレッドはメモリを共有せず、フラットな値だけをやり取りする",
+        "1 行 = 添字とインラインバイト配列を持つ構造体",
+        "シングルスレッドとの時間比較"
+      ],
+      "features": [
+        "threads",
+        "queues",
+        "graphics"
+      ],
+      "requirements": [
+        "threads"
+      ],
+      "lines": 101,
+      "file": "sources/23_mandelbrot_threads.goose",
+      "upstream": "23_mandelbrot_threads.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/23_mandelbrot_threads.goose",
+      "run": "goose 23_mandelbrot_threads.goose",
+      "notes": ""
+    },
+    {
+      "id": "24_call_c",
+      "number": 24,
+      "title": "C の呼び出し",
+      "originalTitle": "Calling C",
+      "category": "practice",
+      "level": "intermediate",
+      "summary": "extern fn で libm と小さな C ヘッダにバインドし、スカラー、スライス、参照渡しの構造体、C が追記する文字列ビルダーを渡します。",
+      "shows": [
+        "C の形を持つものだけが境界を越える",
+        "スライスは data ポインタと長さの構造体になる",
+        "`goose --include call_c.h ...` でビルドする"
+      ],
+      "features": [
+        "interop",
+        "ffi",
+        "c"
+      ],
+      "requirements": [
+        "c-header"
+      ],
+      "run": "goose --include call_c.h 24_call_c.goose",
+      "notes": "同じディレクトリの `call_c.h` を参照します。",
+      "lines": 58,
+      "file": "sources/24_call_c.goose",
+      "upstream": "24_call_c.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/24_call_c.goose"
+    },
+    {
+      "id": "25_serialize",
+      "number": 25,
+      "title": "シリアライズ",
+      "originalTitle": "Data that is already its own file format",
+      "category": "practice",
+      "level": "advanced",
+      "summary": "自己相対リンクで組んだ構造体はそのままファイル形式になります。保存はバイト列の書き出し、読み込みは検証付きの読み取りだけです。",
+      "shows": [
+        "ポインタ修正もノードごとの確保も不要",
+        "from_bytes は信頼できない画像を値にする前に検証する",
+        "改竄・切り詰め・拡張されたファイルを拒否する"
+      ],
+      "features": [
+        "serialization",
+        "validation",
+        "files",
+        "references"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 253,
+      "file": "sources/25_serialize.goose",
+      "upstream": "25_serialize.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/25_serialize.goose",
+      "run": "goose 25_serialize.goose",
+      "notes": ""
+    },
+    {
+      "id": "26_file_tree",
+      "number": 26,
+      "title": "ファイルツリー",
+      "originalTitle": "A directory tree in pools",
+      "category": "practice",
+      "level": "advanced",
+      "summary": "子リストが伸縮する N 分木。ノードは reusable プール、子リストは reusable[] プールの連続したリンク列で持ちます。",
+      "shows": [
+        "エントリ列はそのままスライスとして走査できる",
+        "追記はその場で成長し、無理なら新しい場所へ移動する",
+        "rm -r でスロットと列をプールに返し、次の追加が再利用する"
+      ],
+      "features": [
+        "trees",
+        "pools",
+        "slices",
+        "files"
+      ],
+      "requirements": [
+        "stdlib"
+      ],
+      "lines": 148,
+      "file": "sources/26_file_tree.goose",
+      "upstream": "26_file_tree.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/26_file_tree.goose",
+      "run": "goose 26_file_tree.goose",
+      "notes": ""
+    },
+    {
+      "id": "27_gfx_cube",
+      "number": 27,
+      "title": "回転するキューブ",
+      "originalTitle": "A spinning, lit cube",
+      "category": "applications",
+      "level": "advanced",
+      "summary": "gfx モジュールでウィンドウを開き、ライティング付きの立方体を回転表示します。GLSL はプログラム内の文字列として埋め込みます。",
+      "shows": [
+        "embed_shader が SPIR-V / MSL / HLSL を同時に生成する",
+        "頂点・インデックスバッファを bytes_of から作る",
+        "ユニフォームブロックをパックした構造体で渡す"
+      ],
+      "features": [
+        "graphics",
+        "gpu",
+        "shaders",
+        "gfx"
+      ],
+      "requirements": [
+        "gfx"
+      ],
+      "notes": "`-- --frames N` で N フレームだけ描画して終了します。最終フレームは `gfx_cube.png` に保存されます。",
+      "lines": 157,
+      "file": "sources/27_gfx_cube.goose",
+      "upstream": "27_gfx_cube.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/27_gfx_cube.goose",
+      "run": "goose 27_gfx_cube.goose"
+    },
+    {
+      "id": "28_physics_boxes",
+      "number": 28,
+      "title": "物理ボックス",
+      "originalTitle": "Thousands of physics boxes",
+      "category": "applications",
+      "level": "advanced",
+      "summary": "physics モジュール（Box3D）で数千の箱を落とし、gfx で描画します。箱は最大 8 スレッドでシミュレートされます。",
+      "shows": [
+        "全トランスフォームを 1 回の呼び出しで取得しインスタンスバッファへ送る",
+        "1 つの単位立方体を箱ごとに描画する",
+        "2 つの頂点シェーダがグローバルパートを共有する"
+      ],
+      "features": [
+        "physics",
+        "graphics",
+        "threads",
+        "gpu"
+      ],
+      "requirements": [
+        "gfx",
+        "physics"
+      ],
+      "notes": "`-- --frames N` で N フレームだけ描画して終了します。",
+      "lines": 462,
+      "file": "sources/28_physics_boxes.goose",
+      "upstream": "28_physics_boxes.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/28_physics_boxes.goose",
+      "run": "goose 28_physics_boxes.goose"
+    },
+    {
+      "id": "29_ui_todo",
+      "number": 29,
+      "title": "ToDo とカラーミキサー",
+      "originalTitle": "A to-do list with immediate-mode UI",
+      "category": "applications",
+      "level": "advanced",
+      "summary": "ui モジュール（Nuklear）の即時モードウィジェットを gfx 経由で描きます。入力、ボタン、メニュー、プログレスバー、カラーピッカーを扱います。",
+      "shows": [
+        "各フレームでウィジェットを宣言し、同じ呼び出しから操作を読み取る",
+        "ウィンドウ位置と開閉状態だけを ui が保持する",
+        "UI 全体の拡大縮小と、その倍率でのフォント再ベイク"
+      ],
+      "features": [
+        "ui",
+        "gfx",
+        "widgets"
+      ],
+      "requirements": [
+        "gfx",
+        "ui"
+      ],
+      "notes": "`-- --frames N` で N フレームだけ描画して終了します。",
+      "lines": 192,
+      "file": "sources/29_ui_todo.goose",
+      "upstream": "29_ui_todo.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/29_ui_todo.goose",
+      "run": "goose 29_ui_todo.goose"
+    },
+    {
+      "id": "30_mini_minecraft",
+      "number": 30,
+      "title": "ミニ・マインクラフト",
+      "originalTitle": "A playable voxel world",
+      "category": "games",
+      "level": "advanced",
+      "summary": "アセットファイルなしで、地形・洞窟・木・テクスチャ・空・フォントまでコードで生成するボクセル世界です。",
+      "shows": [
+        "露出面だけのチャンクメッシュとコーナーシェーディング",
+        "採掘・設置・グリッドレイ・インベントリ・クラフト",
+        "検証付きのアトミックなセーブとロード"
+      ],
+      "features": [
+        "game",
+        "graphics",
+        "gpu",
+        "procedural",
+        "save"
+      ],
+      "requirements": [
+        "gfx"
+      ],
+      "notes": "`-- --seed N` で地形、`-- --frames N` でスクリーンショット、`-- --test` でゲームプレイ検証を実行します。",
+      "lines": 1640,
+      "file": "sources/30_mini_minecraft.goose",
+      "upstream": "30_mini_minecraft.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/30_mini_minecraft.goose",
+      "run": "goose 30_mini_minecraft.goose"
+    },
+    {
+      "id": "31_mini_doom",
+      "number": 31,
+      "title": "ミニ・ドゥーム",
+      "originalTitle": "A small Doom-like game",
+      "category": "games",
+      "level": "advanced",
+      "summary": "Freedoom の WAD を読み、BSP、テクスチャ、スプライト、当たり判定、戦闘、鍵と出口までを持つ小さな FPS です。",
+      "shows": [
+        "リトルエンディアンの WAD 解析とパレット／パッチのデコード",
+        "BSP でクリップした床ポリゴンとテクスチャ壁",
+        "ドア・リフト・階段・ピックアップ・4 種の敵"
+      ],
+      "features": [
+        "game",
+        "graphics",
+        "audio",
+        "parsing",
+        "gpu"
+      ],
+      "requirements": [
+        "gfx",
+        "audio",
+        "wad"
+      ],
+      "notes": "既定の WAD は `samples/data/freedoom1-e1m1.wad`。`-- --wad <path>` で差し替え、`-- --frames N` でフレーム描画のみ実行できます。",
+      "lines": 1553,
+      "file": "sources/31_mini_doom.goose",
+      "upstream": "31_mini_doom.goose",
+      "upstreamUrl": "https://github.com/aardappel/goose/blob/64d62fc7f148eadaed9b1c69be0c33d1da97c82f/samples/31_mini_doom.goose",
+      "run": "goose 31_mini_doom.goose"
+    }
+  ]
+}

@@ -14,7 +14,7 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 | # | プロジェクト | 状態 | 入口 |
 |---|---|---|---|
 | 01 | [Pipeline Viz](PipelineViz/) | Active | [LP](PipelineViz/) / [Dashboard](PipelineViz/viewer/) / [README](PipelineViz/README.md) |
-| 02 | 次のプロジェクト | Planned | 準備中 |
+| 02 | [Goose サンプル探訪](GooseSamples/) | Active | [LP](GooseSamples/) / [探訪ビュー](GooseSamples/explorer/) / [README](GooseSamples/README.md) |
 
 ### Pipeline Viz
 
@@ -24,6 +24,14 @@ Goose の実行時メトリクスと oh-my-mermaid の Perspective 構造を接�
 - Dashboard: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/)
 - Goose 言語ガイド: [PipelineViz/goose_language_guide.html](PipelineViz/goose_language_guide.html)
 - 実装提案資料: [PipelineViz/pipeline_viz_proposal.html](PipelineViz/pipeline_viz_proposal.html)
+
+### Goose サンプル探訪
+
+Goose 公式サンプル 31 本を、カテゴリ・難易度・必要な環境で辿り、解説とソースコードを 1 画面で読む静的サイトです。
+
+- LP: [https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/](https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/)
+- 探訪ビュー: [https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/explorer/](https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/explorer/)
+- 収録: `aardappel/goose` @ `64d62fc`（Apache-2.0、無改変）
 
 ## リポジトリ構成
 
@@ -39,6 +47,11 @@ goose-sandbox/
 │   ├── goose_language_guide.html
 │   ├── pipeline_viz_proposal.html
 │   └── README.md
+├── GooseSamples/                 # プロジェクト 02
+│   ├── index.html                # プロジェクト LP
+│   ├── explorer/                 # 探訪ビュー
+│   │   └── data/                 # samples.json とソース 31 本（Apache-2.0）
+│   └── README.md
 ├── .github/
 │   └── workflows/
 │       └── pages.yml             # GitHub Pages デプロイ
@@ -53,6 +66,7 @@ goose-sandbox/
 
 - Sandbox ホーム: [https://watanabe3tipapa.github.io/goose-sandbox/](https://watanabe3tipapa.github.io/goose-sandbox/)
 - Pipeline Viz: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/)
+- Goose サンプル探訪: [https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/](https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/)
 
 初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。
 
@@ -67,6 +81,8 @@ python3 -m http.server 8000
 - Sandbox ホーム: `http://localhost:8000/`
 - Pipeline Viz: `http://localhost:8000/PipelineViz/`
 - Dashboard: `http://localhost:8000/PipelineViz/viewer/`
+- Goose サンプル探訪: `http://localhost:8000/GooseSamples/`
+- 探訪ビュー: `http://localhost:8000/GooseSamples/explorer/`
 
 ## 新しいプロジェクトを追加する
 
