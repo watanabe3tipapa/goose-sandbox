@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Viz — Gooseによるデータ処理工程の「見える化」</title>
+<meta name="description" content="Goose と oh-my-mermaid を組み合わせ、データ処理パイプラインの構造と健康状態をリアルタイムに可視化するダッシュボード試作。">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #0b0b0b;
+  --accent: #00e5a8;
+  --accent-ink: #007a5a;
+  --muted: #f2f2f2;
+  --border: #0b0b0b;
+  --faint: #525252;
+  --radius: 4px;
+  --healthy: #8ef0cf;
+  --warning: #ffc857;
+  --error: #ff6b6b;
+  --external: #b8dcff;
+  --font-ui: Inter, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Noto Mono", monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.75;
+  font-size: 1.0625rem;
+}
+
+.mono { font-family: var(--font-mono); }
+a { color: inherit; }
+
+.frame {
+  max-width: 980px;
+  margin: 28px auto 48px;
+  padding: 26px 28px 40px;
+  border: 6px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--muted), transparent 40%);
+}
+
+.lp-masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.lp-brand {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  border-radius: 2px;
+  font-weight: 700;
+}
+.lp-brand .mark { display: inline-block; width: 10px; height: 10px; background: var(--accent); border: 2px solid var(--border); margin-right: 7px; vertical-align: 1px; }
+.lp-tag {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border: 2px solid var(--border);
+  background: var(--muted);
+  border-radius: 2px;
+}
+
+.hero { margin: 0 0 26px; }
+.hero-title {
+  display: inline-block;
+  margin: 0 0 16px;
+  padding: 6px 16px;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  border-radius: 2px;
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.hero-subtitle { font-size: 1.1rem; max-width: 64ch; margin: 0 0 20px; }
+.hero-subtitle strong { font-weight: 700; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.lp-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 30px; }
+.lp-nav a {
+  padding: 8px 14px;
+  border: 4px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 2px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+.lp-nav a:hover { background: var(--accent); }
+
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border: 4px solid var(--border);
+  background: var(--accent);
+  color: var(--fg);
+  border-radius: 2px;
+  font-weight: 700;
+  font-family: var(--font-ui);
+  text-decoration: none;
+}
+.btn.btn-ghost { background: var(--bg); }
+.btn:hover { background: var(--fg); color: var(--bg); }
+.btn.btn-ghost:hover { background: var(--accent); color: var(--fg); }
+
+main { padding: 0; }
+section { margin-bottom: 42px; }
+h2 {
+  display: table;
+  padding: 6px 14px;
+  margin: 38px 0 16px;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  border-radius: 2px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+h2::before {
+  content: "";
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 9px;
+  vertical-align: 2px;
+  background: var(--accent);
+  border: 3px solid var(--border);
+}
+.intro { font-size: 1.05rem; max-width: 72ch; margin-bottom: 20px; }
+
+main p a, main li a {
+  color: var(--fg);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 3px solid var(--border);
+  padding: 0 2px;
+}
+main p a:hover, main li a:hover { background: var(--accent); }
+
+code {
+  font-family: var(--font-mono);
+  background: var(--bg);
+  padding: 1px 6px;
+  border: 2px dashed var(--border);
+  border-radius: 2px;
+  font-size: 0.88em;
+}
+pre {
+  overflow-x: auto;
+  padding: 16px 18px;
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+pre code { border: 0; padding: 0; background: transparent; font-size: inherit; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 8px; }
+.card {
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 18px;
+  transition: background 0.15s ease;
+}
+.card:hover { background: var(--accent); }
+.card-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-block;
+  border: 2px solid var(--border);
+  background: var(--muted);
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+.card:hover .card-label { background: var(--bg); }
+.card h3 { font-size: 1.1rem; font-weight: 700; margin: 12px 0 8px; }
+.card p { font-size: 0.95rem; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.tag { font-family: var(--font-mono); font-size: 0.72rem; border: 2px dashed var(--border); padding: 1px 7px; border-radius: 2px; background: var(--bg); }
+.card:hover .tag { background: var(--bg); }
+
+.steps { counter-reset: step; list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.steps li {
+  position: relative;
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 16px 18px 16px 66px;
+}
+.steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.steps h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+.steps p { font-size: 0.95rem; }
+.steps pre { margin-top: 10px; }
+
+.table-wrap { overflow-x: auto; border: 3px solid var(--border); border-radius: var(--radius); background: var(--bg); }
+table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+th, td { padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); }
+th { background: var(--muted); font-family: var(--font-mono); font-size: 0.78rem; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+
+.status {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--bg);
+}
+.status.healthy { background: var(--healthy); }
+.status.warning { background: var(--warning); }
+.status.error { background: var(--error); }
+.status.external { background: var(--external); }
+
+.preview { border: 5px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 18px; }
+.preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 4px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+.preview-brand { padding: 2px 9px; border: 3px solid var(--border); border-radius: 2px; font-family: var(--font-ui); font-weight: 700; }
+.preview-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; padding: 16px 0 12px; }
+.preview-title h3 { display: inline-block; padding: 4px 12px; border: 3px solid var(--border); border-radius: 2px; font-size: 1.15rem; }
+.preview-title .mono { font-size: 0.78rem; }
+.preview-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.preview-stat { padding: 10px 12px; border: 3px solid var(--border); border-radius: 2px; background: var(--bg); }
+.preview-stat strong { display: block; font-family: var(--font-mono); font-size: 1.5rem; line-height: 1.2; }
+.preview-stat span { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; }
+.preview-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-bottom: 2px solid var(--border);
+  font-size: 0.85rem;
+}
+.preview-row:last-child { border-bottom: 0; }
+.dot { width: 12px; height: 12px; flex: none; border: 2px solid var(--border); background: var(--healthy); }
+.dot.warning { background: var(--warning); }
+.dot.external { background: var(--external); }
+.preview-name { flex: 1; min-width: 0; }
+.preview-name strong, .preview-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preview-name small { font-family: var(--font-mono); font-size: 0.68rem; color: var(--faint); }
+.preview-date { font-family: var(--font-mono); font-size: 0.7rem; white-space: nowrap; }
+
+.cta { border: 4px solid var(--border); border-radius: var(--radius); background: var(--bg); padding: 24px; text-align: center; }
+.cta h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; }
+.cta p { max-width: 56ch; margin: 0 auto; font-size: 0.98rem; }
+.cta .btn { margin: 16px 5px 0; }
+footer { margin-top: 34px; padding-top: 18px; border-top: 4px solid var(--border); font-family: var(--font-mono); font-size: 0.9rem; }
+
+a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+@media (max-width: 640px) {
+  .frame { margin: 14px; padding: 20px 16px 30px; border-width: 4px; }
+  .hero-title { font-size: 1.9rem; }
+  .hero-cta { flex-direction: column; align-items: stretch; }
+  .hero-cta .btn { text-align: center; }
+  .steps li { padding-left: 62px; }
+  .preview-date { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .card { transition: none; }
+}
+@media print {
+  body { background: #fff; }
+  .card, .cta, .steps li, .preview { break-inside: avoid; }
+}
+@page { size: A4; margin: 18mm; }
+</style>
+</head>
+<body>
+
+<div class="frame">
+
+  <header class="lp-masthead">
+    <span class="lp-brand"><span class="mark"></span>pipeline-viz</span>
+    <span class="lp-tag">v0.1.0 · Goose × oh-my-mermaid</span>
+  </header>
+
+  <div class="hero">
+    <h1 class="hero-title">Pipeline Viz</h1>
+    <p class="hero-subtitle">
+      データ処理工程を、<strong>生きた設計図</strong>に。Goose が出力する実行時メトリクスと oh-my-mermaid の Perspective 構造を接合し、パイプラインの流れ・健康状態・ボトルネックを一枚で把握するダッシュボード試作です。
+    </p>
+    <div class="hero-cta">
+      <a class="btn" href="viewer/">ダッシュボードを開く</a>
+      <a class="btn btn-ghost" href="pipeline_viz_proposal.html">提案資料</a>
+      <a class="btn btn-ghost" href="goose_language_guide.html">Goose 解説</a>
+    </div>
+  </div>
+
+  <nav class="lp-nav" aria-label="ページ内ナビゲーション">
+    <a href="#purpose">目的</a>
+    <a href="#preview">ダッシュボード</a>
+    <a href="#features">機能</a>
+    <a href="#perspectives">Perspective</a>
+    <a href="#usage">使い方</a>
+    <a href="#structure">構成</a>
+    <a href="#limits">制限</a>
+  </nav>
+
+  <main>
+
+    <section id="purpose" aria-labelledby="purpose-heading">
+      <h2 id="purpose-heading">このツールは何のためにあるのか</h2>
+      <p class="intro">
+        データ処理パイプラインは、ステップが増えるほど「いま何が起きているか」を把握するコストが急増します。ログを追い、メトリクスを突き合わせ、どのステップが遅いのか、どこでレコードが落ちているのかを推測する。Pipeline Viz は、その確認作業を図の上に引き寄せます。
+      </p>
+      <p class="intro">
+        Goose の低オーバーヘッドな計測と、oh-my-mermaid の構造化されたダイアグラムを組み合わせ、<strong>「構造」と「状態」を同じ枠組みで管理する</strong>のが本試作の狙いです。図は静的なドキュメントではなく、実行時メトリクスを反映するライブ・ビューになります。
+      </p>
+
+      <div class="cards">
+        <article class="card">
+          <span class="card-label">why</span>
+          <h3>処理の流れを、状態つきで見る</h3>
+          <p>Extract → Transform → Load の各ステップに、レコード数・処理時間・ステータスを重ねて表示します。異常のあるステップは色とアラートで即座に分かります。</p>
+          <div class="tags"><span class="tag">visibility</span><span class="tag">live-status</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">who</span>
+          <h3>開発・運用・データ担当へ</h3>
+          <p>パイプラインを開発する人、日々の実行を監視する人、ボトルネックを特定したい人。ブラウザで開くだけで、同じビューを共有できます。</p>
+          <div class="tags"><span class="tag">developer</span><span class="tag">sre</span><span class="tag">data</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">how</span>
+          <h3>計測・蓄積・可視化をまっすぐに</h3>
+          <p>Goose が <code>metrics.json</code> を出力し、<code>.omm/</code> ストアを介してビューアが読み込みます。静的ファイルだけで動作します。</p>
+          <div class="tags"><span class="tag">Goose</span><span class="tag">.omm/</span><span class="tag">static</span></div>
+        </article>
+      </div>
+
+      <p class="intro" style="margin-top:22px;">本試作が答えるのは、次の4つの問いです。</p>
+      <ol class="steps">
+        <li>
+          <h3>いま、どのステップが動いているか</h3>
+          <p>各ステップのレコード数とレイテンシをライブ表示します。実行のたびに値が更新され、最終更新時刻も確認できます。</p>
+        </li>
+        <li>
+          <h3>どこで詰まっているか</h3>
+          <p>遅延の大きいステップを強調し、ステップ別レイテンシの内訳を表示します。クリックすると詳細パネルで入出力を確認できます。</p>
+        </li>
+        <li>
+          <h3>前回から何が変わったか</h3>
+          <p>Diff モードで、前回スナップショットとのレコード数・処理時間の差分をノード上に表示します。</p>
+        </li>
+        <li>
+          <h3>エラーはどこへ隔離されたか</h3>
+          <p>検証に失敗したレコードは <code>@error-handler</code> に分岐します。隔離件数と最近のエラーを追跡できます。</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="preview" aria-labelledby="preview-heading">
+      <h2 id="preview-heading">ダッシュボード</h2>
+      <p class="intro">ブラウザで開くと、サンプルメトリクスの読み込みとライブ更新が始まります。ノードのクリック、Diff、アラート、Perspective の切り替えを試せます。</p>
+      <div class="preview" aria-label="ダッシュボードのイメージ">
+        <div class="preview-bar">
+          <span class="preview-brand">Pipeline Viz</span>
+          <span>data-pipeline · live</span>
+        </div>
+        <div class="preview-title">
+          <h3>データ処理パイプライン</h3>
+          <span class="mono">4 steps · 4 perspectives</span>
+        </div>
+        <div class="preview-stats">
+          <div class="preview-stat"><strong>1,240</strong><span>RECORDS</span></div>
+          <div class="preview-stat"><strong>198</strong><span>MS TOTAL</span></div>
+          <div class="preview-stat"><strong>4.84%</strong><span>QUARANTINE RATE</span></div>
+          <div class="preview-stat"><strong>60</strong><span>QUARANTINED</span></div>
+          <div class="preview-stat"><strong>1</strong><span>WARNING</span></div>
+          <div class="preview-stat"><strong>LIVE</strong><span>POLL 2.5S</span></div>
+        </div>
+        <div class="preview-row">
+          <span class="dot"></span>
+          <span class="preview-name"><strong>Extract</strong><small>1,240 rec · 46 ms</small></span>
+          <span class="preview-date">in 1,240</span>
+          <span class="status healthy">Healthy</span>
+        </div>
+        <div class="preview-row">
+          <span class="dot warning"></span>
+          <span class="preview-name"><strong>Transform</strong><small>1,180 rec · 121 ms</small></span>
+          <span class="preview-date">60 quarantined</span>
+          <span class="status warning">Warning</span>
+        </div>
+        <div class="preview-row">
+          <span class="dot"></span>
+          <span class="preview-name"><strong>Load</strong><small>1,180 rec · 31 ms</small></span>
+          <span class="preview-date">in 1,180</span>
+          <span class="status healthy">Healthy</span>
+        </div>
+        <div class="preview-row">
+          <span class="dot external"></span>
+          <span class="preview-name"><strong>@error-handler</strong><small>60 rec · 8 ms</small></span>
+          <span class="preview-date">quarantine</span>
+          <span class="status external">External</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" aria-labelledby="features-heading">
+      <h2 id="features-heading">主な機能</h2>
+      <p class="intro">提案資料の UI 仕様をもとに、静的サイトで動く範囲を実装したプロトタイプです。バックエンドなしで動作し、サンプルデータを差し替えるだけで自分のパイプラインに適用できます。</p>
+      <div class="cards">
+        <article class="card">
+          <span class="card-label">live</span>
+          <h3>ライブ更新</h3>
+          <p>2.5 秒間隔でメトリクスを更新。LIVE / PAUSED を切り替えられ、最終更新時刻と全体の健康状態を常時表示します。</p>
+          <div class="tags"><span class="tag">polling</span><span class="tag">status</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">diff</span>
+          <h3>Diff モード</h3>
+          <p>前回スナップショットとの差分をノードに表示。レコード数やレイテンシの変化を、図を見たまま確認できます。</p>
+          <div class="tags"><span class="tag">snapshot</span><span class="tag">delta</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">alert</span>
+          <h3>アラートと隔離</h3>
+          <p>Warning / Error のステップを上部とサイドバーにピン留め。隔離レコードの件数と最近のエラーを一覧します。</p>
+          <div class="tags"><span class="tag">error-handler</span><span class="tag">quarantine</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">drill-down</span>
+          <h3>ドリルダウン</h3>
+          <p>ノードをクリックすると、入出力・処理時間・メッセージ・差分を右パネルに表示。Escape で選択を解除できます。</p>
+          <div class="tags"><span class="tag">inspector</span><span class="tag">@link</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">perspectives</span>
+          <h3>4 つの Perspective</h3>
+          <p>data-pipeline、overall-architecture、error-handler、performance-metrics を切り替え、構造と状態を多角的に確認できます。</p>
+          <div class="tags"><span class="tag">.omm/</span><span class="tag">view</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">mermaid</span>
+          <h3>Mermaid ソース出力</h3>
+          <p>現在の状態から Mermaid 定義を生成して表示。classDef による状態色を含み、既存の oh-my-mermaid ワークフローへ持ち出せます。</p>
+          <div class="tags"><span class="tag">classDef</span><span class="tag">export</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">metrics</span>
+          <h3>時系列チャート</h3>
+          <p>スループットと隔離レコード数の推移をインライン SVG で描画。ステップ別レイテンシも横棒で比較できます。</p>
+          <div class="tags"><span class="tag">svg</span><span class="tag">history</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">demo</span>
+          <h3>障害注入</h3>
+          <p>「障害を注入」で Transform を一時的に Error 状態にし、アラートや色の変化を確認できます。「復旧させる」で戻ります。</p>
+          <div class="tags"><span class="tag">demo</span><span class="tag">error</span></div>
+        </article>
+        <article class="card">
+          <span class="card-label">static</span>
+          <h3>GitHub Pages 対応</h3>
+          <p>ビルド不要の HTML / CSS / JavaScript と JSON だけで構成。相対パスで動作するため、プロジェクト Pages のサブパスにも配置できます。</p>
+          <div class="tags"><span class="tag">pages</span><span class="tag">no-build</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="perspectives" aria-labelledby="perspectives-heading">
+      <h2 id="perspectives-heading">Perspective 構成</h2>
+      <p class="intro">oh-my-mermaid の考え方に合わせ、視点ごとに構造と状態を整理します。<code>.omm/</code> 配下の構成をそのままダッシュボードのナビゲーションに対応させています。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Perspective</th><th>確認する内容</th><th>ダッシュボードでの表示</th></tr></thead>
+          <tbody>
+            <tr><td><code>data-pipeline</code></td><td>ETL 本流のステップと隔離分岐</td><td>ノード図、Diff、アラート、インスペクタ</td></tr>
+            <tr><td><code>overall-architecture</code></td><td>Goose エンジンと .omm ストア、ビューアの関係</td><td>全体構成図とレイヤー表</td></tr>
+            <tr><td><code>error-handler</code></td><td>隔離・再処理と最近のエラー</td><td>エラー経路図、件数、イベント一覧</td></tr>
+            <tr><td><code>performance-metrics</code></td><td>スループット、レイテンシ、隔離レコード数の推移</td><td>時系列チャート、ステップ別バー、履歴表</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="usage" aria-labelledby="usage-heading">
+      <h2 id="usage-heading">使い方</h2>
+      <ol class="steps">
+        <li>
+          <h3>ダッシュボードを開く</h3>
+          <p>公開サイトの <a href="viewer/">PipelineViz/viewer/</a> を開きます。ビルドやサーバーは不要です。ローカルで確認する場合は、リポジトリのルートで静的サーバーを起動します。</p>
+          <pre><code>python3 -m http.server 8000
+# http://localhost:8000/PipelineViz/viewer/</code></pre>
+        </li>
+        <li>
+          <h3>サンプルデータを自分のパイプラインに差し替える</h3>
+          <p><code>viewer/data/metrics.json</code> のステップ名・件数・時間・ステータスを変更します。取得に失敗した場合は、HTML 内の埋め込みサンプルで動作します。</p>
+          <pre><code>{
+  "steps": [
+    { "step_id": "Extract", "records_in": 1240, "records_out": 1240,
+      "elapsed_ms": 46, "status": "Healthy" }
+  ]
+}</code></pre>
+        </li>
+        <li>
+          <h3>GitHub Pages に配置する</h3>
+          <p>GitHub Actions でリポジトリ全体をデプロイします。Sandbox のルート <code>index.html</code> はプロジェクト一覧、<code>PipelineViz/index.html</code> が本プロジェクトの LP、<code>viewer/</code> がダッシュボードです。相対パスのため、<code>https://user.github.io/repo/PipelineViz/</code> のようなサブパスでも動作します。</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="structure" aria-labelledby="structure-heading">
+      <h2 id="structure-heading">プロジェクト構成</h2>
+      <pre><code>goose-sandbox/
+├── PipelineViz/                  # このプロジェクト
+│   ├── index.html                # プロジェクト LP
+│   ├── viewer/
+│   │   ├── index.html            # ダッシュボード試作
+│   │   └── data/
+│   │       ├── metrics.json      # 現在のスナップショット
+│   │       └── metrics-prev.json # Diff 用の前回スナップショット
+│   ├── assets/
+│   │   └── brutalist-doc.css     # ドキュメント共通スタイル
+│   ├── .omm/
+│   │   ├── config.yaml
+│   │   └── data-pipeline/
+│   │       ├── meta.yaml         # live_metrics_url / status_map
+│   │       └── diagram.mmd       # Mermaid 定義
+│   ├── pipeline_viz_proposal.html# 実装提案資料
+│   ├── goose_language_guide.html # Goose 言語ガイド
+│   └── README.md                 # プロジェクト README
+├── index.html                    # Sandbox ホーム
+├── .github/workflows/pages.yml   # GitHub Pages デプロイ
+├── LICENSE                       # MIT
+└── .nojekyll                     # GitHub Pages 用</code></pre>
+    </section>
+
+    <section id="limits" aria-labelledby="limits-heading">
+      <h2 id="limits-heading">現在の制限</h2>
+      <ul class="intro">
+        <li>メトリクスはサンプル JSON とブラウザ内シミュレーションで、実際の Goose プロセスとは接続していません。</li>
+        <li>ライブ更新はポーリング方式です。SSE / WebSocket による配信は今後の実装対象です。</li>
+        <li>Mermaid の描画は独自の HTML / SVG 表現で、Mermaid ランタイムは読み込んでいません。ソース出力のみ対応しています。</li>
+        <li>大規模ダイアグラムの仮想化や、複数パイプラインの同時監視は未対応です。</li>
+        <li>oh-my-mermaid 本体への組み込みは未実施で、UI とデータ構造の試作段階です。</li>
+      </ul>
+    </section>
+
+    <div class="cta">
+      <h3>処理の流れを、確かめる。</h3>
+      <p>サンプルデータとライブシミュレーションで、パイプラインの状態可視化をすぐに試せます。</p>
+      <a class="btn" href="viewer/">ダッシュボードを開く</a>
+      <a class="btn btn-ghost" href="pipeline_viz_proposal.html">提案資料を読む</a>
+    </div>
+
+  </main>
+
+  <footer>
+    <a href="../">goose-sandbox</a> / pipeline-viz · Goose × oh-my-mermaid · 2026
+  </footer>
+
+</div>
+
+</body>
+</html>
