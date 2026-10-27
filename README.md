@@ -40,7 +40,6 @@ Mac のプロセスを親子ツリーとして表示し、署名・CPU・メモ�
 
 - LP: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/)
 - Viewer: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/viewer/)
-- 実装提案資料: [ProcessSentinel/process_sentinel_proposal.html](ProcessSentinel/process_sentinel_proposal.html)
 - 収集: `tools/collect_processes.py`（`ps` / `codesign` / `lsof`、macOS のみ）
 
 ## リポジトリ構成
@@ -68,7 +67,6 @@ goose-sandbox/
 │   │   ├── data/                 # デモスナップショットとベースライン
 │   │   └── lib/                  # 分類・差分・レイアウト
 │   ├── tools/                    # macOS コレクタ
-│   ├── process_sentinel_proposal.html
 │   └── README.md
 ├── .github/
 │   └── workflows/

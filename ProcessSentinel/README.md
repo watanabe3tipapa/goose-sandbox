@@ -18,7 +18,6 @@ Process Sentinel は、Mac 上のプロセスを**親子ツリー**として描�
 
 - ランディングページ: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/)
 - ビューア（合成デモ）: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/viewer/)
-- 実装提案資料: [process_sentinel_proposal.html](process_sentinel_proposal.html)
 
 公開デモは**合成スナップショット**です。実データはローカルのコレクタで生成します。
 
@@ -227,7 +226,6 @@ node --test ProcessSentinel/viewer/lib/model.test.js
 ProcessSentinel/
 ├── index.html                    # プロジェクト LP
 ├── README.md                     # このファイル
-├── process_sentinel_proposal.html # 実装提案資料
 ├── tools/
 │   └── collect_processes.py      # macOS コレクタ
 └── viewer/
