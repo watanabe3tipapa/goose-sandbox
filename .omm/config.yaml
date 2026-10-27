@@ -1,0 +1,6 @@
+perspectives:
+  - data-pipeline
+  - overall-architecture
+  - error-handler
+  - performance-metrics
+store: .omm

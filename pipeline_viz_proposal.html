@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>データ処理工程「見える化」ダッシュボード — Goose × oh-my-mermaid 試作提案</title>
+<meta name="description" content="Goose と oh-my-mermaid を組み合わせ、データ処理パイプラインの構造と健康状態をリアルタイムに可視化するダッシュボードの実装提案。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/brutalist-doc.css">
+</head>
+<body>
+
+<nav class="doc-nav" aria-label="サイト内ナビゲーション">
+  <a href="./">ホーム</a>
+  <a href="viewer/">ダッシュボード</a>
+  <a href="goose_language_guide.html">Goose 解説</a>
+</nav>
+
+<header>
+  <h1>データ処理工程の「見える化」ダッシュボード</h1>
+  <p class="subtitle">Goose × oh-my-mermaid によるパイプライン可視化ツールの試作提案</p>
+  <p class="meta">2026年10月作成 | 実装: viewer/ | 情報源: Goose 公式・oh-my-mermaid</p>
+</header>
+
+<main>
+
+<section>
+  <h2>コンセプトと狙い</h2>
+  <p>データ処理パイプラインは、ステップが増えるほど「何が起きているか」を把握するコストが急増します。本提案は、次の2つのオープンソース技術を接合することで、処理工程そのものを「生きた設計図」として可視化します。</p>
+  <div class="cols">
+    <div class="card">
+      <div class="card-title">Goose</div>
+      <p>ヒープなし・GCなし・メモリ安全なシステム言語。JSON/CSVのパース、高速なデータ変換、軽量HTTPエンドポイントの提供に適しています。データスタックによるゼロコピー処理が、メトリクス収集のオーバーヘッドを最小化します。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">oh-my-mermaid</div>
+      <p>コードベースから Mermaid ダイアグラムと7種類のメタ情報を生成・管理するフレームワーク。<code>.omm/</code> ディレクトリによる「視点（Perspective）」単位の構成と、<code>@class-name</code> によるクラス間リンク機構を持ちます。</p>
+    </div>
+  </div>
+  <p>組み合わせの核となる発想は、「ダイアグラムを静的なドキュメントではなく、実行時メトリクスを反映するライブ・ビューとして扱う」ことです。Goose が処理パイプラインの内部状態を JSON で出力し、oh-my-mermaid のビューアがそれを読み込んでノードの色やラベルを動的に更新します。</p>
+</section>
+
+<section>
+  <h2>全体アーキテクチャ</h2>
+  <div class="mermaid-box">graph LR
+    A[データソース] --&gt;| raw | B[Goose パイプライン エンジン]
+    B --&gt;| metrics.json | C[.omm/ ストア]
+    B --&gt;| transformed | D[出力先]
+    C --&gt;| SSE/HTTP | E[oh-my-mermaid ビューア]
+    E --&gt;| @drill-down | F[詳細 Perspective]
+
+    style B fill:#8ef0cf,color:#0b0b0b,stroke:#0b0b0b
+    style E fill:#b8dcff,color:#0b0b0b,stroke:#0b0b0b
+  </div>
+  <h3>主要コンポーネント</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>層</th><th>役割</th><th>技術要素</th></tr>
+      <tr><td>収集層</td><td>各処理ステップの入力量、出力量、処理時間、エラーを計測</td><td>Goose <code>struct StepMetrics</code></td></tr>
+      <tr><td>蓄積層</td><td>メトリクスとダイアグラム定義を統合管理</td><td><code>.omm/</code> ディレクトリ + <code>meta.yaml</code></td></tr>
+      <tr><td>可視化層</td><td>Mermaid ダイアグラムのレンダリングとリアルタイム更新</td><td>oh-my-mermaid ビューア + カスタム SSE ワッチャー</td></tr>
+      <tr><td>ナビゲーション層</td><td>ステップのドリルダウン、diff表示、参照関係追跡</td><td><code>@step-name</code> リンク + ブレッドクラム</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Goose 側の実装設計</h2>
+  <p>Goose の「データスタック・ゼロコピー」特性を活かし、メトリクス収集がパイプライン本体に与える影響をゼロに近づけます。</p>
+
+  <h3>コアデータ構造</h3>
+<pre><code>import std;
+import json;
+import os;
+
+enum Status { Healthy, Warning, Error }
+
+struct StepMetrics {
+  step_id: u8[varint],
+  records_in: varint,
+  records_out: varint,
+  elapsed_ms: f64,
+  status: Status,
+  message: u8[varint],
+}
+
+struct PipelineSnapshot {
+  timestamp: u8[varint],
+  steps: StepMetrics[varint],
+}</code></pre>
+
+  <h3>パイプライン・ラッパー</h3>
+  <p>各ステップを <code>measure()</code> でラップし、実行前後のカウンタ差分を自動記録します。Goose の「スコープ終了時に一括解放」されるデータスタックを利用することで、高頻度処理でもメモリリークのリスクを排除します。</p>
+<pre><code>fn measure(step_name: u8[:], input_count: varint,
+           f: fn() -&gt; varint) -&gt; StepMetrics {
+  let t0 = os.now_ms();
+  let out_count = f();
+  let elapsed = os.now_ms() - t0;
+  return StepMetrics {
+    step_id: step_name,
+    records_in: input_count,
+    records_out: out_count,
+    elapsed_ms: elapsed,
+    status: Status.Healthy,
+    message: "",
+  };
+}</code></pre>
+
+  <h3>メトリクス出力（.omm 連携）</h3>
+  <p>パイプライン実行のたびに <code>.omm/data-pipeline/meta.yaml</code> と <code>diagram.mmd</code> を更新します。Goose の JSON サンプル（<code>18_json.goose</code>）と同様、単一のプール内にツリーを構築してから一括書き出しします。</p>
+<pre><code>fn emit_snapshot(steps: StepMetrics[:], out_path: u8[:]) {
+  var buf: u8[&gt;..] = [];
+  json.render(buf, steps);   // 標準ライブラリ json モジュール活用
+  os.write_file(out_path, buf);
+}</code></pre>
+</section>
+
+<section>
+  <h2>oh-my-mermaid 拡張設計</h2>
+  <p>既存の oh-my-mermaid ビューアに、リアルタイムダッシュボードとしての機能を追加します。元の設計思想（Perspective ベース、<code>@</code> リンク、7フィールド構成）を崩さずに拡張します。</p>
+
+  <h3>追加 Perspective</h3>
+  <div class="tree">.omm/
+├── config.yaml
+├── overall-architecture/
+│   ├── description.md
+│   ├── diagram.mmd          <span class="comment"># @data-pipeline, @error-handler 等</span>
+│   └── ...
+├── data-pipeline/
+│   ├── description.md
+│   ├── diagram.mmd          <span class="comment"># パイプライン本流（動的更新対象）</span>
+│   ├── context.md
+│   ├── constraint.md
+│   ├── concern.md
+│   ├── todo.md
+│   ├── note.md
+│   └── meta.yaml            <span class="comment"># prev_diagram + live_metrics フィールド追加</span>
+├── error-handler/
+│   └── ...
+└── performance-metrics/
+    ├── description.md
+    ├── diagram.mmd          <span class="comment"># 時系列ダイアグラム（Goose 生成）</span>
+    └── ...</div>
+
+  <h3>meta.yaml 拡張</h3>
+  <p>既存の <code>prev_diagram</code> 保持機構に加え、ライブメトリクスへの参照を追加します。</p>
+<pre><code># meta.yaml 拡張案
+updated: 2026-10-27T09:15:00Z
+git_commit: a1b2c3d
+prev_diagram: |-
+  graph LR
+    A --&gt; B
+live_metrics_url: ./metrics.json   # ビューアがポーリング/SSEするパス
+status_map:
+  Healthy: "classDef healthy fill:#8ef0cf"
+  Warning: "classDef warning fill:#ffc857"
+  Error:   "classDef error fill:#ff6b6b"</code></pre>
+
+  <h3>ビューア拡張機能</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>機能</th><th>内容</th></tr>
+      <tr><td>リアルタイム色反映</td><td><code>metrics.json</code> の <code>status</code> に応じ、Mermaid ノードに <code>classDef</code> を動的注入</td></tr>
+      <tr><td>スループットオーバーレイ</td><td>ノードラベルに <code>records_in → records_out</code> と <code>elapsed_ms</code> をバッジ表示</td></tr>
+      <tr><td>Diff モード</td><td>既存の <code>prev_diagram</code> 比較に加え、メトリクス変化（前回実行との差分）をハイライト</td></tr>
+      <tr><td>アラート連携</td><td><code>Status.Error</code> のステップをサイドバーに自動ピン留め、ブレッドクラムに警告アイコン表示</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>ダッシュボード UI 仕様</h2>
+  <p>oh-my-mermaid ビューアのインターフェースに、ダッシュボード特有の情報を追加します。</p>
+
+  <h3>画面構成</h3>
+  <div class="mermaid-box">┌─────────────────────────────────────────────────────┐
+│  Pipeline Viz    [更新: 09:15:02]    [Diff] [Alert]  │
+├──────────┬────────────────────────────────────────────┤
+│ Classes  │  ┌────────────────────────────────────┐  │
+│          │  │  ┌─────┐   ┌─────┐   ┌─────┐     │  │
+│ ● data   │  │  │Extract│──│Transform│──│Load │     │  │
+│   pipeline│  │  │ 1.2k │   │ 1.1k │   │ 1.1k│     │  │
+│   error  │  │  │ 45ms │   │ 120ms│   │ 30ms│     │  │
+│   perform│  │  └─────┘   └─────┘   └─────┘     │  │
+│          │  │       ↘ @error-handler            │  │
+│          │  └────────────────────────────────────┘  │
+│          │                                          │
+│          │  Description                             │
+│          │  ETL パイプラインの主要3ステップを示す   │
+│          │                                          │
+│          │  Metrics (auto)                          │
+│          │  • スループット: 1,100 rec/s             │
+│          │  • エラー率: 0.00%                       │
+│          │  • 遅延ステップ: Transform (120ms)       │
+│          │                                          │
+│          │  Meta                                    │
+│          │  Updated: 2026-10-27 09:15:00            │
+└──────────┴──────────────────────────────────────────┘</div>
+
+  <h3>状態色の定義</h3>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--healthy)"></span> Healthy（正常）</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--warning)"></span> Warning（遅延・欠損あり）</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--error)"></span> Error（処理失敗）</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--external)"></span> External（外部依存）</div>
+  </div>
+</section>
+
+<section>
+  <h2>ファイル構成と実装ステップ</h2>
+
+  <h3>リポジトリ構成</h3>
+  <div class="tree">pipeline-viz/
+├── src/
+│   ├── main.goose              <span class="comment"># エントリーポイント</span>
+│   ├── pipeline.goose          <span class="comment"># ETL ステップ定義</span>
+│   ├── metrics.goose           <span class="comment"># メトリクス収集・JSON出力</span>
+│   └── server.goose            <span class="comment"># 静的ファイル配信 + SSE</span>
+├── .omm/
+│   ├── config.yaml
+│   ├── data-pipeline/
+│   │   ├── description.md
+│   │   ├── diagram.mmd
+│   │   ├── context.md
+│   │   ├── concern.md
+│   │   └── meta.yaml
+│   └── error-handler/
+│       └── ...
+├── viewer/
+│   └── index.html              <span class="comment"># oh-my-mermaid ビューア拡張版</span>
+├── Makefile
+└── README.md</div>
+
+  <h3>実装ロードマップ</h3>
+  <ol>
+    <li><strong>Phase 1 — Goose パイプライン原型</strong><br>3ステップのサンプル ETL（Extract → Transform → Load）を Goose で実装し、<code>StepMetrics</code> の計測と JSON 出力を確認します。</li>
+    <li><strong>Phase 2 — .omm/ 連携</strong><br><code>omm init</code> で <code>data-pipeline</code> / <code>error-handler</code> Perspective を作成し、<code>diagram.mmd</code> に <code>@</code> リンクを埋め込みます。</li>
+    <li><strong>Phase 3 — ビューア拡張</strong><br>oh-my-mermaid ビューアに <code>live_metrics_url</code> ポーリングを実装し、ノード色・バッジの動的更新を有効化します。</li>
+    <li><strong>Phase 4 — Diff &amp; Alert</strong><br><code>prev_diagram</code> 比較と、<code>Status.Error</code> 時のサイドバー自動ピン留めを実装します。</li>
+    <li><strong>Phase 5 — 運用改善</strong><br>メトリクス履歴の時系列保存、Goose ワーカースレッドによる並列ステップ計測を検討します。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>技術的メリットと留意点</h2>
+  <div class="cols">
+    <div class="card">
+      <div class="card-title">メリット</div>
+      <ul>
+        <li>Goose のゼロコピー・データスタックにより、メトリクス収集のメモリオーバーヘッドが極小</li>
+        <li>oh-my-mermaid の Perspective 構造により、パイプラインの「構造」と「状態」を同じ枠組みで管理</li>
+        <li><code>@step-name</code> リンクで、エラー発生時の原因追跡を直感的に</li>
+        <li>Mermaid テキストベースなので、Git diff でアーキテクチャ変更をコードレビュー可能</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">留意点</div>
+      <ul>
+        <li>Goose に組み込み HTTP サーバーがないため、C FFI または外部サーバー（Python 等）での配信が必要</li>
+        <li>高頻度更新時は SSE より WebSocket またはポーリング間隔の調整が必要</li>
+        <li>Mermaid の動的 classDef 注入は、大規模ダイアグラムで描画コストが増加する可能性あり</li>
+        <li>oh-my-mermaid 本体へのパッチ方針を事前に検討（fork vs プラグイン）</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>サンプル Mermaid ダイアグラム</h2>
+  <p>Goose が生成するダイアグラムのイメージです。ステップ名に加え、スループットとレイテンシをラベルに埋め込み、状態に応じた色分けを行います。</p>
+  <div class="mermaid-box">graph LR
+    Extract["Extract&lt;br/&gt;1,200 rec&lt;br/&gt;45ms"]:::healthy
+    Transform["Transform&lt;br/&gt;1,100 rec&lt;br/&gt;120ms"]:::warning
+    Load["Load&lt;br/&gt;1,100 rec&lt;br/&gt;30ms"]:::healthy
+    ErrorLog["@error-handler&lt;br/&gt;Error Log"]:::external
+
+    Extract --&gt; Transform
+    Transform --&gt; Load
+    Transform -.->|errors| ErrorLog
+
+    classDef healthy fill:#8ef0cf,stroke:#0b0b0b,color:#0b0b0b
+    classDef warning fill:#ffc857,stroke:#0b0b0b,color:#0b0b0b
+    classDef external fill:#b8dcff,stroke:#0b0b0b,color:#0b0b0b</div>
+</section>
+
+<section>
+  <h2>まとめ</h2>
+  <p>本提案では、Goose の高性能・低オーバーヘッドなデータ処理能力と、oh-my-mermaid の構造化されたアーキテクチャ可視化フレームワークを接合することで、データ処理パイプラインの「構造」と「健康状態」を一枚のダッシュボードに統合する道筋を示しました。</p>
+  <p>特に、<code>.omm/</code> ディレクトリを「実行時メトリクスのキャンバス」として再定義し、Mermaid ダイアグラムを静的ドキュメントからライブステータスボードへと昇華させる点が、本試作の独自性となります。</p>
+  <p>実装済みのプロトタイプは <a href="viewer/">viewer/</a> で確認できます。サンプルデータとライブシミュレーションにより、提案した UI の挙動をブラウザ上で試せます。</p>
+</section>
+
+</main>
+
+<footer>
+  <p>データ処理工程「見える化」ダッシュボード試作提案 — Goose × oh-my-mermaid</p>
+  <p>2026年10月作成</p>
+</footer>
+
+</body>
+</html>

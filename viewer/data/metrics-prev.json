@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-10-27T09:14:59Z",
+  "pipeline": "etl-main",
+  "steps": [
+    {
+      "step_id": "Extract",
+      "label": "Extract",
+      "records_in": 1200,
+      "records_out": 1200,
+      "elapsed_ms": 44,
+      "status": "Healthy",
+      "message": ""
+    },
+    {
+      "step_id": "Transform",
+      "label": "Transform",
+      "records_in": 1200,
+      "records_out": 1160,
+      "elapsed_ms": 96,
+      "status": "Warning",
+      "message": "40 件がスキーマ検証で隔離されました"
+    },
+    {
+      "step_id": "Load",
+      "label": "Load",
+      "records_in": 1160,
+      "records_out": 1160,
+      "elapsed_ms": 29,
+      "status": "Healthy",
+      "message": ""
+    }
+  ],
+  "quarantine": {
+    "step_id": "error-handler",
+    "label": "@error-handler",
+    "records_in": 40,
+    "records_out": 40,
+    "elapsed_ms": 7,
+    "status": "External",
+    "message": "隔離レコードを error log に書き込み"
+  },
+  "errors": [
+    {
+      "at": "09:14:40",
+      "step_id": "Transform",
+      "kind": "schema",
+      "message": "フィールド amount が数値ではありません",
+      "count": 28
+    },
+    {
+      "at": "09:14:22",
+      "step_id": "Extract",
+      "kind": "timeout",
+      "message": "source shard 3 の応答が遅延",
+      "count": 9
+    }
+  ]
+}

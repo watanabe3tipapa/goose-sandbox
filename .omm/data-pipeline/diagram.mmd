@@ -1,0 +1,14 @@
+graph LR
+    Extract["Extract<br/>1,240 rec<br/>46ms"]:::healthy
+    Transform["Transform<br/>1,180 rec<br/>121ms"]:::warning
+    Load["Load<br/>1,180 rec<br/>31ms"]:::healthy
+    ErrorLog["@error-handler<br/>60 rec<br/>8ms"]:::external
+
+    Extract -->|"1,240"| Transform
+    Transform -->|"1,180"| Load
+    Transform -.->|"60"| ErrorLog
+
+    classDef healthy fill:#8ef0cf,stroke:#0b0b0b,color:#0b0b0b
+    classDef warning fill:#ffc857,stroke:#0b0b0b,color:#0b0b0b
+    classDef error fill:#ff6b6b,stroke:#0b0b0b,color:#0b0b0b
+    classDef external fill:#b8dcff,stroke:#0b0b0b,color:#0b0b0b

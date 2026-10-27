@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Viz — Goose × oh-my-mermaid 試作ダッシュボード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #0b0b0b;
+  --ink: #0b0b0b;
+  --muted: #f2f2f2;
+  --muted-2: #e9e9e9;
+  --surface: #ffffff;
+  --surface-2: #f7f7f7;
+  --surface-3: #ededed;
+  --bg-deep: #f2f2f2;
+  --border: #0b0b0b;
+  --line: #d4d4d4;
+  --line-strong: #0b0b0b;
+  --faint: #525252;
+  --accent: #00e5a8;
+  --accent-ink: #007a5a;
+  --accent-soft: #c9f7e8;
+  --accent-dim: #0b0b0b;
+  --accent-glow: #c9f7e8;
+  --healthy: #8ef0cf;
+  --warning: #ffc857;
+  --error: #ff6b6b;
+  --external: #b8dcff;
+  --warn: #a16207;
+  --danger: #c81e1e;
+  --info: #1f6feb;
+  --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Noto Mono", monospace;
+  --sans: Inter, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  --radius: 4px;
+  --radius-sm: 3px;
+  --space: clamp(1rem, 0.9rem + 0.5vw, 1.5rem);
+  --step-0: clamp(0.9rem, 0.88rem + 0.15vw, 1rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  padding: 18px;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: var(--step-0);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; }
+::selection { background: var(--accent); color: var(--fg); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3, h4, p, dl, dd, dt, ul, ol { margin: 0; }
+ul, ol { padding-left: 1.3rem; }
+li { margin-bottom: 0.3rem; }
+small { font-size: 0.78em; }
+code { font-family: var(--mono); border: 2px dashed var(--border); background: var(--bg); padding: 1px 6px; border-radius: 2px; font-size: 0.86em; }
+
+.app {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "side top"
+    "side main";
+  min-height: calc(100vh - 36px);
+  max-width: 1720px;
+  margin: 0 auto;
+  border: 5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  overflow: clip;
+}
+
+.sidebar {
+  grid-area: side;
+  position: sticky;
+  top: 18px;
+  height: calc(100vh - 36px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0.9rem;
+  border-right: 4px solid var(--border);
+  background: var(--muted);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+}
+.brand-mark {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  background: var(--accent);
+  color: var(--fg);
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.brand strong { display: block; font-size: 0.92rem; font-weight: 700; letter-spacing: -0.01em; }
+.brand small { display: block; color: var(--faint); font-family: var(--mono); font-size: 0.58rem; }
+
+.side-label {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding: 0 0.25rem;
+  margin-bottom: 0.5rem;
+}
+#nav { display: flex; flex-direction: column; gap: 0.35rem; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.5rem 0.55rem;
+  border: 3px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.nav-item:hover { background: var(--bg); border-color: var(--border); }
+.nav-item.is-active {
+  background: var(--accent);
+  border-color: var(--border);
+}
+.nav-text { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; flex: 1; }
+.nav-text strong { font-size: 0.72rem; font-weight: 700; font-family: var(--mono); white-space: nowrap; }
+.nav-text small { color: var(--faint); font-size: 0.65rem; }
+.nav-item.is-active .nav-text small { color: var(--fg); }
+.nav-badge {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--fg);
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  padding: 0 0.35em;
+}
+.status-dot {
+  width: 10px; height: 10px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  flex-shrink: 0;
+  background: var(--muted-2);
+}
+.status-dot.s-healthy { background: var(--healthy); }
+.status-dot.s-warning { background: var(--warning); }
+.status-dot.s-error { background: var(--error); }
+.status-dot.s-external { background: var(--external); }
+.status-dot.s-paused { background: var(--muted-2); }
+
+.side-store dl { display: grid; gap: 0.35rem; padding: 0 0.25rem; }
+.side-store dl > div { display: flex; justify-content: space-between; gap: 0.5rem; font-family: var(--mono); font-size: 0.62rem; }
+.side-store dt { color: var(--faint); }
+.side-store dd { color: var(--fg); text-align: right; word-break: break-all; }
+
+.legend-block { border-top: 4px solid var(--border); padding-top: 0.9rem; }
+.legend-item { display: flex; align-items: center; gap: 0.45rem; font-size: 0.72rem; color: var(--fg); margin-bottom: 0.3rem; padding: 0 0.25rem; }
+.legend-swatch { width: 12px; height: 12px; border: 2px solid var(--border); border-radius: 2px; flex-shrink: 0; }
+.swatch-healthy { background: var(--healthy); }
+.swatch-warning { background: var(--warning); }
+.swatch-error { background: var(--error); }
+.swatch-external { background: var(--external); }
+.swatch-diff { background: var(--bg); border-style: dashed; }
+
+.topbar {
+  grid-area: top;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem 1.4rem;
+  flex-wrap: wrap;
+  padding: 1rem var(--space) 0.9rem;
+  border-bottom: 4px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 18px;
+  z-index: 20;
+}
+.crumb {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--faint);
+  margin-bottom: 0.25rem;
+}
+.crumb b { color: var(--fg); background: var(--accent); padding: 0 4px; border: 2px solid var(--border); border-radius: 2px; font-weight: 700; }
+.topbar h1 { font-size: clamp(1.2rem, 1rem + 0.7vw, 1.6rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
+.page-sub { color: var(--faint); font-size: 0.8rem; margin-top: 0.1rem; }
+.toolbar { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+.updated { font-family: var(--mono); font-size: 0.66rem; color: var(--faint); padding-right: 0.15rem; }
+.updated b { color: var(--fg); font-weight: 700; }
+.health-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0.22rem 0.55rem;
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--fg);
+}
+.health-pill .status-dot { width: 8px; height: 8px; }
+.health-pill.is-healthy { background: var(--healthy); }
+.health-pill.is-warning { background: var(--warning); }
+.health-pill.is-error { background: var(--error); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 2px;
+  padding: 0.22rem 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.btn:hover { background: var(--fg); color: var(--bg); }
+.btn[aria-pressed="true"] { background: var(--accent); color: var(--fg); }
+.btn[aria-pressed="true"]:hover { background: var(--fg); color: var(--bg); }
+.btn-live .live-dot { width: 8px; height: 8px; border: 2px solid currentColor; border-radius: 2px; background: currentColor; }
+.btn-live[aria-pressed="false"] { background: var(--bg); color: var(--faint); }
+.btn-ghost { background: var(--bg); }
+.btn-danger { background: #ffe3e3; color: var(--danger); }
+.btn-danger:hover { background: var(--danger); color: var(--bg); }
+.btn-danger.is-on { background: var(--danger); color: var(--bg); }
+
+.main {
+  grid-area: main;
+  min-width: 0;
+  padding: var(--space);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 var(--space) var(--space) 0;
+  min-width: 0;
+}
+
+.card {
+  min-width: 0;
+  background: var(--bg);
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+}
+.card.flat { border-width: 2px; }
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.8rem;
+}
+.card-head h2, .card-head h3 { font-size: 1rem; font-weight: 700; line-height: 1.4; display: flex; align-items: center; gap: 0.5rem; }
+.card-head h2::before, .card-head h3::before {
+  content: "";
+  width: 10px; height: 10px;
+  flex-shrink: 0;
+  background: var(--accent);
+  border: 2px solid var(--border);
+  border-radius: 1px;
+}
+.card-head .sub { color: var(--faint); font-size: 0.76rem; margin-top: 0.15rem; }
+.eyebrow {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 0.3rem;
+}
+.eyebrow.info { color: var(--info); }
+.eyebrow.warn { color: var(--warn); }
+.eyebrow.danger { color: var(--danger); }
+
+.alert-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.85rem;
+  border: 3px solid var(--border);
+  border-left-width: 12px;
+  border-radius: 2px;
+  background: var(--bg);
+  font-size: 0.8rem;
+}
+.alert-strip.is-healthy { border-left-color: var(--healthy); background: var(--accent-soft); }
+.alert-strip.is-warning { border-left-color: var(--warning); background: #fff4d6; }
+.alert-strip.is-error { border-left-color: var(--error); background: #ffe3e3; }
+.alert-strip strong { font-weight: 700; }
+.alert-strip .alert-copy { flex: 1; min-width: 180px; color: var(--fg); }
+.alert-strip .alert-copy b { font-weight: 700; }
+.alert-strip .alert-link {
+  border: 2px solid var(--border);
+  background: var(--bg);
+  border-radius: 2px;
+  padding: 0.05rem 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.alert-strip .alert-link:hover { background: var(--fg); color: var(--bg); }
+
+.diagram-scroll { overflow-x: auto; max-width: 100%; padding: 0.2rem 0 0.5rem; }
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: max-content;
+  padding: 0.3rem 0;
+}
+.node {
+  position: relative;
+  width: 198px;
+  flex-shrink: 0;
+  text-align: left;
+  padding: 1rem 0.9rem 0.75rem;
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+.node::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 8px;
+  background: var(--node-color, var(--muted-2));
+  border-bottom: 2px solid var(--border);
+}
+.node:hover { background: var(--muted); transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--border); }
+.node.is-selected { box-shadow: 4px 4px 0 var(--border); background: var(--accent-soft); }
+.node.is-changed::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 2px dashed var(--info);
+  pointer-events: none;
+}
+.node[data-status="Healthy"] { --node-color: var(--healthy); }
+.node[data-status="Warning"] { --node-color: var(--warning); }
+.node[data-status="Error"] { --node-color: var(--error); }
+.node[data-status="External"] { --node-color: var(--external); }
+.node-top { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; margin-bottom: 0.4rem; }
+.node-name { font-weight: 700; font-size: 0.9rem; letter-spacing: -0.01em; }
+.node-records { display: block; font-family: var(--mono); font-size: 1.2rem; font-weight: 700; line-height: 1.25; }
+.node-records small { font-size: 0.55em; font-weight: 400; color: var(--faint); letter-spacing: 0.04em; }
+.node-meta { display: block; font-family: var(--mono); font-size: 0.64rem; color: var(--faint); margin-top: 0.12rem; }
+.node-diff {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--fg);
+  background: var(--bg);
+  border: 2px dashed var(--info);
+  border-radius: 2px;
+  padding: 0 0.35em;
+  margin-top: 0.4rem;
+}
+.node-diff.neg { border-color: var(--warn); color: var(--warn); }
+.node-diff.eq { border-color: var(--line); color: var(--faint); }
+
+.status-chip {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  font-weight: 700;
+  padding: 0.05em 0.4em;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  color: var(--fg);
+  white-space: nowrap;
+}
+.status-chip.s-healthy { background: var(--healthy); }
+.status-chip.s-warning { background: var(--warning); }
+.status-chip.s-error { background: var(--error); }
+.status-chip.s-external { background: var(--external); }
+
+.connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  min-width: 56px;
+  flex-shrink: 0;
+  color: var(--fg);
+}
+.connector-label { font-family: var(--mono); font-size: 0.56rem; font-weight: 700; color: var(--faint); }
+.connector-arrow { font-size: 0.95rem; line-height: 1; color: var(--fg); }
+.connector-line { width: 100%; height: 2px; background: var(--border); }
+
+.branch-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+  padding-left: clamp(0.5rem, 20%, 235px);
+  min-width: max-content;
+}
+.branch-tag {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--info);
+  background: var(--bg);
+  border: 2px dashed var(--info);
+  border-radius: 2px;
+  padding: 0 0.35em;
+  white-space: nowrap;
+}
+.branch-dash { width: 40px; border-top: 3px dashed var(--info); flex-shrink: 0; }
+.node-compact { width: 178px; }
+.node-compact .node-records { font-size: 1rem; }
+
+.diagram-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1.2rem;
+  flex-wrap: wrap;
+  border-top: 3px solid var(--border);
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+  font-size: 0.7rem;
+  color: var(--faint);
+}
+.legend { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; }
+.legend .legend-item { font-size: 0.68rem; padding: 0; margin: 0; }
+.hint { font-family: var(--mono); font-size: 0.62rem; }
+
+.mermaid-src {
+  margin: 0.9rem 0 0;
+  background: var(--bg);
+  border: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 1rem;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  line-height: 1.65;
+  color: var(--fg);
+  white-space: pre;
+}
+.mermaid-src[hidden] { display: none; }
+
+.split-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 1rem; }
+.split-grid > .card { margin: 0; }
+
+.metrics-list { display: flex; flex-direction: column; gap: 0; }
+.metric-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.45rem 0;
+  border-bottom: 2px solid var(--line);
+}
+.metric-row:last-child { border-bottom: none; }
+.metric-row .k { color: var(--faint); font-size: 0.78rem; }
+.metric-row .v { font-family: var(--mono); font-weight: 700; font-size: 0.95rem; }
+.metric-row .v small { color: var(--faint); font-weight: 400; font-size: 0.62em; }
+.metric-row .v.good { color: var(--accent-ink); }
+.metric-row .v.warn { color: var(--warn); }
+.metric-row .v.bad { color: var(--danger); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.7rem; }
+.stat {
+  background: var(--bg);
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  padding: 0.7rem 0.8rem;
+}
+.stat .label { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em; color: var(--faint); }
+.stat .value { font-family: var(--mono); font-size: 1.4rem; font-weight: 700; line-height: 1.3; margin-top: 0.1rem; }
+.stat .value small { font-size: 0.5em; color: var(--faint); font-weight: 400; margin-left: 0.15em; }
+.stat .delta { font-family: var(--mono); font-size: 0.62rem; color: var(--faint); }
+.stat .delta.up { color: var(--warn); }
+.stat .delta.down { color: var(--accent-ink); }
+
+.chart-wrap { width: 100%; overflow: hidden; color: var(--fg); }
+.chart-wrap svg { display: block; width: 100%; height: auto; }
+.chart-note { display: flex; justify-content: space-between; gap: 0.5rem; font-family: var(--mono); font-size: 0.6rem; font-weight: 700; color: var(--faint); margin-top: 0.3rem; }
+
+.lat-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.lat-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 66px; align-items: center; gap: 0.55rem; font-size: 0.76rem; }
+.lat-row .name { font-family: var(--mono); font-size: 0.68rem; font-weight: 700; color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lat-track { height: 12px; border: 2px solid var(--border); border-radius: 2px; background: var(--bg); overflow: hidden; }
+.lat-fill { display: block; height: 100%; background: var(--healthy); border-right: 2px solid var(--border); }
+.lat-fill.s-warning { background: var(--warning); }
+.lat-fill.s-error { background: var(--error); }
+.lat-fill.s-external { background: var(--external); }
+.lat-row .val { font-family: var(--mono); font-size: 0.68rem; font-weight: 700; text-align: right; color: var(--fg); }
+
+.error-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.error-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: start;
+  padding: 0.55rem 0.65rem;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-left: 10px solid var(--warning);
+  border-radius: 2px;
+}
+.error-item.s-error { border-left-color: var(--error); }
+.error-item .time { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; color: var(--faint); padding-top: 0.1rem; }
+.error-item .msg { font-size: 0.78rem; line-height: 1.5; color: var(--fg); }
+.error-item .meta { font-family: var(--mono); font-size: 0.6rem; color: var(--faint); margin-top: 0.1rem; }
+.error-item .count {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: var(--fg);
+  background: var(--warning);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  padding: 0 0.35em;
+  white-space: nowrap;
+}
+
+.arch-flow { display: flex; flex-direction: column; gap: 0.75rem; }
+.arch-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.node.static { cursor: default; width: 178px; }
+.node.static:hover { transform: none; background: var(--bg); box-shadow: none; }
+.node.static .node-records { font-size: 0.9rem; }
+.arch-caption { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; color: var(--faint); }
+.arch-note { font-size: 0.78rem; color: var(--faint); margin-top: 0.8rem; }
+
+.table-wrap { overflow-x: auto; border: 3px solid var(--border); border-radius: 2px; background: var(--bg); }
+table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+th, td { text-align: left; padding: 0.5rem 0.65rem; border-bottom: 2px solid var(--border); }
+.history-table { font-size: 0.68rem; }
+.history-table th, .history-table td { padding: 0.38rem 0.42rem; white-space: nowrap; }
+th { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fg); font-weight: 700; background: var(--muted); }
+tr:last-child td { border-bottom: none; }
+td.mono, .mono { font-family: var(--mono); }
+
+.inspector .rail-head { margin-bottom: 0.65rem; }
+.inspector h3 { font-size: 0.95rem; font-weight: 700; }
+.inspector-empty { color: var(--faint); font-size: 0.78rem; }
+.inspector-empty b { color: var(--fg); font-weight: 700; }
+.kv { display: grid; gap: 0.2rem; margin-top: 0.7rem; }
+.kv > div { display: flex; align-items: baseline; justify-content: space-between; gap: 0.7rem; padding: 0.22rem 0; border-bottom: 2px dashed var(--line); }
+.kv > div:last-child { border-bottom: none; }
+.kv dt { color: var(--faint); font-family: var(--mono); font-size: 0.62rem; }
+.kv dd { font-family: var(--mono); font-size: 0.68rem; font-weight: 700; color: var(--fg); text-align: right; word-break: break-word; }
+.detail-message {
+  margin-top: 0.7rem;
+  padding: 0.55rem 0.65rem;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  font-size: 0.74rem;
+  color: var(--fg);
+  line-height: 1.6;
+}
+.detail-message.is-warning { background: #fff4d6; }
+.detail-message.is-error { background: #ffe3e3; border-color: var(--danger); }
+.clear-btn {
+  margin-top: 0.7rem;
+  width: 100%;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 2px;
+  padding: 0.3rem 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.clear-btn:hover { background: var(--fg); color: var(--bg); }
+
+.rail-alert-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.rail-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  padding: 0.45rem 0.55rem;
+  cursor: pointer;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+.rail-alert:hover { background: var(--accent-soft); }
+.rail-alert .status-dot { margin-top: 0.3rem; }
+.rail-alert b { display: block; font-family: var(--mono); font-size: 0.66rem; font-weight: 700; }
+.rail-alert span { color: var(--faint); }
+.rail-empty { color: var(--faint); font-size: 0.74rem; display: flex; align-items: center; gap: 0.5rem; }
+.meta-card .kv { margin-top: 0.15rem; }
+.meta-card .kv > div { display: block; text-align: left; }
+.meta-card .kv dd { text-align: left; margin-top: 0.02rem; }
+
+@media (min-width: 1200px) {
+  .app {
+    grid-template-columns: 236px minmax(0, 1fr) 290px;
+    grid-template-areas:
+      "side top top"
+      "side main rail";
+  }
+  .rail { position: sticky; top: 18px; align-self: start; max-height: calc(100vh - 36px); overflow-y: auto; padding-right: var(--space); }
+}
+@media (max-width: 1199px) {
+  .app {
+    grid-template-areas:
+      "side top"
+      "side main"
+      "side rail";
+  }
+  .rail {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    padding: 0 var(--space) var(--space);
+    align-items: start;
+  }
+}
+@media (max-width: 900px) {
+  body { padding: 8px; }
+  .app {
+    min-height: calc(100vh - 16px);
+    border-width: 4px;
+    border-radius: 4px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "top" "side" "main" "rail";
+  }
+  .sidebar {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.8rem;
+    overflow-x: auto;
+    padding: 0.55rem 0.7rem;
+    border-right: 0;
+    border-bottom: 4px solid var(--border);
+  }
+  .brand { flex-shrink: 0; padding: 0.35rem 0.45rem; }
+  .brand small { display: none; }
+  .side-block { margin: 0; }
+  .side-label, .side-store, .legend-block { display: none; }
+  #nav { flex-direction: row; gap: 0.3rem; }
+  .nav-item { width: auto; white-space: nowrap; padding: 0.3rem 0.45rem; }
+  .nav-text small, .nav-badge { display: none; }
+  .topbar { position: static; padding: 0.8rem; }
+  .split-grid { grid-template-columns: 1fr; }
+  .rail { padding: 0 0.8rem 0.8rem; }
+}
+@media (max-width: 560px) {
+  .toolbar { width: 100%; }
+  .toolbar .updated { order: 5; width: 100%; padding: 0; }
+  .node { width: 176px; }
+  .node-compact { width: 168px; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .lat-row { grid-template-columns: 82px minmax(0, 1fr) 58px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation: none !important; transition: none !important; }
+}
+@media print {
+  body { padding: 0; background: #fff; color: #111; }
+  .app { border: 0; min-height: 0; display: block; }
+  .sidebar, .rail, .toolbar, .alert-link { display: none; }
+  .topbar { position: static; }
+  .card, .node, .mermaid-src, .table-wrap { border-color: #999; }
+  .main { max-width: none; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">◈</span>
+      <div>
+        <strong>Pipeline Viz</strong>
+        <small>oh-my-mermaid × Goose</small>
+      </div>
+    </div>
+
+    <div class="side-block">
+      <p class="side-label">Perspectives</p>
+      <nav id="nav" aria-label="Perspective ナビゲーション">
+        <button class="nav-item is-active" data-persp="data-pipeline" type="button">
+          <span class="status-dot s-healthy" data-dot="data-pipeline"></span>
+          <span class="nav-text"><strong>data-pipeline</strong><small>ETL 本流</small></span>
+          <span class="nav-badge" data-badge="data-pipeline">3</span>
+        </button>
+        <button class="nav-item" data-persp="overall-architecture" type="button">
+          <span class="status-dot s-healthy" data-dot="overall-architecture"></span>
+          <span class="nav-text"><strong>overall-architecture</strong><small>全体構成</small></span>
+          <span class="nav-badge" data-badge="overall-architecture">5</span>
+        </button>
+        <button class="nav-item" data-persp="error-handler" type="button">
+          <span class="status-dot s-external" data-dot="error-handler"></span>
+          <span class="nav-text"><strong>error-handler</strong><small>隔離・再処理</small></span>
+          <span class="nav-badge" data-badge="error-handler">0</span>
+        </button>
+        <button class="nav-item" data-persp="performance-metrics" type="button">
+          <span class="status-dot s-healthy" data-dot="performance-metrics"></span>
+          <span class="nav-text"><strong>performance-metrics</strong><small>時系列指標</small></span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="side-block side-store">
+      <p class="side-label">Store</p>
+      <dl>
+        <div><dt>path</dt><dd>.omm/</dd></div>
+        <div><dt>metrics</dt><dd id="side-metrics-path">data/metrics.json</dd></div>
+        <div><dt>poll</dt><dd>2500 ms</dd></div>
+        <div><dt>source</dt><dd id="side-source">embedded</dd></div>
+      </dl>
+    </div>
+
+    <div class="legend-block">
+      <p class="side-label">Status</p>
+      <div class="legend-item"><span class="legend-swatch swatch-healthy"></span>Healthy</div>
+      <div class="legend-item"><span class="legend-swatch swatch-warning"></span>Warning</div>
+      <div class="legend-item"><span class="legend-swatch swatch-error"></span>Error</div>
+      <div class="legend-item"><span class="legend-swatch swatch-external"></span>External</div>
+      <div class="legend-item"><span class="legend-swatch swatch-diff"></span>Diff 変更点</div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <div>
+      <div class="crumb" id="crumb">.omm / <b>data-pipeline</b> / diagram.mmd</div>
+      <h1 id="page-title">データ処理パイプライン</h1>
+      <p class="page-sub" id="page-sub">Extract → Transform → Load の実行状態をライブ表示</p>
+    </div>
+    <div class="toolbar">
+      <span class="health-pill" id="health-pill"><span class="status-dot s-healthy"></span><span id="health-text">Healthy</span></span>
+      <span class="updated">更新 <b id="updated-time">--:--:--</b></span>
+      <button class="btn btn-live" id="live-btn" type="button" aria-pressed="true"><span class="live-dot"></span><span id="live-label">LIVE</span></button>
+      <button class="btn" id="diff-btn" type="button" aria-pressed="false">Diff</button>
+      <button class="btn btn-danger" id="inject-btn" type="button">障害を注入</button>
+    </div>
+  </header>
+
+  <main class="main" id="main"></main>
+
+  <aside class="rail">
+    <section class="card inspector" id="inspector"></section>
+    <section class="card" id="alerts-card"></section>
+    <section class="card meta-card" id="meta-card"></section>
+  </aside>
+
+</div>
+
+<script>
+const FALLBACK_SNAPSHOT = {
+  timestamp: "2026-10-27T09:15:02Z",
+  pipeline: "etl-main",
+  steps: [
+    { step_id: "Extract", label: "Extract", records_in: 1240, records_out: 1240, elapsed_ms: 46, status: "Healthy", message: "" },
+    { step_id: "Transform", label: "Transform", records_in: 1240, records_out: 1180, elapsed_ms: 121, status: "Warning", message: "60 件がスキーマ検証で隔離されました" },
+    { step_id: "Load", label: "Load", records_in: 1180, records_out: 1180, elapsed_ms: 31, status: "Healthy", message: "" }
+  ],
+  quarantine: { step_id: "error-handler", label: "@error-handler", records_in: 60, records_out: 60, elapsed_ms: 8, status: "External", message: "隔離レコードを error log に書き込み" },
+  errors: [
+    { at: "09:14:58", step_id: "Transform", kind: "schema", message: "フィールド amount が数値ではありません", count: 37 },
+    { at: "09:14:41", step_id: "Extract", kind: "timeout", message: "source shard 3 の応答が遅延", count: 12 },
+    { at: "09:13:12", step_id: "Transform", kind: "schema", message: "必須フィールド customer_id が欠落", count: 11 }
+  ]
+};
+
+const FALLBACK_PREVIOUS = {
+  timestamp: "2026-10-27T09:14:59Z",
+  pipeline: "etl-main",
+  steps: [
+    { step_id: "Extract", label: "Extract", records_in: 1200, records_out: 1200, elapsed_ms: 44, status: "Healthy", message: "" },
+    { step_id: "Transform", label: "Transform", records_in: 1200, records_out: 1160, elapsed_ms: 96, status: "Warning", message: "40 件がスキーマ検証で隔離されました" },
+    { step_id: "Load", label: "Load", records_in: 1160, records_out: 1160, elapsed_ms: 29, status: "Healthy", message: "" }
+  ],
+  quarantine: { step_id: "error-handler", label: "@error-handler", records_in: 40, records_out: 40, elapsed_ms: 7, status: "External", message: "隔離レコードを error log に書き込み" },
+  errors: [
+    { at: "09:14:40", step_id: "Transform", kind: "schema", message: "フィールド amount が数値ではありません", count: 28 },
+    { at: "09:14:22", step_id: "Extract", kind: "timeout", message: "source shard 3 の応答が遅延", count: 9 }
+  ]
+};
+
+const PERSPECTIVES = {
+  "data-pipeline": {
+    title: "データ処理パイプライン",
+    sub: "Extract → Transform → Load の実行状態をライブ表示",
+    file: "diagram.mmd"
+  },
+  "overall-architecture": {
+    title: "全体アーキテクチャ",
+    sub: "Goose エンジン、.omm ストア、ビューアの接続構成",
+    file: "diagram.mmd"
+  },
+  "error-handler": {
+    title: "エラーハンドリング",
+    sub: "隔離レコードと再処理待ちの追跡",
+    file: "description.md"
+  },
+  "performance-metrics": {
+    title: "パフォーマンス指標",
+    sub: "スループット・レイテンシ・隔離レコード数の時系列",
+    file: "metrics.json"
+  }
+};
+
+const STATUS_LABEL = { Healthy: "Healthy", Warning: "Warning", Error: "Error", External: "External" };
+const STATUS_RANK = { Healthy: 0, External: 0, Warning: 1, Error: 2 };
+const num = new Intl.NumberFormat("ja-JP");
+
+const state = {
+  live: true,
+  diff: false,
+  perspective: "data-pipeline",
+  selected: null,
+  snap: null,
+  prev: null,
+  history: [],
+  mermaidOpen: false,
+  forcedError: false,
+  source: "embedded sample"
+};
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+}[ch]));
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const randInt = (min, max) => Math.floor(min + Math.random() * (max - min + 1));
+const statusClass = (status) => String(status || "Healthy").toLowerCase();
+
+function normalizeSnapshot(data) {
+  const snapshot = JSON.parse(JSON.stringify(data || {}));
+  snapshot.timestamp = snapshot.timestamp || new Date().toISOString();
+  snapshot.steps = (snapshot.steps || []).map((step) => ({
+    step_id: step.step_id || step.label || "step",
+    label: step.label || step.step_id || "step",
+    records_in: Number(step.records_in || 0),
+    records_out: Number(step.records_out || 0),
+    elapsed_ms: Number(step.elapsed_ms || 0),
+    status: STATUS_LABEL[step.status] ? step.status : "Healthy",
+    message: step.message || ""
+  }));
+  snapshot.quarantine = {
+    step_id: "error-handler",
+    label: (snapshot.quarantine && snapshot.quarantine.label) || "@error-handler",
+    records_in: Number(snapshot.quarantine && snapshot.quarantine.records_in || 0),
+    records_out: Number(snapshot.quarantine && snapshot.quarantine.records_out || 0),
+    elapsed_ms: Number(snapshot.quarantine && snapshot.quarantine.elapsed_ms || 0),
+    status: "External",
+    message: (snapshot.quarantine && snapshot.quarantine.message) || "隔離レコードを error log に書き込み"
+  };
+  snapshot.errors = Array.isArray(snapshot.errors) ? snapshot.errors.map((error) => ({
+    at: error.at || "--:--:--",
+    step_id: error.step_id || "Transform",
+    kind: error.kind || "error",
+    message: error.message || "",
+    count: Number(error.count || 0)
+  })) : [];
+  return snapshot;
+}
+
+function allSteps(snapshot = state.snap) {
+  if (!snapshot) return [];
+  return [...snapshot.steps, snapshot.quarantine];
+}
+
+function findStep(stepId) {
+  if (!state.snap) return null;
+  if (stepId === "error-handler") return state.snap.quarantine;
+  return state.snap.steps.find((step) => step.step_id === stepId) || null;
+}
+
+function findByStepId(snapshot, stepId) {
+  if (!snapshot) return null;
+  if (stepId === "error-handler") return snapshot.quarantine;
+  return snapshot.steps.find((step) => step.step_id === stepId) || null;
+}
+
+function worstStatus(statuses) {
+  return statuses.reduce((worst, status) => (STATUS_RANK[status] > STATUS_RANK[worst] ? status : worst), "Healthy");
+}
+
+function pipelineStatus(snapshot = state.snap) {
+  if (!snapshot) return "Healthy";
+  return worstStatus(snapshot.steps.map((step) => step.status));
+}
+
+function totalElapsed(snapshot = state.snap) {
+  if (!snapshot) return 0;
+  return snapshot.steps.reduce((sum, step) => sum + step.elapsed_ms, 0);
+}
+
+function throughputOf(snapshot = state.snap) {
+  if (!snapshot || !snapshot.steps.length) return 0;
+  const seconds = totalElapsed(snapshot) / 1000;
+  const last = snapshot.steps[snapshot.steps.length - 1];
+  return seconds > 0 ? Math.round(last.records_out / seconds) : 0;
+}
+
+function quarantineRateOf(snapshot = state.snap) {
+  if (!snapshot || !snapshot.steps.length) return 0;
+  const first = snapshot.steps[0];
+  const last = snapshot.steps[snapshot.steps.length - 1];
+  const dropped = Math.max(0, first.records_out - last.records_out);
+  return first.records_out > 0 ? (dropped / first.records_out) * 100 : 0;
+}
+
+function slowestStep(snapshot = state.snap) {
+  if (!snapshot) return null;
+  return snapshot.steps.reduce((slowest, step) => (
+    !slowest || step.elapsed_ms > slowest.elapsed_ms ? step : slowest
+  ), null);
+}
+
+function timeOnly(iso) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "--:--:--";
+  return date.toLocaleTimeString("ja-JP", { hour12: false });
+}
+
+function fullTime(iso) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "--";
+  return date.toLocaleString("ja-JP", {
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+  });
+}
+
+function deltaFor(step) {
+  if (!state.prev) return null;
+  const prevStep = findByStepId(state.prev, step.step_id);
+  if (!prevStep) return null;
+  return {
+    records: step.records_out - prevStep.records_out,
+    elapsed: Math.round(step.elapsed_ms - prevStep.elapsed_ms)
+  };
+}
+
+function deltaChip(step) {
+  if (!state.diff) return "";
+  const delta = deltaFor(step);
+  if (!delta) return "";
+  const records = delta.records === 0 ? "±0" : `${delta.records > 0 ? "+" : ""}${num.format(delta.records)}`;
+  const elapsed = delta.elapsed === 0 ? "±0" : `${delta.elapsed > 0 ? "+" : ""}${delta.elapsed}`;
+  const kind = delta.records === 0 && delta.elapsed === 0 ? "eq" : delta.records < 0 ? "neg" : "";
+  return `<span class="node-diff ${kind}">${records} rec · ${elapsed} ms</span>`;
+}
+
+function changed(step) {
+  const delta = deltaFor(step);
+  if (!delta) return false;
+  return Math.abs(delta.records) >= 10 || Math.abs(delta.elapsed) >= 8;
+}
+
+function renderNode(step, options = {}) {
+  const selected = state.selected === step.step_id;
+  const classes = [
+    "node",
+    options.compact ? "node-compact" : "",
+    options.static ? "static" : "",
+    selected ? "is-selected" : "",
+    state.diff && changed(step) ? "is-changed" : ""
+  ].filter(Boolean).join(" ");
+  const tag = options.static ? "div" : "button";
+  const attrs = options.static
+    ? 'role="group"'
+    : `type="button" data-step="${esc(step.step_id)}" aria-pressed="${selected}"`;
+  const inLabel = step.records_in !== step.records_out
+    ? ` · in ${num.format(step.records_in)}`
+    : "";
+  return `
+    <${tag} class="${classes}" data-status="${esc(step.status)}" ${attrs}>
+      <span class="node-top">
+        <span class="node-name">${esc(step.label || step.step_id)}</span>
+        <span class="status-chip s-${statusClass(step.status)}">${esc(STATUS_LABEL[step.status] || step.status)}</span>
+      </span>
+      <span class="node-records">${num.format(step.records_out)}<small> rec</small></span>
+      <span class="node-meta">${num.format(step.elapsed_ms)} ms${inLabel}</span>
+      ${deltaChip(step)}
+    </${tag}>`;
+}
+
+function renderConnector(label) {
+  return `
+    <div class="connector" aria-hidden="true">
+      <span class="connector-label">${label}</span>
+      <span class="connector-line"></span>
+      <span class="connector-arrow">→</span>
+    </div>`;
+}
+
+function renderPipeline() {
+  const snapshot = state.snap;
+  const nodes = snapshot.steps.map((step, index) => {
+    const connector = index > 0
+      ? renderConnector(num.format(snapshot.steps[index - 1].records_out))
+      : "";
+    return `${connector}${renderNode(step)}`;
+  }).join("");
+  const quarantine = snapshot.quarantine;
+  const mermaid = mermaidSource();
+  return `
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <span class="eyebrow">data-pipeline · live</span>
+          <h2>ETL 本流</h2>
+          <p class="sub">Goose の data stack から出力された実行時メトリクスを反映</p>
+        </div>
+        <button class="btn btn-ghost" type="button" data-action="toggle-mermaid" aria-expanded="${state.mermaidOpen}">Mermaid ソース</button>
+      </div>
+      <div class="diagram-scroll">
+        <div class="flow">${nodes}</div>
+        <div class="branch-row">
+          <span class="branch-tag">quarantine · ${num.format(quarantine.records_in)} rec</span>
+          <span class="branch-dash" aria-hidden="true"></span>
+          ${renderNode(quarantine, { compact: true })}
+        </div>
+      </div>
+      <pre class="mermaid-src" ${state.mermaidOpen ? "" : "hidden"}>${esc(mermaid)}</pre>
+      <div class="diagram-foot">
+        <div class="legend">
+          <span class="legend-item"><span class="legend-swatch swatch-healthy"></span>Healthy</span>
+          <span class="legend-item"><span class="legend-swatch swatch-warning"></span>Warning</span>
+          <span class="legend-item"><span class="legend-swatch swatch-error"></span>Error</span>
+          <span class="legend-item"><span class="legend-swatch swatch-external"></span>External</span>
+        </div>
+        <span class="hint">ノードをクリックすると詳細を表示</span>
+      </div>
+    </section>
+
+    <div class="split-grid">
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">Description</span>
+            <h2>パイプライン概要</h2>
+          </div>
+        </div>
+        <p style="font-size:0.84rem;color:var(--faint);margin-bottom:0.8rem;">
+          Extract で取得したレコードを Transform で検証・変換し、Load で出力シンクへ書き込みます。
+          検証に失敗したレコードは <code>@error-handler</code> に隔離され、本流を止めません。
+        </p>
+        <div class="metrics-list">
+          <div class="metric-row"><span class="k">ステップ数</span><span class="v">${snapshot.steps.length}<small> steps</small></span></div>
+          <div class="metric-row"><span class="k">合計処理時間</span><span class="v">${num.format(totalElapsed())}<small> ms</small></span></div>
+          <div class="metric-row"><span class="k">入力レコード</span><span class="v">${num.format(snapshot.steps[0].records_in)}<small> rec</small></span></div>
+          <div class="metric-row"><span class="k">出力レコード</span><span class="v">${num.format(snapshot.steps[snapshot.steps.length - 1].records_out)}<small> rec</small></span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow info">Metrics · auto</span>
+            <h2>ライブ指標</h2>
+          </div>
+        </div>
+        <div class="metrics-list">
+          <div class="metric-row"><span class="k">スループット</span><span class="v good">${num.format(throughputOf())}<small> rec/s</small></span></div>
+          <div class="metric-row"><span class="k">隔離率</span><span class="v ${quarantineRateOf() > 3 ? "warn" : "good"}">${quarantineRateOf().toFixed(2)}<small> %</small></span></div>
+          <div class="metric-row"><span class="k">遅延ステップ</span><span class="v">${esc(slowestStep() ? slowestStep().label : "—")}<small> ${slowestStep() ? num.format(slowestStep().elapsed_ms) + " ms" : ""}</small></span></div>
+          <div class="metric-row"><span class="k">隔離レコード</span><span class="v ${quarantine.records_in > 0 ? "warn" : ""}">${num.format(quarantine.records_in)}<small> rec</small></span></div>
+        </div>
+      </section>
+    </div>`;
+}
+
+function renderArchitecture() {
+  return `
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <span class="eyebrow">overall-architecture</span>
+          <h2>全体アーキテクチャ</h2>
+          <p class="sub">Goose が生成した metrics.json を .omm ストア経由でビューアに供給</p>
+        </div>
+      </div>
+      <div class="arch-flow">
+        <div class="arch-row">
+          ${renderNode({ step_id: "sources", label: "Data sources", records_out: 1240, records_in: 1240, elapsed_ms: 0, status: "External" }, { static: true })}
+          ${renderConnector("raw")}
+          ${renderNode({ step_id: "engine", label: "Goose pipeline", records_out: 1180, records_in: 1240, elapsed_ms: 198, status: pipelineStatus() }, { static: true })}
+          ${renderConnector("transformed")}
+          ${renderNode({ step_id: "sink", label: "Output sink", records_out: 1180, records_in: 1180, elapsed_ms: 0, status: "External" }, { static: true })}
+        </div>
+        <div class="arch-row">
+          <span class="arch-caption">↳ metrics.json</span>
+          ${renderConnector("write")}
+          ${renderNode({ step_id: "store", label: ".omm store", records_out: state.snap.steps.length, records_in: state.snap.steps.length, elapsed_ms: 0, status: "Healthy" }, { static: true })}
+          ${renderConnector("SSE / HTTP")}
+          ${renderNode({ step_id: "viewer", label: "Viewer", records_out: state.snap.steps.length, records_in: state.snap.steps.length, elapsed_ms: 0, status: "External" }, { static: true })}
+        </div>
+      </div>
+      <p class="arch-note">ビューアは <code>live_metrics_url</code> をポーリングし、Mermaid ノードの色とバッジを動的に更新します。ダイアグラム定義と実行時状態を同じ <code>.omm/</code> 配下で管理する点が本構成の特徴です。</p>
+    </section>
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <span class="eyebrow info">Components</span>
+          <h2>レイヤー構成</h2>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>層</th><th>役割</th><th>技術要素</th></tr></thead>
+          <tbody>
+            <tr><td>収集層</td><td>入力量・出力量・処理時間・エラーを計測</td><td class="mono">Goose struct StepMetrics</td></tr>
+            <tr><td>蓄積層</td><td>メトリクスとダイアグラム定義を統合管理</td><td class="mono">.omm/ + meta.yaml</td></tr>
+            <tr><td>可視化層</td><td>Mermaid の描画とリアルタイム更新</td><td class="mono">viewer + SSE watcher</td></tr>
+            <tr><td>ナビゲーション層</td><td>ドリルダウン・diff・参照追跡</td><td class="mono">@step-name / breadcrumb</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>`;
+}
+
+function renderErrors() {
+  const quarantine = state.snap.quarantine;
+  const errors = state.snap.errors;
+  const total = errors.reduce((sum, error) => sum + error.count, 0);
+  const errorItems = errors.length
+    ? errors.map((error) => `
+        <div class="error-item ${error.kind === "timeout" ? "s-error" : ""}">
+          <span class="time">${esc(error.at)}</span>
+          <div>
+            <div class="msg">${esc(error.message)}</div>
+            <div class="meta">${esc(error.step_id)} · ${esc(error.kind)}</div>
+          </div>
+          <span class="count">${num.format(error.count)} 件</span>
+        </div>`).join("")
+    : `<p class="rail-empty"><span class="status-dot s-healthy"></span>エラーなし</p>`;
+
+  return `
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <span class="eyebrow warn">error-handler</span>
+          <h2>隔離と再処理</h2>
+          <p class="sub">本流から分離されたレコードの追跡</p>
+        </div>
+      </div>
+      <div class="stat-grid" style="margin-bottom:1rem;">
+        <div class="stat"><div class="label">QUARANTINED</div><div class="value" style="color:var(--warn)">${num.format(quarantine.records_in)}<small> rec</small></div><div class="delta">直近実行で隔離</div></div>
+        <div class="stat"><div class="label">ERROR EVENTS</div><div class="value" style="color:var(--danger)">${num.format(errors.length)}<small> 件</small></div><div class="delta">${num.format(total)} レコードに影響</div></div>
+        <div class="stat"><div class="label">HANDLER STATUS</div><div class="value" style="color:var(--info)">External</div><div class="delta">書き込み ${num.format(quarantine.elapsed_ms)} ms</div></div>
+      </div>
+      <div class="arch-flow">
+        <div class="arch-row">
+          ${renderNode(state.snap.steps.find((step) => step.step_id === "Transform") || state.snap.steps[0], { static: true })}
+          ${renderConnector("failed")}
+          ${renderNode(quarantine, { static: true })}
+          ${renderConnector("log")}
+          ${renderNode({ step_id: "error-log", label: "Error log", records_out: total, records_in: total, elapsed_ms: 0, status: "External" }, { static: true })}
+        </div>
+      </div>
+      <p class="arch-note">隔離されたレコードは本流のスループットに影響しません。再処理は error log から型付きキュー経由で行われます。</p>
+    </section>
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <span class="eyebrow danger">Recent</span>
+          <h2>最近のエラー</h2>
+        </div>
+        <span class="hint" style="color:var(--faint)">最大 8 件</span>
+      </div>
+      <div class="error-list">${errorItems}</div>
+    </section>`;
+}
+
+function buildChart(points, key, color, label, unit) {
+  const width = 640;
+  const height = 190;
+  const pad = { left: 46, right: 14, top: 16, bottom: 26 };
+  const values = points.map((point) => point[key]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const x = (index) => pad.left + (index / Math.max(1, points.length - 1)) * (width - pad.left - pad.right);
+  const y = (value) => pad.top + (1 - (value - min) / span) * (height - pad.top - pad.bottom);
+  const coords = points.map((point, index) => `${x(index).toFixed(1)},${y(point[key]).toFixed(1)}`).join(" ");
+  const area = `${pad.left},${height - pad.bottom} ${coords} ${width - pad.right},${height - pad.bottom}`;
+  const grid = [0, 0.25, 0.5, 0.75, 1].map((fraction) => {
+    const gy = pad.top + fraction * (height - pad.top - pad.bottom);
+    const value = Math.round(max - fraction * span);
+    return `<line x1="${pad.left}" y1="${gy.toFixed(1)}" x2="${width - pad.right}" y2="${gy.toFixed(1)}" stroke="currentColor" stroke-opacity="0.08" />
+      <text x="${pad.left - 8}" y="${(gy + 3).toFixed(1)}" text-anchor="end" font-family="Roboto Mono, monospace" font-size="9" fill="#525252">${value >= 1000 ? (value / 1000).toFixed(1) + "k" : value}</text>`;
+  }).join("");
+  const gradientId = `grad-${key}`;
+  const first = points[0];
+  const last = points[points.length - 1];
+  return `
+    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(label)}の推移">
+      <defs>
+        <linearGradient id="${gradientId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.28" />
+          <stop offset="100%" stop-color="${color}" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      ${grid}
+      <polygon points="${area}" fill="url(#${gradientId})" />
+      <polyline points="${coords}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+      <circle cx="${x(points.length - 1).toFixed(1)}" cy="${y(last[key]).toFixed(1)}" r="3.5" fill="${color}" />
+      <text x="${pad.left}" y="${height - 8}" font-family="Roboto Mono, monospace" font-size="9" fill="#525252">${esc(timeOnly(first.time))}</text>
+      <text x="${width - pad.right}" y="${height - 8}" text-anchor="end" font-family="Roboto Mono, monospace" font-size="9" fill="#525252">${esc(timeOnly(last.time))}</text>
+    </svg>
+    <div class="chart-note"><span>${esc(label)}</span><span>${num.format(last[key])} ${esc(unit)}</span></div>`;
+}
+
+function renderPerformance() {
+  const history = state.history;
+  const steps = allSteps();
+  const maxLatency = Math.max(...steps.map((step) => step.elapsed_ms), 1);
+  const latencyRows = steps.map((step) => `
+    <div class="lat-row">
+      <span class="name" title="${esc(step.label || step.step_id)}">${esc(step.label || step.step_id)}</span>
+      <span class="lat-track"><span class="lat-fill s-${statusClass(step.status)}" style="width:${Math.max(3, (step.elapsed_ms / maxLatency) * 100).toFixed(1)}%"></span></span>
+      <span class="val">${num.format(step.elapsed_ms)} ms</span>
+    </div>`).join("");
+  const recentRows = history.slice(-5).reverse().map((point) => `
+    <tr>
+      <td class="mono">${esc(timeOnly(point.time))}</td>
+      <td class="mono">${num.format(point.throughput)} rec/s</td>
+      <td class="mono">${num.format(point.elapsed)} ms</td>
+      <td class="mono">${num.format(point.errors)}</td>
+    </tr>`).join("");
+
+  return `
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <span class="eyebrow info">performance-metrics</span>
+          <h2>スループット推移</h2>
+          <p class="sub">直近 ${history.length} サンプル / 2.5 秒間隔</p>
+        </div>
+      </div>
+      <div class="chart-wrap">${history.length > 1 ? buildChart(history, "throughput", "#00a878", "スループット", "rec/s") : ""}</div>
+    </section>
+    <div class="split-grid">
+      <section class="card">
+        <div class="card-head">
+          <div><span class="eyebrow">Latency</span><h2>ステップ別レイテンシ</h2></div>
+        </div>
+        <div class="lat-list">${latencyRows}</div>
+        <p class="arch-note">合計 ${num.format(totalElapsed())} ms / 最遅 ${esc(slowestStep() ? slowestStep().label : "—")} ${slowestStep() ? num.format(slowestStep().elapsed_ms) + " ms" : ""}</p>
+      </section>
+      <section class="card">
+        <div class="card-head">
+          <div><span class="eyebrow">History</span><h2>直近の実行</h2></div>
+        </div>
+        <div class="table-wrap">
+          <table class="history-table">
+            <thead><tr><th>時刻</th><th>Throughput</th><th>Latency</th><th>Quarantine</th></tr></thead>
+            <tbody>${recentRows}</tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+    <section class="card">
+      <div class="card-head">
+        <div><span class="eyebrow">Quarantine</span><h2>隔離レコード数の推移</h2></div>
+      </div>
+      <div class="chart-wrap">${history.length > 1 ? buildChart(history, "errors", "#b45309", "隔離レコード数", "rec") : ""}</div>
+    </section>`;
+}
+
+function renderMain() {
+  const issues = state.snap.steps.filter((step) => step.status !== "Healthy");
+  const worst = pipelineStatus();
+  let strip = "";
+  if (!issues.length) {
+    strip = `<div class="alert-strip is-healthy"><span class="status-dot s-healthy"></span><strong>全ステップ正常</strong><span class="alert-copy">直近の実行で警告・障害は検出されていません。</span></div>`;
+  } else {
+    const lead = issues[0];
+    const others = issues.length > 1 ? ` 他 ${issues.length - 1} 件` : "";
+    strip = `
+      <div class="alert-strip ${worst === "Error" ? "is-error" : "is-warning"}">
+        <span class="status-dot ${worst === "Error" ? "s-error" : "s-warning"}"></span>
+        <strong>${worst === "Error" ? "障害を検出" : "警告あり"}</strong>
+        <span class="alert-copy"><b>${esc(lead.label)}</b> — ${esc(lead.message || "処理遅延を検出")}${others}</span>
+        <button class="alert-link" type="button" data-step="${esc(lead.step_id)}">詳細を見る</button>
+      </div>`;
+  }
+
+  let content = "";
+  if (state.perspective === "data-pipeline") content = renderPipeline();
+  else if (state.perspective === "overall-architecture") content = renderArchitecture();
+  else if (state.perspective === "error-handler") content = renderErrors();
+  else content = renderPerformance();
+
+  $("#main").innerHTML = strip + content;
+}
+
+function renderInspector() {
+  const inspector = $("#inspector");
+  const step = state.selected ? findStep(state.selected) : null;
+  if (!step) {
+    const snapshot = state.snap;
+    inspector.innerHTML = `
+      <div class="rail-head">
+        <span class="eyebrow">Inspector</span>
+        <h3>ライブ状態</h3>
+      </div>
+      <p class="inspector-empty"><b>ノードをクリック</b>すると、ここにステップの詳細が表示されます。</p>
+      <dl class="kv">
+        <div><dt>pipeline</dt><dd>${esc(snapshot.pipeline || "etl-main")}</dd></div>
+        <div><dt>steps</dt><dd>${snapshot.steps.length}</dd></div>
+        <div><dt>total latency</dt><dd>${num.format(totalElapsed())} ms</dd></div>
+        <div><dt>throughput</dt><dd>${num.format(throughputOf())} rec/s</dd></div>
+        <div><dt>quarantined</dt><dd>${num.format(snapshot.quarantine.records_in)} rec</dd></div>
+      </dl>`;
+    return;
+  }
+
+  const delta = state.diff ? deltaFor(step) : null;
+  const isExternal = step.status === "External";
+  const source = isExternal ? "error-handler" : state.perspective;
+  const messageClass = step.status === "Error" ? "is-error" : step.status === "Warning" ? "is-warning" : "";
+  inspector.innerHTML = `
+    <div class="rail-head">
+      <span class="eyebrow">Inspector</span>
+      <h3>${esc(step.label || step.step_id)}</h3>
+    </div>
+    <span class="status-chip s-${statusClass(step.status)}">${esc(STATUS_LABEL[step.status] || step.status)}</span>
+    <dl class="kv">
+      <div><dt>step_id</dt><dd>${esc(step.step_id)}</dd></div>
+      <div><dt>perspective</dt><dd>${esc(source)}</dd></div>
+      <div><dt>records in</dt><dd>${num.format(step.records_in)}</dd></div>
+      <div><dt>records out</dt><dd>${num.format(step.records_out)}</dd></div>
+      <div><dt>elapsed</dt><dd>${num.format(step.elapsed_ms)} ms</dd></div>
+      ${delta ? `<div><dt>diff</dt><dd>${delta.records >= 0 ? "+" : ""}${num.format(delta.records)} rec / ${delta.elapsed >= 0 ? "+" : ""}${delta.elapsed} ms</dd></div>` : ""}
+      <div><dt>updated</dt><dd>${esc(timeOnly(state.snap.timestamp))}</dd></div>
+    </dl>
+    ${step.message ? `<div class="detail-message ${messageClass}">${esc(step.message)}</div>` : ""}
+    <button class="clear-btn" type="button" data-clear>選択を解除</button>`;
+}
+
+function renderAlertsCard() {
+  const issues = allSteps().filter((step) => step.status === "Warning" || step.status === "Error");
+  const card = $("#alerts-card");
+  const list = issues.length
+    ? issues.map((step) => `
+        <button class="rail-alert" type="button" data-step="${esc(step.step_id)}">
+          <span class="status-dot ${step.status === "Error" ? "s-error" : "s-warning"}"></span>
+          <span><b>${esc(step.label || step.step_id)}</b><span>${esc(step.message || "要確認")}</span></span>
+        </button>`).join("")
+    : `<p class="rail-empty"><span class="status-dot s-healthy"></span>ピン留めされたアラートはありません</p>`;
+  card.innerHTML = `
+    <div class="rail-head">
+      <span class="eyebrow ${issues.length ? "warn" : ""}">Alerts</span>
+      <h3>${issues.length ? `要対応 ${issues.length} 件` : "アラート"}</h3>
+    </div>
+    <div class="rail-alert-list">${list}</div>`;
+}
+
+function renderMetaCard() {
+  $("#meta-card").innerHTML = `
+    <div class="rail-head">
+      <span class="eyebrow info">Meta</span>
+      <h3>ストア情報</h3>
+    </div>
+    <dl class="kv">
+      <div><dt>updated</dt><dd>${esc(fullTime(state.snap.timestamp))}</dd></div>
+      <div><dt>git_commit</dt><dd>a1b2c3d</dd></div>
+      <div><dt>live_metrics_url</dt><dd>./data/metrics.json</dd></div>
+      <div><dt>poll_interval</dt><dd>2500 ms</dd></div>
+      <div><dt>data source</dt><dd>${esc(state.source)}</dd></div>
+      <div><dt>diff baseline</dt><dd>${state.prev ? esc(timeOnly(state.prev.timestamp)) : "—"}</dd></div>
+    </dl>`;
+}
+
+function renderHeader() {
+  const meta = PERSPECTIVES[state.perspective];
+  $("#crumb").innerHTML = `.omm / <b>${esc(state.perspective)}</b> / ${esc(meta.file)}`;
+  $("#page-title").textContent = meta.title;
+  $("#page-sub").textContent = meta.sub;
+  $("#updated-time").textContent = timeOnly(state.snap.timestamp);
+  const worst = pipelineStatus();
+  const pill = $("#health-pill");
+  pill.className = `health-pill is-${statusClass(worst)}`;
+  pill.innerHTML = `<span class="status-dot s-${statusClass(worst)}"></span><span>${worst === "Healthy" ? "Healthy" : worst === "Warning" ? "Warning" : "Error"}</span>`;
+  $("#live-btn").setAttribute("aria-pressed", String(state.live));
+  $("#live-label").textContent = state.live ? "LIVE" : "PAUSED";
+  $("#diff-btn").setAttribute("aria-pressed", String(state.diff));
+  const inject = $("#inject-btn");
+  inject.textContent = state.forcedError ? "復旧させる" : "障害を注入";
+  inject.classList.toggle("is-on", state.forcedError);
+  $("#side-source").textContent = state.source;
+}
+
+function renderNav() {
+  $$("#nav .nav-item").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.persp === state.perspective);
+  });
+  const worst = pipelineStatus();
+  const dots = {
+    "data-pipeline": state.live ? worst : "paused",
+    "overall-architecture": worst,
+    "error-handler": state.snap.errors.length ? (worst === "Error" ? "error" : "external") : "healthy",
+    "performance-metrics": worst === "Error" ? "error" : "healthy"
+  };
+  Object.entries(dots).forEach(([key, status]) => {
+    const dot = $(`[data-dot="${key}"]`);
+    if (!dot) return;
+    dot.className = `status-dot s-${statusClass(status)}`;
+  });
+  $('[data-badge="data-pipeline"]').textContent = state.snap.steps.length;
+  $('[data-badge="error-handler"]').textContent = state.snap.errors.length;
+}
+
+function renderAll() {
+  renderHeader();
+  renderNav();
+  renderMain();
+  renderInspector();
+  renderAlertsCard();
+  renderMetaCard();
+}
+
+function selectStep(stepId) {
+  state.selected = state.selected === stepId ? null : stepId;
+  if (stepId && state.perspective !== "data-pipeline" && state.perspective !== "error-handler") {
+    state.perspective = "data-pipeline";
+  }
+  renderAll();
+}
+
+function mermaidSource() {
+  const lines = ["graph LR"];
+  const classFor = (status) => statusClass(status);
+  state.snap.steps.forEach((step) => {
+    lines.push(`    ${step.step_id}["${esc(step.label)}<br/>${num.format(step.records_out)} rec<br/>${num.format(step.elapsed_ms)}ms"]:::${classFor(step.status)}`);
+  });
+  const quarantine = state.snap.quarantine;
+  lines.push(`    ErrorLog["${esc(quarantine.label)}<br/>${num.format(quarantine.records_in)} rec<br/>${num.format(quarantine.elapsed_ms)}ms"]:::external`);
+  lines.push("");
+  state.snap.steps.forEach((step, index) => {
+    if (index === 0) return;
+    lines.push(`    ${state.snap.steps[index - 1].step_id} -->|"${num.format(state.snap.steps[index - 1].records_out)}"| ${step.step_id}`);
+  });
+  const transformId = (state.snap.steps[1] && state.snap.steps[1].step_id) || "Transform";
+  lines.push(`    ${transformId} -.->|"${num.format(quarantine.records_in)}"| ErrorLog`);
+  lines.push("");
+  lines.push('    classDef healthy fill:#8ef0cf,stroke:#0b0b0b,color:#0b0b0b');
+  lines.push('    classDef warning fill:#ffc857,stroke:#0b0b0b,color:#0b0b0b');
+  lines.push('    classDef error fill:#ff6b6b,stroke:#0b0b0b,color:#0b0b0b');
+  lines.push('    classDef external fill:#b8dcff,stroke:#0b0b0b,color:#0b0b0b');
+  return lines.join("\n");
+}
+
+function seedHistory() {
+  const base = throughputOf() || 5000;
+  const baseLatency = totalElapsed() || 200;
+  const baseErrors = state.snap.quarantine.records_in || 40;
+  const now = Date.now();
+  state.history = Array.from({ length: 28 }, (_, index) => {
+    const order = 28 - index;
+    const wave = 1 + 0.09 * Math.sin(order * 0.52) + 0.04 * Math.cos(order * 0.21);
+    return {
+      time: new Date(now - order * 2500).toISOString(),
+      throughput: Math.round(base * wave),
+      elapsed: Math.round(baseLatency * (2 - wave)),
+      errors: Math.max(0, Math.round(baseErrors * (2 - wave)))
+    };
+  });
+}
+
+function tick() {
+  if (!state.snap) return;
+  const previous = state.snap;
+  const now = new Date();
+  const timeLabel = now.toLocaleTimeString("ja-JP", { hour12: false });
+  const extractIn = clamp(previous.steps[0].records_in + randInt(-45, 55), 900, 1600);
+  const forceError = state.forcedError;
+  const triggerWarning = !forceError && Math.random() < 0.2;
+  const extract = {
+    ...previous.steps[0],
+    records_in: extractIn,
+    records_out: extractIn,
+    elapsed_ms: randInt(38, 58),
+    status: "Healthy",
+    message: ""
+  };
+  const dropped = forceError ? extractIn : triggerWarning ? randInt(45, 95) : randInt(0, 24);
+  const transformOut = Math.max(0, extractIn - dropped);
+  const transformStatus = forceError ? "Error" : triggerWarning ? "Warning" : "Healthy";
+  const transform = {
+    ...previous.steps[1],
+    records_in: extractIn,
+    records_out: transformOut,
+    elapsed_ms: forceError ? randInt(290, 380) : randInt(92, 138),
+    status: transformStatus,
+    message: forceError
+      ? "出力シンクへの接続がタイムアウトしました"
+      : triggerWarning
+        ? `${dropped} 件がスキーマ検証で隔離されました`
+        : ""
+  };
+  const load = {
+    ...previous.steps[2],
+    records_in: transformOut,
+    records_out: transformOut,
+    elapsed_ms: randInt(24, 40),
+    status: "Healthy",
+    message: ""
+  };
+  const errors = [...previous.errors];
+  if (dropped > 0 && (forceError || Math.random() < 0.7)) {
+    errors.unshift({
+      at: timeLabel,
+      step_id: forceError ? "Transform" : Math.random() < 0.6 ? "Transform" : "Extract",
+      kind: forceError ? "timeout" : Math.random() < 0.7 ? "schema" : "timeout",
+      message: forceError ? "出力シンクへの接続がタイムアウトしました" : "スキーマ検証でレコードを隔離",
+      count: dropped
+    });
+  }
+  const next = {
+    timestamp: now.toISOString(),
+    pipeline: previous.pipeline,
+    steps: [extract, transform, load],
+    quarantine: {
+      ...previous.quarantine,
+      records_in: dropped,
+      records_out: dropped,
+      elapsed_ms: dropped > 0 ? randInt(5, 12) : 0
+    },
+    errors: errors.slice(0, 8)
+  };
+  state.prev = previous;
+  state.snap = normalizeSnapshot(next);
+  const point = {
+    time: now.toISOString(),
+    throughput: throughputOf(state.snap),
+    elapsed: totalElapsed(state.snap),
+    errors: dropped
+  };
+  state.history.push(point);
+  state.history = state.history.slice(-40);
+  if (state.selected && !findStep(state.selected)) state.selected = null;
+  renderAll();
+}
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const requested = params.get("persp");
+  if (requested && PERSPECTIVES[requested]) state.perspective = requested;
+  if (params.get("diff") === "1") state.diff = true;
+  if (params.get("live") === "0") state.live = false;
+  try {
+    const [current, previous] = await Promise.all([
+      fetch("./data/metrics.json", { cache: "no-store" }).then((response) => {
+        if (!response.ok) throw new Error("metrics.json");
+        return response.json();
+      }),
+      fetch("./data/metrics-prev.json", { cache: "no-store" }).then((response) => {
+        if (!response.ok) throw new Error("metrics-prev.json");
+        return response.json();
+      })
+    ]);
+    state.snap = normalizeSnapshot(current);
+    state.prev = normalizeSnapshot(previous);
+    state.source = "metrics.json";
+  } catch (error) {
+    state.snap = normalizeSnapshot(FALLBACK_SNAPSHOT);
+    state.prev = normalizeSnapshot(FALLBACK_PREVIOUS);
+    state.source = "embedded sample";
+  }
+  seedHistory();
+  renderAll();
+  window.setInterval(() => {
+    if (state.live) tick();
+  }, 2500);
+}
+
+$("#nav").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-persp]");
+  if (!button) return;
+  state.perspective = button.dataset.persp;
+  state.selected = null;
+  renderAll();
+});
+
+$("#main").addEventListener("click", (event) => {
+  const node = event.target.closest("[data-step]");
+  if (node) {
+    selectStep(node.dataset.step);
+    return;
+  }
+  const toggle = event.target.closest('[data-action="toggle-mermaid"]');
+  if (toggle) {
+    state.mermaidOpen = !state.mermaidOpen;
+    renderMain();
+  }
+});
+
+$("#alerts-card").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-step]");
+  if (!button) return;
+  if (state.perspective !== "data-pipeline") state.perspective = "data-pipeline";
+  state.selected = button.dataset.step;
+  renderAll();
+});
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-clear]")) return;
+  state.selected = null;
+  renderAll();
+});
+
+$("#live-btn").addEventListener("click", () => {
+  state.live = !state.live;
+  renderAll();
+});
+
+$("#diff-btn").addEventListener("click", () => {
+  state.diff = !state.diff;
+  renderAll();
+});
+
+$("#inject-btn").addEventListener("click", () => {
+  state.forcedError = !state.forcedError;
+  state.selected = (state.snap.steps[1] && state.snap.steps[1].step_id) || "Transform";
+  if (!state.live) tick();
+  else renderAll();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && state.selected) {
+    state.selected = null;
+    renderAll();
+  }
+});
+
+init();
+</script>
+</body>
+</html>

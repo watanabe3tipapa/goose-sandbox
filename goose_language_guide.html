@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goose プログラミング言語 詳細解説</title>
+<meta name="description" content="ヒープなし・GCなし・ライフタイム注釈なしのメモリ安全なシステム言語 Goose の特徴、配列型、ベンチマーク、サンプルコードを解説します。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/brutalist-doc.css">
+</head>
+<body>
+
+<nav class="doc-nav" aria-label="サイト内ナビゲーション">
+  <a href="./">ホーム</a>
+  <a href="viewer/">ダッシュボード</a>
+  <a href="pipeline_viz_proposal.html">提案資料</a>
+</nav>
+
+<header>
+  <h1>Goose プログラミング言語</h1>
+  <p class="subtitle">ヒープなし・GCなし・ライフタイム注釈なしのメモリ安全なシステム言語</p>
+  <p class="meta">作成日: 2026年10月27日 | 情報源: 公式サイト・GitHub・言語リファレンス</p>
+</header>
+
+<main>
+
+<section>
+  <h2>Goose とは</h2>
+  <p>
+    Goose は、Wouter van Oortmerssen（<code>aardappel</code>）によって開発された新しいシステムプログラミング言語です。
+    C++ や Rust に似た構文を持ちながら、<strong>ヒープアロケータなし・ガベージコレクタなし・ライフタイム注釈なし</strong>でメモリ安全性を実現します。
+    公式ベンチマークでは、C++ や安全な Rust を上回る速度とメモリ効率を示しています。
+  </p>
+
+  <div class="highlight-box">
+    <p><strong>核心コンセプト:</strong> 動的メモリを「データスタック」で管理。値はすべてインラインに配置され、スコープ終了時にポインタを戻すだけで一括解放されます。個別の <code>free</code> やデストラクタは存在しません。</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>項目</th><th>内容</th></tr>
+      <tr><td>作者</td><td>Wouter van Oortmerssen（FlatBuffers、Lobster の作者）</td></tr>
+      <tr><td>ライセンス</td><td>Apache License 2.0</td></tr>
+      <tr><td>コンパイル先</td><td>C 言語（1 ファイルに出力、任意の C コンパイラでビルド可能）</td></tr>
+      <tr><td>バックエンド</td><td>バンドルされた TinyCC（ビルドステップなしでインタプリタ的に実行可能）</td></tr>
+      <tr><td>公開日</td><td>2026 年 8 月末（GitHub 公開）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>主要な特徴</h2>
+
+  <h3>データスタックによるメモリ管理</h3>
+  <p>
+    Goose にはヒープがありません。代わりに、コンパイラが静的に割り当てる「データスタック」が複数存在します。
+    成長は単なるポインタの前進であり、スコープ終了時にポインタを戻すだけでメモリが解放されます。
+    100 万要素の構造体であっても、解放コストは 1 回のストアです。
+  </p>
+
+<pre><code>for round in 3 {
+    var scratch: u8[&gt;..] = [];    // 成長専用配列
+    for i in 100000 { scratch.push((i % 256) as! u8); }
+    print("round ", round, ": ", scratch.len, " bytes");
+}                                 // スコープ終了で 1 ストアで解放</code></pre>
+
+  <h3>成長しても参照は無効化されない</h3>
+  <p>
+    通常の <code>Vec</code> や <code>vector</code> は再アロケーションで要素への参照が無効になりますが、Goose のデータスタックでは値が移動しないため、
+    配列を成長させても要素への参照は有効なままです。
+  </p>
+
+<pre><code>struct Item { id: i32, weight: f32 }
+
+var items: Item[&gt;..] = [];
+let first .= items.push(Item { 1, 0.5 });   // 要素 0 への参照を取得
+for i: i32 in 2..1000001 { items.push(Item { i, 0.0 }); }
+first.weight = 99.5;                          // 100 万回 push 後も有効</code></pre>
+
+  <h3>ライフタイム注釈なしのメモリ安全性</h3>
+  <p>
+    Goose はすべての参照とスライスに静的な「ルート」（対象の生存期間を規定する変数）を推論します。
+    参照が所有者より長生きする可能性がある場合、コンパイラはエラーを出します。
+    <code>&amp;'a</code> も <code>unsafe</code> も不要です。
+  </p>
+
+<pre><code>fn longest(a: u8[:], b: u8[:]) -&gt; u8[:] {
+    if a.len &gt;= b.len { a } else { b }
+}
+
+var outer: u8[&gt;..] = [];
+var w = outer[..];
+{
+    var inner: u8[&gt;..] = [];
+    w = longest(outer, inner);   // エラー: inner をルートとする参照を
+}                                //       より長生きの変数 w に格納</code></pre>
+
+  <h3>ネストデータの完全インライン化</h3>
+  <p>
+    文字列、文字列の配列、可変長フィールドを持つ構造体の配列も、すべて 1 つの連続したバイト列として格納されます。
+    ポインタによる間接参照は発生しません。
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>言語</th><th>サイズ</th><th>アロケーション数</th></tr>
+      <tr><td>Goose</td><td>29 バイト</td><td>0</td></tr>
+      <tr><td>C++（<code>std::string</code> + <code>std::vector</code>）</td><td>160 バイト</td><td>1</td></tr>
+      <tr><td>Rust（<code>String</code> + <code>Vec</code>）</td><td>153 バイト</td><td>4</td></tr>
+    </table>
+  </div>
+
+  <h3>2 種類の Enum 表現</h3>
+  <p>
+    代数データ型（ADT）は Goose で唯一の動的ポリモーフィズムです。固定モードはタグ＋最大ペイロード領域、
+    可変モード（<code>Shape..</code>）は各値がバリアントの実サイズだけを消費します。
+  </p>
+
+<pre><code>enum Shape { Circle { r: f64 }, Rect { w: f64, h: f64 }, Dot }
+
+var packed: Shape..[&gt;..] = [];      // 9, 17, 1 バイト（17 バイト固定ではない）
+packed.push(Shape.Circle { r: 1.0 });
+packed.push(Shape.Rect { w: 2.0, h: 3.0 });
+packed.push(Shape.Dot);
+
+for s in packed {
+    match s { Rect &amp;r =&gt; { r.w += 1.0; }, _ =&gt; {} }
+}</code></pre>
+
+  <h3>ポインタより狭いリンク（相対参照）</h3>
+  <p>
+    <code>T&amp;&lt;u32&gt;</code> のような相対参照は、ターゲットへのオフセットを 1, 2, 4 バイトで持ちます。
+    これにより構造体はポジション非依存となり、ファイルにそのまま書き出せます。
+    読み込み時は検証パスで不正データを拒否できます。
+  </p>
+
+  <h3>共有メモリのないスレッド</h3>
+  <p>
+    ワーカーは独自のメモリ空間を持つ別プログラムとしてコンパイルされます。
+    スレッド間のデータ交換は、型付きキューを通じた <code>memcpy</code> のみです。
+    データ競合、ロック、アトミック、メモリオーダリングの概念が言語に存在しません。
+  </p>
+
+  <h3>多値リターンと長距離リターン</h3>
+  <p>
+    <code>return err from load</code> は、任意の階層上の <code>load</code> 関数からリターンします。
+    スタティックに検証され、アンワインディングや <code>Result</code> 型、<code>?</code> 演算子は不要です。
+  </p>
+</section>
+
+<section>
+  <h2>配列型ファミリー</h2>
+  <p>
+    Goose には単一の配列型ではなく、「サイズの変化方法」で区別された配列型ファミリーがあります。
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>型</th><th>意味</th></tr>
+      <tr><td><code>T[k]</code></td><td>固定サイズ（コンパイル時に決定）</td></tr>
+      <tr><td><code>T[]</code>, <code>T[varint]</code></td><td>構築時にサイズ決定、構築後は不変</td></tr>
+      <tr><td><code>T[..k]</code>, <code>T[..]</code></td><td>インライン容量内で伸縮可能</td></tr>
+      <tr><td><code>T[&gt;..]</code></td><td>成長専用（最も一般的）。参照は成長後も有効</td></tr>
+      <tr><td><code>T[&gt;..&lt;]</code></td><td>成長・縮小両方（スタック、キュー、ヒープ向け）</td></tr>
+      <tr><td><code>T[:]</code></td><td>スライス：任意の配列からのビュー（コピーなし）</td></tr>
+    </table>
+  </div>
+
+  <p>
+    文字列は <code>u8</code> 配列です。<code>u8[&gt;..]</code> はビルダー、<code>u8[]</code> は完成文字列、
+    <code>u8[:]</code> はビューとして機能します。
+  </p>
+</section>
+
+<section>
+  <h2>ベンチマーク概要</h2>
+  <p>
+    16 のベンチマークの幾何平均（公式 README より）。Goose は速度とメモリの両方で優位性を示しています。
+  </p>
+
+  <div class="card">
+    <div class="card-title">速度比較（対各言語の倍率、大きいほど Goose が速い）</div>
+    <div class="bench-chart">
+      <div class="bench-row">
+        <div class="bench-label">idiomatic C++</div>
+        <div class="bench-bar-wrap"><div class="bench-bar" style="width:100%"></div></div>
+        <div class="bench-val">3.3x</div>
+      </div>
+      <div class="bench-row">
+        <div class="bench-label">hand-optimized C++</div>
+        <div class="bench-bar-wrap"><div class="bench-bar" style="width:35%"></div></div>
+        <div class="bench-val">1.16x</div>
+      </div>
+      <div class="bench-row">
+        <div class="bench-label">best safe Rust</div>
+        <div class="bench-bar-wrap"><div class="bench-bar" style="width:34%"></div></div>
+        <div class="bench-val">1.12x</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ピークメモリ比較（対各言語の削減率、大きいほど Goose が少ない）</div>
+    <div class="bench-chart">
+      <div class="bench-row">
+        <div class="bench-label">idiomatic C++</div>
+        <div class="bench-bar-wrap"><div class="bench-bar" style="width:100%"></div></div>
+        <div class="bench-val">1.9x</div>
+      </div>
+      <div class="bench-row">
+        <div class="bench-label">hand-optimized C++</div>
+        <div class="bench-bar-wrap"><div class="bench-bar" style="width:68%"></div></div>
+        <div class="bench-val">1.3x</div>
+      </div>
+      <div class="bench-row">
+        <div class="bench-label">best safe Rust</div>
+        <div class="bench-bar-wrap"><div class="bench-bar" style="width:64%"></div></div>
+        <div class="bench-val">1.2x</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="section-note">
+    ※ これらは公式ベンチマークスイートの結果です。すべてのユースケースで同様の結果が得られるとは限りません。
+    公式リポジトリには「負けたケース」も公開されています。
+  </p>
+</section>
+
+<section>
+  <h2>Goose 特性を活かしたサンプルコード</h2>
+
+  <div class="sample-grid">
+
+    <div class="sample-card">
+      <div class="sample-header">サンプル A: インライン注文帳</div>
+<pre><code>struct Item {
+    sku: u8[varint],
+    qty: varint,
+    cents: varint,
+}
+
+struct Order {
+    id: varint,
+    customer: u8[varint],
+    items: Item[varint],
+}
+
+fn main() {
+    var book: Order[&gt;..] = [];
+    book.push(Order {
+        id: 1001,
+        customer: "alice",
+        items: [
+            Item { sku: "SKU-441", qty: 2, cents: 1999 },
+            Item { sku: "SKU-7",   qty: 1, cents:  500 },
+        ],
+    });
+    print(book);
+}</code></pre>
+      <div class="sample-desc">
+        29 バイト・0 アロケーションで 1 つの連続ブロックとして格納されます。
+        キャッシュ効率とシリアライズのオーバーヘッドが最小限です。
+      </div>
+    </div>
+
+    <div class="sample-card">
+      <div class="sample-header">サンプル B: 成長中も有効な参照</div>
+<pre><code>struct Task { name: u8[&gt;..], done: bool }
+
+fn main() {
+    var tasks: Task[&gt;..] = [];
+    let first .= tasks.push(Task {
+        name: "設計", done: false
+    });
+
+    for i in 2..101 {
+        tasks.push(Task {
+            name: str("task", i), done: false
+        });
+    }
+
+    first.done = true;   // 100 回 push 後も有効
+    print(tasks.len);    // 100
+}</code></pre>
+      <div class="sample-desc">
+        <code>push</code> が返す参照はデータスタック上で移動しないため、
+        配列成長後もダングリングしません。
+      </div>
+    </div>
+
+    <div class="sample-card">
+      <div class="sample-header">サンプル C: 可変モード Enum</div>
+<pre><code>enum Shape {
+    Circle { r: f64 },
+    Rect   { w: f64, h: f64 },
+    Dot,
+}
+
+fn area(s: Shape.Circle) -&gt; f64 { 3.14159 * s.r * s.r }
+fn area(s: Shape.Rect)   -&gt; f64 { s.w * s.h }
+fn area(s: Shape.Dot)    -&gt; f64 { 0.0 }
+
+fn main() {
+    var shapes: Shape..[&gt;..] = [];
+    shapes.push(Shape.Circle { r: 1.0 });
+    shapes.push(Shape.Rect   { w: 2.0, h: 3.0 });
+    shapes.push(Shape.Dot);
+
+    for s in shapes {
+        print(area(s));
+    }
+}</code></pre>
+      <div class="sample-desc">
+        <code>Shape..</code> は各バリアントを実サイズで保持。
+        Rust の enum と比較して最大 4 倍のメモリ削減と 2 倍の速度向上が期待できます。
+      </div>
+    </div>
+
+    <div class="sample-card">
+      <div class="sample-header">サンプル D: 相対参照ツリー</div>
+<pre><code>struct Node {
+    key: i32,
+    left:  Node&amp;&lt;u32&gt;?,
+    right: Node&amp;&lt;u32&gt;?,
+}
+
+fn main() {
+    var nodes: Node[&gt;..] = [];
+    let root .= nodes.push(Node {
+        key: 10, left: null, right: null
+    });
+    let left .= nodes.push(Node {
+        key: 5, left: null, right: null
+    });
+    root.left = left;   // u32 オフセットでリンク
+
+    print(nodes.len);   // 2
+    print(root.left?.key);
+}</code></pre>
+      <div class="sample-desc">
+        <code>T&amp;&lt;u32&gt;?</code> は 4 バイトの相対オフセット。
+        構造体全体をファイルに書き込んでもポジション非依存で読み戻せます。
+      </div>
+    </div>
+
+    <div class="sample-card">
+      <div class="sample-header">サンプル E: 長距離リターン</div>
+<pre><code>fn load(path: u8[:]) -&gt; u8[] {
+    let data = read_file(path);
+    guard data.len &gt; 0 else {
+        return "empty file" from load;
+    }
+    parse(data);
+    return "ok";
+}
+
+fn parse(src: u8[:]) {
+    let comma = find(src, ",");
+    guard comma &gt;= 0 else {
+        return "expected comma" from load;
+    }
+    // ...
+}</code></pre>
+      <div class="sample-desc">
+        <code>return ... from load</code> は <code>load</code> から直接リターンします。
+        中間関数のシグネチャを汚さず、<code>Result</code> や <code>?</code> も不要です。
+      </div>
+    </div>
+
+    <div class="sample-card">
+      <div class="sample-header">サンプル F: 共有メモリなし並行処理</div>
+<pre><code>struct Job { n: i64 }
+struct Result { n: i64, digits: i32 }
+
+fn worker() {
+    loop {
+        let job = qget&lt;Job&gt;();
+        guard job.n &gt;= 0 else { break; }
+        qput(Result {
+            n: job.n,
+            digits: count_digits(job.n),
+        });
+    }
+}
+
+fn main() {
+    spawn worker();
+    qput(Job { n: 12345 });
+    let res = qget&lt;Result&gt;();
+    print(res.digits);   // 5
+}</code></pre>
+      <div class="sample-desc">
+        ワーカーは独立したアドレス空間を持ち、型付きキュー経由で <code>memcpy</code> 通信します。
+        ロック、アトミック、データ競合の概念がありません。
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>制限事項とトレードオフ</h2>
+
+  <div class="card">
+    <div class="card-title">Goose を使う上で知っておくべき制約</div>
+    <ul>
+      <li><strong>ヒープがない:</strong> <code>Box</code>、<code>Rc</code>、循環構造体、一般的な共有グラフは直接表現できません。代わりに相対参照やプールを使用します。</li>
+      <li><strong>可変長要素の配列はシーケンシャルアクセスのみ:</strong> インデックスアクセスはできません（別途インデックス配列が必要）。</li>
+      <li><strong>スコープに縛られたライフタイム:</strong> データの生存期間は基本的に「構築した関数」までです。それを超える永続化には <code>reusable</code> プールが必要です。</li>
+      <li><strong>言語の語彙が豊富:</strong> <code>guard</code>、<code>block</code>、<code>checkfree</code>、<code>reusable</code>、<code>from_bytes</code> など、学習すべき概念が多数あります。</li>
+      <li><strong>エコシステムが初期段階:</strong> 2026 年 10 月時点でまだ新しい言語であり、ライブラリやツールチェーンは今後の発展に依存します。</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>まとめ</h2>
+  <p>
+    Goose は、「ヒープなし・GC なし・ライフタイム注釈なし」という大胆な設計選択を通じて、
+    システムプログラミングにおけるメモリ管理とデータレイアウトの常識を書き換えようとする言語です。
+  </p>
+  <p>
+    データスタックによる一括管理、インライン化されたネスト構造、可変モード Enum、相対参照、
+    共有メモリなしの並行モデルなど、各機能が一貫したメモリ哲学の上に構築されています。
+    ゲームエンジン、シリアライゼーション、高頻度トレーディングなど、
+    キャッシュ効率とメモリレイテンシが重要な領域で特に強みを発揮する可能性があります。
+  </p>
+  <p>
+    一方で、ヒープの不在は表現力とのトレードオフであり、大規模コードベースでの長距離リターンの可読性や、
+    エコシステムの成熟度は今後の課題です。公式ドキュメントが充実しており、
+    チュートリアル・リファレンス・仕様書・31 のサンプルプログラムが揃っているため、
+    興味のある開発者はすぐに試すことができます。
+  </p>
+</section>
+
+</main>
+
+<footer>
+  <p>本資料は Goose 公式サイト（aardappel.github.io/goose）および GitHub リポジトリの情報に基づき作成されました。</p>
+  <p>印刷 → PDF に保存 で紙面/PDF 版として保存できます。</p>
+</footer>
+
+</body>
+</html>
