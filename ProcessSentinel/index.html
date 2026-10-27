@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23070c15'/%3E%3Crect x='4.5' y='4.5' width='23' height='23' rx='5' fill='none' stroke='%23f59e0b'/%3E%3Cpath d='M11 23V9h5.5a4.5 4.5 0 0 1 0 9H11' fill='none' stroke='%23fbbf24' stroke-width='2.2'/%3E%3C/svg%3E">
+<title>Process Sentinel — プロセスツリーでデバイスを見張る</title>
+<meta name="description" content="Mac のプロセスを親子ツリーで可視化し、署名・CPU・メモリ・ネットワークと前回スナップショットとの差分から不審な動きを見つける実験プロジェクト。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #070c15;
+  --bg-2: #0b1321;
+  --panel: #0e1726;
+  --panel-2: #131f33;
+  --ink: #eef4ff;
+  --muted: #9bb0cc;
+  --faint: #6b7f9c;
+  --line: rgba(148, 163, 184, 0.16);
+  --line-strong: rgba(148, 163, 184, 0.3);
+  --accent: #f59e0b;
+  --accent-bright: #fbbf24;
+  --accent-soft: rgba(245, 158, 11, 0.12);
+  --healthy: #8ef0cf;
+  --warning: #ffc857;
+  --error: #ef4444;
+  --external: #b8dcff;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, system-ui, sans-serif;
+  --radius: 12px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(1100px 620px at 12% -10%, rgba(245, 158, 11, 0.1), transparent 62%),
+    radial-gradient(900px 560px at 96% 2%, rgba(56, 130, 246, 0.1), transparent 58%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p, ul, ol, figure { margin: 0; }
+ul, ol { padding-left: 1.25rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent-bright); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+button { font: inherit; }
+code, kbd { font-family: var(--mono); }
+code {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg-2);
+  color: #f4d9a5;
+  font-size: 0.86em;
+}
+::selection { background: var(--accent); color: #1a1205; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 clamp(14px, 3vw, 28px) 40px; }
+
+header.site {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(245, 158, 11, 0.55);
+  border-radius: 8px;
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.3), rgba(245, 158, 11, 0.05));
+  color: var(--accent-bright);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.brand b { font-size: 14px; font-weight: 900; letter-spacing: -0.01em; }
+.brand small { display: block; color: var(--faint); font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+.site-nav { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.site-nav a {
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.site-nav a:hover { border-color: var(--line-strong); color: var(--ink); }
+.site-nav a.primary { border-color: var(--accent); background: var(--accent); color: #1a1205; font-weight: 700; }
+.site-nav a.primary:hover { background: var(--accent-bright); color: #1a1205; }
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(24px, 4vw, 52px);
+  align-items: center;
+  padding: clamp(34px, 6vw, 72px) 0 clamp(30px, 5vw, 58px);
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 9px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+h1 {
+  font-size: clamp(2.5rem, 1.7rem + 3.4vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  font-weight: 900;
+}
+h1 span { color: var(--accent); }
+.hero .lead {
+  max-width: 52ch;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: clamp(0.96rem, 0.9rem + 0.2vw, 1.05rem);
+}
+.hero .lead strong { color: var(--ink); font-weight: 700; }
+.cta { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 24px; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 15px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent-bright); }
+.btn.primary { border-color: var(--accent); background: var(--accent); color: #1a1205; }
+.btn.primary:hover { background: var(--accent-bright); color: #1a1205; }
+.hero-note { margin-top: 14px; color: var(--faint); font-family: var(--mono); font-size: 9.5px; }
+
+.hero-figure {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent), var(--panel);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+.figure-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 3px 9px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.figure-bar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--healthy); }
+.figure-bar .spacer { margin-left: auto; }
+.hero-figure svg { display: block; width: 100%; height: auto; border-radius: 7px; background: #080f1b; }
+.figure-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 3px 1px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 8.5px;
+}
+.figure-caption b { color: var(--error); font-weight: 700; }
+
+.section { padding: clamp(28px, 4vw, 44px) 0; border-top: 1px solid var(--line); }
+.section-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.kicker { color: var(--accent); font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.16em; }
+h2 { font-size: clamp(1.35rem, 1.1rem + 1vw, 1.85rem); line-height: 1.25; letter-spacing: -0.025em; }
+.section > p { max-width: 72ch; color: var(--muted); }
+.section > p + p { margin-top: 10px; }
+
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+.step {
+  position: relative;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.step-no { color: var(--accent); font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; }
+.step h3 { margin-top: 4px; font-size: 1rem; letter-spacing: -0.01em; }
+.step p { margin-top: 5px; color: var(--muted); font-size: 0.83rem; line-height: 1.65; }
+.step code { font-size: 0.78em; }
+
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+.feature {
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent), var(--panel);
+}
+.feature .icon { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-bottom: 9px; border: 1px solid var(--line-strong); border-radius: 6px; color: var(--accent); font-family: var(--mono); font-size: 10px; font-weight: 700; }
+.feature h3 { font-size: 0.94rem; letter-spacing: -0.01em; }
+.feature p { margin-top: 4px; color: var(--muted); font-size: 0.81rem; line-height: 1.65; }
+
+.status-table { width: 100%; margin-top: 20px; border-collapse: collapse; table-layout: fixed; font-size: 0.86rem; }
+.status-table th, .status-table td { padding: 9px 11px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.status-table th { color: var(--faint); font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; }
+.status-table td { overflow-wrap: anywhere; }
+.status-table th:nth-child(1), .status-table td:nth-child(1) { width: 20%; }
+.status-table th:nth-child(3), .status-table td:nth-child(3) { width: 30%; }
+.status-table code { color: var(--muted); }
+.status-pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; font-weight: 700; }
+.status-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--pill); }
+.status-pill.error { --pill: var(--error); color: var(--error); }
+.status-pill.warning { --pill: var(--warning); color: var(--warning); }
+.status-pill.healthy { --pill: var(--healthy); color: var(--healthy); }
+.status-pill.external { --pill: var(--external); color: var(--external); }
+
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 22px; }
+.code-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); overflow: hidden; }
+.code-card header { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-bottom: 1px solid var(--line); color: var(--faint); font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+.code-card header .spacer { margin-left: auto; color: var(--faint); font-size: 8px; }
+.code-card pre { margin: 0; padding: 12px 14px; overflow-x: auto; color: #d8e2f2; font-family: var(--mono); font-size: 10.5px; line-height: 1.8; }
+.code-card pre .c { color: var(--faint); }
+.code-card pre .a { color: var(--accent-bright); }
+.code-card pre .g { color: var(--healthy); }
+.code-card pre .r { color: #fca5a5; }
+.notes { margin-top: 12px; color: var(--faint); font-size: 0.78rem; }
+
+.limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; margin-top: 18px; }
+.limits div { padding-left: 12px; border-left: 2px solid var(--line-strong); }
+.limits b { display: block; font-size: 0.87rem; }
+.limits p { color: var(--muted); font-size: 0.8rem; }
+
+footer.site {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 18px;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 9px;
+}
+footer.site a { color: var(--muted); }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: minmax(0, 1fr); padding-top: 32px; }
+  .hero-figure { order: -1; max-width: 560px; }
+  .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .site-nav a:not(.primary) { display: none; }
+  .steps, .features, .split, .limits { grid-template-columns: minmax(0, 1fr); }
+  .status-table th:nth-child(1), .status-table td:nth-child(1) { width: 23%; }
+  .status-table { font-size: 0.8rem; }
+  h1 { letter-spacing: -0.04em; }
+}
+@media (max-width: 400px) {
+  .wrap { padding: 0 11px 28px; }
+  .brand small { display: none; }
+  .cta .btn { flex: 1; justify-content: center; }
+  .hero-figure { padding: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print {
+  body { background: #fff; color: #000; }
+  .site-nav, .cta, .hero-figure { display: none; }
+  .section, .hero { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="site">
+    <a class="brand" href="../">
+      <span class="brand-mark" aria-hidden="true">PS</span>
+      <span><b>Process Sentinel</b><small>goose-sandbox / project 03</small></span>
+    </a>
+    <nav class="site-nav" aria-label="プロジェクトリンク">
+      <a href="viewer/">Viewer</a>
+      <a href="README.md">README</a>
+      <a class="primary" href="viewer/">ツリーを開く →</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Next project · macOS prototype</span>
+        <h1>Process<br><span>Sentinel</span></h1>
+        <p class="lead">
+          デバイスの中で動く<strong>プロセスの森</strong>を、親子の流れとして描く。
+          署名・CPU・メモリ・ネットワーク、そして前回との差分を重ねて、
+          <strong>「見慣れない動き」</strong>に気づくための静的ビューアです。
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="viewer/">デモを開く</a>
+          <a class="btn" href="README.md">仕組みを読む</a>
+        </div>
+        <p class="hero-note">Pipeline Viz の「構造 × 状態」を、Mac のプロセスに適用した試作。</p>
+      </div>
+
+      <figure class="hero-figure">
+        <div class="figure-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>sentinel-mbp · 29 procs</span>
+          <span class="spacer">demo snapshot</span>
+        </div>
+        <svg viewBox="0 0 520 292" role="img" aria-label="launchd を根として Safari と unknown_agent が連なるプロセスツリー。unknown_agent は未署名で赤く強調されている。">
+          <defs>
+            <linearGradient id="nodeBg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#18273d"/>
+              <stop offset="1" stop-color="#101b2c"/>
+            </linearGradient>
+            <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="4" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <g stroke="#8ef0cf" stroke-opacity="0.16" fill="none" stroke-width="1.2">
+            <path d="M150 54 H 196 C 210 54 210 54 224 54"/>
+            <path d="M150 54 C 176 54 176 148 224 148"/>
+            <path d="M150 54 C 176 54 176 238 224 238"/>
+            <path d="M352 54 H 386"/>
+            <path d="M352 148 C 370 148 368 112 386 112"/>
+            <path d="M352 148 C 370 148 368 184 386 184"/>
+          </g>
+          <g font-family="JetBrains Mono, monospace">
+            <g>
+              <rect x="22" y="32" width="128" height="44" rx="6" fill="url(#nodeBg)" stroke="#b8dcff" stroke-opacity="0.35"/>
+              <rect x="22" y="32" width="3" height="44" rx="1.5" fill="#b8dcff"/>
+              <text x="34" y="49" fill="#eef4ff" font-size="10.5" font-weight="700">launchd</text>
+              <text x="34" y="64" fill="#6b7f9c" font-size="8">PID 1 · root</text>
+            </g>
+            <g>
+              <rect x="224" y="32" width="128" height="44" rx="6" fill="url(#nodeBg)" stroke="#8ef0cf" stroke-opacity="0.3"/>
+              <rect x="224" y="32" width="3" height="44" rx="1.5" fill="#8ef0cf"/>
+              <text x="236" y="49" fill="#eef4ff" font-size="10.5" font-weight="700">Safari</text>
+              <text x="236" y="64" fill="#6b7f9c" font-size="8">PID 820 · cpu 18.2%</text>
+            </g>
+            <g>
+              <rect x="224" y="126" width="128" height="44" rx="6" fill="url(#nodeBg)" stroke="#ffc857" stroke-opacity="0.42"/>
+              <rect x="224" y="126" width="3" height="44" rx="1.5" fill="#ffc857"/>
+              <text x="236" y="143" fill="#eef4ff" font-size="9.4" font-weight="700">WebKit.WebContent</text>
+              <text x="236" y="158" fill="#6b7f9c" font-size="8">PID 845 · cpu 62.3%</text>
+              <rect x="300" y="165" width="44" height="9" rx="4.5" fill="#ffc857" fill-opacity="0.14"/>
+              <text x="304" y="172" fill="#ffc857" font-size="6.2" font-weight="700">CHANGED</text>
+            </g>
+            <g>
+              <rect x="224" y="216" width="128" height="44" rx="6" fill="#1b1113" stroke="#ef4444" stroke-opacity="0.75" filter="url(#glow)"/>
+              <rect x="224" y="216" width="3" height="44" rx="1.5" fill="#ef4444"/>
+              <text x="236" y="233" fill="#ffe4e6" font-size="10.5" font-weight="700">unknown_agent</text>
+              <text x="236" y="248" fill="#fca5a5" font-size="8">unsigned · 45.77.12.9:8443</text>
+              <text x="358" y="228" fill="#ef4444" font-size="7" font-weight="700">100</text>
+            </g>
+            <g>
+              <rect x="386" y="90" width="112" height="40" rx="6" fill="url(#nodeBg)" stroke="#8ef0cf" stroke-opacity="0.2"/>
+              <rect x="386" y="90" width="3" height="40" rx="1.5" fill="#8ef0cf"/>
+              <text x="397" y="106" fill="#dbe7f7" font-size="9.2" font-weight="700">WebKit.GPU</text>
+              <text x="397" y="120" fill="#6b7f9c" font-size="7.6">PID 847 · 21.5%</text>
+            </g>
+            <g>
+              <rect x="386" y="164" width="112" height="40" rx="6" fill="url(#nodeBg)" stroke="#b8dcff" stroke-opacity="0.22"/>
+              <rect x="386" y="164" width="3" height="40" rx="1.5" fill="#b8dcff"/>
+              <text x="397" y="180" fill="#dbe7f7" font-size="9.2" font-weight="700">Networking</text>
+              <text x="397" y="194" fill="#6b7f9c" font-size="7.6">PID 846 · NET 1</text>
+            </g>
+            <text x="22" y="278" fill="#6b7f9c" font-size="7.5">親 → 子 · 未署名 / 一時領域 / 高負荷 / 差分を色とスコアで表現</text>
+          </g>
+        </svg>
+        <figcaption class="figure-caption">
+          <span>左から右へ、親から子へ。</span>
+          <span><b>1 error</b> · 5 warning · 1 unsigned</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="section" aria-labelledby="how-heading">
+      <div class="section-head">
+        <span class="kicker">HOW IT WORKS</span>
+        <h2 id="how-heading">収集・正規化・可視化を、静的な仕組みで。</h2>
+      </div>
+      <p>
+        ネイティブアプリや常駐エージェントは作りません。macOS 標準の <code>ps</code> / <code>codesign</code> / <code>lsof</code>
+        でスナップショットを取得し、JSON に正規化して、ブラウザのビューアに渡します。
+        サーバーもデータベースも不要で、GitHub Pages にそのまま置けます。
+      </p>
+      <div class="steps">
+        <article class="step">
+          <span class="step-no">01 / COLLECT</span>
+          <h3>プロセスを採取</h3>
+          <p><code>ps</code> で PID・親子関係・CPU・メモリを取得し、<code>proc_pidpath</code> で実行パスを補完。<code>lsof</code> で接続先を紐づけます。</p>
+        </article>
+        <article class="step">
+          <span class="step-no">02 / NORMALIZE</span>
+          <h3>JSON に整える</h3>
+          <p><code>codesign</code> で署名・Team ID・アドホック署名を確認し、1 つの <code>process_snapshot.json</code> にまとめます。</p>
+        </article>
+        <article class="step">
+          <span class="step-no">03 / VISUALIZE</span>
+          <h3>ツリーとして読む</h3>
+          <p>ブラウザ側で状態を分類し、親子ツリー・アラート・差分・インスペクタを描画。状態は URL に載ります。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="features-heading">
+      <div class="section-head">
+        <span class="kicker">FEATURES</span>
+        <h2 id="features-heading">一枚の画面で、構造と状態を。</h2>
+      </div>
+      <div class="features">
+        <article class="feature">
+          <span class="icon" aria-hidden="true">T</span>
+          <h3>プロセスツリー</h3>
+          <p>親子関係を左から右の流れで配置。フィルタ時も祖先を薄く残し、文脈を切らしません。</p>
+        </article>
+        <article class="feature">
+          <span class="icon" aria-hidden="true">S</span>
+          <h3>署名の可視化</h3>
+          <p>未署名・アドホック・Team ID を表示。未署名バイナリと一時領域からの実行は Error として強調します。</p>
+        </article>
+        <article class="feature">
+          <span class="icon" aria-hidden="true">A</span>
+          <h3>アラートレール</h3>
+          <p>Error / Warning をスコア順に一覧。クリックで該当ノードへ移動し、理由を確認できます。</p>
+        </article>
+        <article class="feature">
+          <span class="icon" aria-hidden="true">D</span>
+          <h3>ベースライン差分</h3>
+          <p>前回スナップショットとの新規・変更・消滅を判定。実行パスをキーにし、CPU ±10pt などの変化を拾います。</p>
+        </article>
+        <article class="feature">
+          <span class="icon" aria-hidden="true">N</span>
+          <h3>ネットワーク相関</h3>
+          <p>lsof から TCP / UDP の接続先をプロセス単位で表示。未知の外向き接続を署名と並べて確認できます。</p>
+        </article>
+        <article class="feature">
+          <span class="icon" aria-hidden="true">H</span>
+          <h3>履歴スパークライン</h3>
+          <p><code>--watch</code> で複数回サンプリングすると、CPU とメモリの短い推移をインスペクタに描きます。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="status-heading">
+      <div class="section-head">
+        <span class="kicker">STATUS MODEL</span>
+        <h2 id="status-heading">4 つの状態と、その決め方。</h2>
+      </div>
+      <p>分類はブラウザ側の純粋関数で行い、スナップショットには生の事実だけを持たせます。判定順は「未署名・危険パス → 警告条件 → システム領域 → 健全」。</p>
+      <table class="status-table">
+        <thead>
+          <tr><th>状態</th><th>条件の例</th><th>表示</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="status-pill error">Error</span></td>
+            <td><code>signed: false</code>、<code>/tmp</code>・<code>/Users/Shared</code> からの実行</td>
+            <td>赤いノード。スコア最大 100。アラート最上位。</td>
+          </tr>
+          <tr>
+            <td><span class="status-pill warning">Warning</span></td>
+            <td>アドホック署名、CPU 40% 以上、メモリ 15% 以上、新規出現、署名不明</td>
+            <td>琥珀色。スコアと理由を表示。</td>
+          </tr>
+          <tr>
+            <td><span class="status-pill healthy">Healthy</span></td>
+            <td>署名済みで、既知の実行パス・通常の負荷</td>
+            <td>ミント色。静かに一覧に残る。</td>
+          </tr>
+          <tr>
+            <td><span class="status-pill external">External</span></td>
+            <td><code>/System</code>・<code>/usr/libexec</code> などのシステム領域</td>
+            <td>青灰色。スコアは 0 に固定し、ノイズを抑える。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="notes">状態は「危険度の断定」ではなく、見る順番を決めるためのシグナルです。最終判断はパス・署名・接続先・差分を並べて行います。</p>
+    </section>
+
+    <section class="section" aria-labelledby="start-heading">
+      <div class="section-head">
+        <span class="kicker">QUICK START</span>
+        <h2 id="start-heading">手元の Mac で試す。</h2>
+      </div>
+      <p>デモは合成スナップショットです。実データを見るには、リポジトリ直下でコレクタを実行してからビューアを開きます。</p>
+      <div class="split">
+        <div class="code-card">
+          <header><span>1 · collect</span><span class="spacer">Python 3 · macOS</span></header>
+          <pre><code><span class="c"># リポジトリ直下で</span>
+python3 ProcessSentinel/tools/collect_processes.py
+
+<span class="c"># 前回を baseline に残しつつ、12 回サンプリング</span>
+python3 ProcessSentinel/tools/collect_processes.py \
+  <span class="a">--baseline</span> ProcessSentinel/viewer/data/process_baseline.json \
+  <span class="a">--watch</span> 12 <span class="a">--interval</span> 2</code></pre>
+        </div>
+        <div class="code-card">
+          <header><span>2 · view</span><span class="spacer">static</span></header>
+          <pre><code><span class="c"># 静的サーバーを起動</span>
+python3 -m http.server 8000
+
+<span class="c"># ブラウザで開く</span>
+<span class="g">http://localhost:8000/ProcessSentinel/viewer/</span>
+
+<span class="c"># 別のスナップショットを指定</span>
+...viewer/?<span class="a">data</span>=process_snapshot.json
+           &amp;<span class="a">baseline</span>=process_baseline.json</code></pre>
+        </div>
+      </div>
+      <p class="notes">署名確認には <code>codesign</code>、接続確認には <code>lsof</code> を使います。権限のないプロセスは署名が「未確認」になり、Warning として残ります。<code>--no-codesign</code> / <code>--no-network</code> で省略も可能です。</p>
+    </section>
+
+    <section class="section" aria-labelledby="limits-heading">
+      <div class="section-head">
+        <span class="kicker">SCOPE</span>
+        <h2 id="limits-heading">これは何で、何ではないか。</h2>
+      </div>
+      <div class="limits">
+        <div>
+          <b>プロセスの「読む順番」を作る</b>
+          <p>ツリー・署名・負荷・接続・差分を 1 画面に寄せ、怪しい候補を上から確認できるようにします。</p>
+        </div>
+        <div>
+          <b>Endpoint Security ではない</b>
+          <p>イベントを常時監視するのではなく、スナップショットを取得する静的プロトタイプです。検知エンジンではありません。</p>
+        </div>
+        <div>
+          <b>macOS のみ収集</b>
+          <p>iOS / iPadOS のプロセス取得は未実装。提案の Phase 4 以降の範囲です。</p>
+        </div>
+        <div>
+          <b>デモは合成データ</b>
+          <p>公開デモのプロセス名・PID・接続先は実在の macOS を模した合成値です。実データはローカルで生成します。</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <span>Process Sentinel · goose-sandbox project 03 · 2026</span>
+    <span><a href="../">Sandbox</a> / <a href="viewer/">Viewer</a> / <a href="README.md">README</a> / <a href="process_sentinel_proposal.html">提案資料</a> / <a href="https://github.com/watanabe3tipapa/goose-sandbox">GitHub</a></span>
+  </footer>
+
+</div>
+
+</body>
+</html>

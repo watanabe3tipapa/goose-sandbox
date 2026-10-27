@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Process Sentinel — 次のプロジェクト提案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b1220;
+  --surface: #111827;
+  --surface-2: #1f2937;
+  --ink: #f8fafc;
+  --muted: #94a3b8;
+  --accent: #f59e0b;
+  --accent-weak: color-mix(in oklab, var(--accent) 12%, var(--surface));
+  --danger: #ef4444;
+  --danger-weak: color-mix(in oklab, var(--danger) 12%, var(--surface));
+  --line: color-mix(in oklab, var(--ink) 8%, transparent);
+  --step--2: clamp(0.64rem, 0.62rem + 0.12vw, 0.72rem);
+  --step--1: clamp(0.80rem, 0.76rem + 0.20vw, 0.90rem);
+  --step-0: clamp(1rem, 0.92rem + 0.4vw, 1.125rem);
+  --step-1: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem);
+  --step-2: clamp(1.6rem, 1.3rem + 1.6vw, 2.4rem);
+  --step-3: clamp(2rem, 1.5rem + 2.8vw, 3.6rem);
+  --step-4: clamp(2.5rem, 1.8rem + 4vw, 5rem);
+  --space: clamp(1rem, 0.7rem + 1.5vw, 2rem);
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.25), 0 10px 30px -10px rgba(0,0,0,0.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.8;
+  font-size: var(--step-0);
+  overflow-x: hidden;
+}
+
+header {
+  position: relative;
+  padding: calc(var(--space)*3) calc(var(--space)*1.5);
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--step--2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius);
+  margin-bottom: 1.2rem;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(245,158,11,0.7);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245,158,11,0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(245,158,11,0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+}
+
+h1 {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--step-4);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.6rem;
+  font-feature-settings: "palt";
+}
+
+h1 span {
+  color: var(--accent);
+}
+
+.subtitle {
+  font-size: var(--step-1);
+  color: var(--muted);
+  max-width: 50ch;
+  line-height: 1.6;
+}
+
+main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 calc(var(--space)*1.5) calc(var(--space)*3);
+}
+
+section {
+  margin-bottom: calc(var(--space)*2.5);
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.9rem;
+}
+
+.section-number {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--step-2);
+  color: var(--accent);
+  line-height: 1;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+h2 {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--step-2);
+  line-height: 1.2;
+  font-weight: 700;
+  font-feature-settings: "palt";
+}
+
+h3 {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--step-1);
+  margin-top: 1.4rem;
+  margin-bottom: 0.6rem;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+p, ul, ol {
+  max-width: 68ch;
+  margin-bottom: 1rem;
+}
+
+ul, ol {
+  padding-left: 1.4rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--space)*1.2);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.2rem;
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space);
+}
+
+.tag {
+  display: inline-block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--step--2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  margin-right: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.tag-accent {
+  background: var(--accent-weak);
+  color: var(--accent);
+  border-color: color-mix(in oklab, var(--accent) 25%, transparent);
+}
+
+.tag-danger {
+  background: var(--danger-weak);
+  color: var(--danger);
+  border-color: color-mix(in oklab, var(--danger) 25%, transparent);
+}
+
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--space)*1.2);
+  margin: 1.2rem 0;
+  overflow-x: auto;
+}
+
+.diagram svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: var(--step--1);
+}
+
+th, td {
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--surface-2);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+code, pre {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.92em;
+}
+
+code {
+  background: var(--surface-2);
+  padding: 0.15rem 0.35rem;
+  border-radius: 5px;
+  color: var(--accent);
+}
+
+pre {
+  background: var(--surface-2);
+  padding: 1rem;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid var(--line);
+}
+
+.typo-box {
+  background: var(--surface);
+  border-left: 4px solid var(--danger);
+  padding: 1rem 1.2rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 1rem 0;
+}
+
+.typo-box p {
+  margin-bottom: 0.4rem;
+}
+
+.typo-box .correction {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.note {
+  font-size: var(--step--1);
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+  margin-top: 2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #111;
+  }
+  .no-print {
+    display: none;
+  }
+  .card, .diagram, .typo-box {
+    background: #f6f7f9;
+    border-color: #ddd;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 18mm;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hero-badge">
+    <span class="pulse" aria-hidden="true"></span>
+    Next Project Proposal
+  </div>
+  <h1>Process <span>Sentinel</span></h1>
+  <p class="subtitle">
+    Mac / iPhone / iPad 上の不審プロセスを、Pipeline Viz の流儀で「見える化」する次の実験プロジェク
+  </p>
+</header>
+
+<main>
+
+<section>
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2>背景と課題</h2>
+  </div>
+  <p>
+    あなたは、自分のデバイス（Mac、iPhone、iPad）に不審なプロセスが現出していないかを常に監視したいと考えています。
+    既存の Pipeline Viz は「データ処理パイプラインの構造と健康状態」を可視化する試作でしたが、次のステップとして、
+    <strong>「デバイス内部のプロセス群」という新しい対象</strong>に同じ可視化の発想を応用するのが自然な進化です。
+  </p>
+  <div class="grid-2">
+    <div class="card">
+      <h3>監視対象</h3>
+      <ul>
+        <li>Mac: 起動中のプロセス、デーモン、エージェント</li>
+        <li>iPhone / iPad: アプリプロセス、バックグラウンタスク、ネットワーク接続</li>
+        <li>共通: CPU / メモリの急激な変動、未知の署名なしバイナリ</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>可視化の要件</h3>
+      <ul>
+        <li>プロセス間の親子関係や依存関係を「流れ」として把握</li>
+        <li>異常プロセスを色とパルスで即座に識別</li>
+        <li>時系列で「いつから」不審な動きが始まったか追跡</li>
+        <li>Pipeline Viz と同じく、静的ドキュメントではなくライブ・ビュー</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-number">02</span>
+    <h2>コンセプト：Pipeline Viz の進化形</h2>
+  </div>
+  <p>
+    Pipeline Viz の核は「ダイアグラム実行時メトリクスを反映するライブ・ビューとして扱う」ことでした。
+    Process Sentinel では、この発想をデバイス・プロセス監視に置き換えます。
+  </p>
+  <div class="diagram">
+    <svg viewBox="0 0 840 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Process Sentinel アーキテクチャ図">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/>
+        </marker>
+        <linearGradient id="grad1" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- Nodes -->
+      <rect x="30" y="80" width="160" height="80" rx="10" fill="#1f2937" stroke="#f59e0b" stroke-width="2"/>
+      <text x="110" y="115" text-anchor="middle" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">Endpoint API</text>
+      <text x="110" y="138" text-anchor="middle" fill="#94a3b8" font-family="Noto Sans JP, sans-serif" font-size="11">プロセス情報収集</text>
+
+      <rect x="260" y="80" width="180" height="80" rx="10" fill="#1f2937" stroke="#f59e0b" stroke-width="2"/>
+      <text x="350" y="115" text-anchor="middle" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">Anomaly Engine</text>
+      <text x="350" y="138" text-anchor="middle" fill="#94a3b8" font-family="Noto Sans JP, sans-serif" font-size="11">異常検知・スコアリング</text>
+
+      <rect x="510" y="80" width="160" height="80" rx="10" fill="#1f2937" stroke="#f59e0b" stroke-width="2"/>
+      <text x="590" y="115" text-anchor="middle" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">Sentinel Viz</text>
+      <text x="590" y="138" text-anchor="middle" fill="#94a3b8" font-family="Noto Sans JP, sans-serif" font-size="11">ライブ・ダッシュボード</text>
+
+      <rect x="720" y="100" width="90" height="40" rx="8" fill="#ef4444" fill-opacity="0.15" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="765" y="126" text-anchor="middle" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700">Alert</text>
+
+      <!-- Arrows -->
+      <line x1="190" y1="120" x2="260" y2="120" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="440" y1="120" x2="510" y2="120" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="670" y1="120" x2="720" y2="120" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+      <!-- Labels -->
+      <text x="225" y="112" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10">JSON</text>
+      <text x="475" y="112" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10">SSE</text>
+
+      <!-- Bottom caption -->
+      <text x="420" y="210" text-anchor="middle" fill="#64748b" font-family="Noto Sans JP, sans-serif" font-size="12">
+        プロセス情報 → 異常スコア → ライブ・ビュー → ラート
+      </text>
+    </svg>
+  </div>
+  <p>
+    つまり、Pipeline Viz で培った「構造と状態の同時可視化」を、
+    <strong>プロセスツリー × 異常スコア × 時系列</strong>
+    という新しいドメインに移植するのが、次のプロジェクトの中核です。
+  </p>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-number">03</span>
+    <h2>システムアーキテクチャ</h2>
+  </div>
+
+  <h3>3.1 収集層（Endpoint API）</h3>
+  <p>
+    デバイスごとにプロセス情報を取得するインターフェースを設計します。
+    Mac では <code>ps</code>、<code>top</code>、Endpoint Security API、System Extensions を組み合わせ、
+    iOS では制約の中で取得可能な範囲（ネットワーク拡張、VPN 関連、公開 API）を活用します。
+  </p>
+  <table>
+    <thead>
+      <tr><th>層</th><th>役割</th><th>技術要素</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>収集層</td>
+        <td>プロセス一覧、CPU / メモリ、ネットワーク接続、コード署名の取得</td>
+        <td>macOS: ES API / <code>libproc</code> / <code>ps</code><br>iOS: NEProvider / <code>sysctl</code>（制限あり）</td>
+      </tr>
+      <tr>
+        <td>正規化層</td>
+        <td>OS 間の差異を吸収し、共通スキーマに変換</td>
+        <td>Swift Codable / JSON Schema</td>
+      </tr>
+      <tr>
+        <td>検知層</td>
+        <td>ベースラインからの逸脱、未知バイナリ、急激なリソース消費をスコア化</td>
+        <td>ルールベース + 統計的閾値</td>
+      </tr>
+      <tr>
+        <td>可視化層</td>
+        <td>プロセスツリーをパイプライン風にレンダリング、リアルタイム更新</td>
+        <td>SwiftUI Canvas / WebView + Mermaid / D3</td>
+      </tr>
+      <tr>
+        <td>通知層</td>
+        <td>異常検知時のプッシュ通知、ログ記録</td>
+        <td>UserNotifications / OSLog</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>3.2 異常検知エンジン</h3>
+  <div class="grid-3">
+    <div class="card">
+      <h3>ベースライン学習</h3>
+      <p>通常時のプロセス一覧とリソース使用量を数日間記録し、統計的な「正常範囲」を自動構築します。</p>
+    </div>
+    <div class="card">
+      <h3>署名検証</h3>
+      <p>コード署名の有無、チームID の変化、アドホック署名の検出を行い、未署名バイナリを即座にフラグします。</p>
+    </div>
+    <div class="card">
+      <h3>ネットワーク相関</h3>
+      <p>未知プロセスが外部通信を開始した場合、相関スコアを上昇させ、視覚的に強調します。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-number">04</span>
+    <h2>ビジュアライゼーション設計</h2>
+  </div>
+  <p>
+    Pipeline Viz の「ノード色 + スループットバッジ」を、プロセス監視の文脈に再解釈します。
+  </p>
+  <div class="diagram">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="プロセスツリー可視化イメージ">
+      <defs>
+        <marker id="arrow2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+        </marker>
+      </defs>
+
+      <!-- Root -->
+      <rect x="320" y="20" width="160" height="50" rx="8" fill="#1f2937" stroke="#f59e0b" stroke-width="2"/>
+      <text x="400" y="40" text-anchor="middle" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700">launchd</text>
+      <text x="400" y="58" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10">PID 1</text>
+
+      <!-- Children -->
+      <rect x="120" y="120" width="160" height="56" rx="8" fill="#1f2937" stroke="#8ef0cf" stroke-width="2"/>
+      <text x="200" y="142" text-anchor="middle" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">WindowServer</text>
+      <text x="200" y="160" text-anchor="middle" fill="#8ef0cf" font-family="JetBrains Mono, monospace" font-size="10">CPU 12% | MEM 2%</text>
+
+      <rect x="340" y="120" width="120" height="56" rx="8" fill="#1f2937" stroke="#8ef0cf" stroke-width="2"/>
+      <text x="400" y="142" text-anchor="middle" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">syslogd</text>
+      <text x="400" y="160" text-anchor="middle" fill="#8ef0cf" font-family="JetBrains Mono, monospace" font-size="10">healthy</text>
+
+      <rect x="540" y="120" width="160" height="56" rx="8" fill="#1f2937" stroke="#ef4444" stroke-width="2"/>
+      <text x="620" y="142" text-anchor="middle" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">unknown_agent</text>
+      <text x="620" y="160" text-anchor="middle" fill="#ef4444" font-family="JetBrains Mono, monospace" font-size="10">UNSIGNED | NET OUT</text>
+
+      <!-- Grandchild -->
+      <rect x="140" y="230" width="120" height="50" rx="8" fill="#1f2937" stroke="#ffc857" stroke-width="2"/>
+      <text x="200" y="252" text-anchor="middle" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">Safari</text>
+      <text x="200" y="268" text-anchor="middle" fill="#ffc857" font-family="JetBrains Mono, monospace" font-size="10">CPU 45%</text>
+
+      <!-- Lines -->
+      <line x1="400" y1="70" x2="200" y2="120" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow2)"/>
+      <line x1="400" y1="70" x2="400" y2="120" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow2)"/>
+      <line x1="400" y1="70" x2="620" y2="120" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow2)"/>
+      <line x1="200" y1="176" x2="200" y2="230" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow2)"/>
+
+      <!-- Legend -->
+      <rect x="30" y="260" width="14" height="14" rx="4" fill="#8ef0cf"/>
+      <text x="52" y="272" fill="#94a3b8" font-family="Noto Sans JP, sans-serif" font-size="11">正常</text>
+      <rect x="100" y="260" width="14" height="14" rx="4" fill="#ffc857"/>
+      <text x="122" y="272" fill="#94a3b8" font-family="Noto Sans JP, sans-serif" font-size="11">注意</text>
+      <rect x="170" y="260" width="14" height="14" rx="4" fill="#ef4444"/>
+      <text x="192" y="272" fill="#94a3b8" font-family="Noto Sans JP, sans-serif" font-size="11">異常</text>
+
+      <text x="400" y="310" text-anchor="middle" fill="#64748b" font-family="Noto Sans JP, sans-serif" font-size="12">
+        親子関係をツリーではなく「流れ」として配置し、異常ノードをパルス強調
+      </text>
+    </svg>
+  </div>
+
+  <h3>4.1 状態色の定義</h3>
+  <table>
+    <thead>
+      <tr><th>状態</th><th>色</th><th>意味</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag" style="background:#8ef0cf22;color:#8ef0cf;border-color:#8ef0cf55">Healthy</span></td>
+        <td style="color:#8ef0cf">#8ef0cf</td>
+        <td>署名済み、ベースライン内、通信パターン正常</td>
+      </tr>
+      <tr>
+        <td><span class="tag" style="background:#ffc85722;color:#ffc857;border-color:#ffc85755">Warning</span></td>
+        <td style="color:#ffc857">#ffc857</td>
+        <td>CPU / メモリの急上昇、稀なプロセスだが署名あり</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-danger">Error</span></td>
+        <td style="color:#ef4444">#ef4444</td>
+        <td>未署名、未知バイナリ、異常な外部通信、親プロセスの不審な fork</td>
+      </tr>
+      <tr>
+        <td><span class="tag" style="background:#b8dcff22;color:#b8dcff;border-color:#b8dcff55">External</span></td>
+        <td style="color:#b8dcff">#b8dcff</td>
+        <td>OS システムプロセス、常駐デーモン（常に存在する前提）</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>4.2 UI パターン</h3>
+  <ul>
+    <li><strong>プロセスパイプライン・ビュー:</strong> 親子関係を水平フローで配置。Pipeline Viz の ETL ステップ表示を fork / exec チェーンに置き換えます。</li>
+    <li><strong>時系列ミニマップ:</strong> 各プロセスの CPU / メモリをスパークラインで表示。異常発生時点をドラッグで選択し、詳細にドリルダウン。</li>
+    <li><strong>アラートサイドバー:</strong> Error 状態のプロセスを自動ピン留め。クリックで該当ノードにフォーカス＋周辺プロセスをハイライト。</li>
+    <li><strong>Diff モード:</strong> 前回スキャンとの差分を表示。新規プロセスは緑の枠線、消失プロセスはグレーアウト、変更箇所はアニメーションで強調。</li>
+  </ul>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-number">05</span>
+    <h2>技術スタック</h2>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Mac クライアント</h3>
+      <p>
+        <span class="tag tag-accent">Swift</span>
+        <span class="tag tag-accent">SwiftUI</span>
+        <span class="tag">EndpointSecurity</span>
+        <span class="tag">Combine</span>
+        <span class="tag">OSLog</span>
+      </p>
+      <p>SwiftUI でダッシュボードを構築し、Endpoint Security API または <code>libproc.h</code> 経由でプロセス情報を取得します。Combine でデータストリームを統合し、リアクティブに UI を更新します。</p>
+    </div>
+    <div class="card">
+      <h3>iOS / iPad クライアント</h3>
+      <p>
+        <span class="tag tag-accent">Swift</span>
+        <span class="tag tag-accent">SwiftUI</span>
+        <span class="tag">NetworkExtension</span>
+        <span class="tag">BackgroundTasks</span>
+        <span class="tag">CoreData / SwiftData</span>
+      </p>
+      <p>iOS のサンドボックス制約を考慮し、取得可能な情報に限定した「軽量版 Sentinel」を提供します。Mac 側と共通の可視化コンポーネントを再利用します。</p>
+    </div>
+    <div class="card">
+      <h3>可視化エンジン</h3>
+      <p>
+        <span class="tag tag-accent">SwiftUI Canvas</span>
+        <span class="tag">MermaidJS</span>
+        <span class="tag">D3.js</span>
+        <span class="tag">SVG</span>
+      </p>
+      <p>ネイティブ描画と Web ベース描画のハイブリッドを検討します。Pipeline Viz で Mermaid を使った知見を活かしつつ、より動的なノード配置には Canvas / D3 を併用します。</p>
+    </div>
+    <div class="card">
+      <h3>データ層</h3>
+      <p>
+        <span class="tag tag-accent">SQLite</span>
+        <span class="tag">GRDB.swift</span>
+        <span class="tag">JSON</span>
+        <span class="tag">CloudKit (opt)</span>
+      </p>
+      <p>ローカルに時系列データを蓄積し、ベースライン学習と履歴参照を可能にします。複数デバイス間の同期が必要な場合のみ CloudKit を選択的に利用します。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-number">06</span>
+    <h2>実装ロードマップ</h2>
+  </div>
+  <div class="card">
+    <h3>Phase 1 — プロセス収集プロトタイプ（Mac）</h3>
+    <p><code>ps</code> または ES API を使い、プロセス一覧と基本メトリクスを取得し、JSON 形式で出力できることを確認します。Pipeline Viz の <code>metrics.json</code> と同じ発想で<code>process_snapshot.json</code> を設計します。</p>
+  </div>
+  <div class="card">
+    <h3>Phase 2 — ベースラインと異常検知</h3>
+    <p>数日間のプロセスログを蓄積し、統計的ベースラインを構築。未知バイナリ検出と CPU / メモリの閾値超過をルールベースで実装します。</p>
+  </div>
+  <div class="card">
+    <h3>Phase 3 — Sentinel Viz ダッシュボード</h3>
+    <p>SwiftUI または WebView でプロセスツリーをパイプライン風に描画。異常ノードの色反映とパルスアニメーションを実装します。Pipeline Viz の viewer/ をフォークして拡張するのも有効です。</p>
+  </div>
+  <div class="card">
+    <h3>Phase 4 — iOS 軽量版と通知</h3>
+    <p>iOS で取得可能な情報に絞ったビューを築し、異常検知時のプッシュ通知を実装します。Mac と UI コンポーネントを共有します。</p>
+  </div>
+  <div class="card">
+    <h3>Phase 5 — Diff / Alert / 履歴</h3>
+    <p>前回スキャンとの差分表示、アラートサイドバーの自動ピン留め、時系列のスパークライン表示を追加します。Pipeline Viz の Diff モードをそのまま応用できます。</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-number">07</span>
+    <h2>Pipeline Viz からの連続性</h2>
+  </div>
+  <p>
+    次のプロジェクトは Pipeline Viz を否定するのではなく、<strong>対象ドメインを「データパイプライン」から「デバイス・プロセス」に拡張</strong>します。
+    以下の資産をそのまま再利用できます。
+  </p>
+  <ul>
+    <li><strong>.omm/ ディレクトリ構造:</strong> プロセスカテゴリ（system / user / network / unsigned）を Perspective として管理できます。</li>
+    <li><strong>ライブメトリクス連携:</strong> <code>live_metrics_url</code> のポーリング / SSE 機構を <code>process_snapshot.json</code> 向けに流用できます。</li>
+    <li><strong>状態色と classDef:</strong> Healthy / Warning / Error / External の4色体系は、プロセス監視にもそのまま適合します。</li>
+    <li><strong>Diff & Alert UI:</strong> 前回実行との差分比較、Error 時のサイドバー自動ピン留めを、プロセスの生死・変化追跡に応用できます。</li>
+    <li><strong>GitHub Pages ホスティング:</strong> 静的プロトタイプ（viewer/）は goose-sandbox と同じワークフローで公開できます。</li>
+  </ul>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-number">08</span>
+    <h2>タイポチェック結果</h2>
+  </div>
+  <p>あなたのメッセージに含まれる表記を確認し、修正案を提示します。</p>
+
+  <div class="typo-box">
+    <p><strong>原文:</strong> 「Macやiphone.iPad」</p>
+    <p><strong>修正案:</strong> 「Mac / <span class="correction">iPhone / iPad</span>」</p>
+    <p style="color:var(--muted);font-size:var(--step--1);">iPhone と iPad は正式な製品名なので先頭を大文字にし、区切りはスラッシュまたは「・」が適切です。</p>
+  </div>
+
+  <div class="typo-box">
+    <p><strong>原文:</strong> 「何を考案すればよいにかな？」</p>
+    <p><strong>修正案:</strong> 「何を考案すればよい<span class="correction">の</span>かな？」</p>
+    <p style="color:var(--muted);font-size:var(--step--1);">「に」は助詞の誤りで、「の」が正しい文法的な形です。</p>
+  </div>
+
+  <div class="typo-box">
+    <p><strong>原文:</strong> 「さあ、何を考案すればよいにかな？」</p>
+    <p><strong>修正案:</strong> 「さあ、何を考案すればよいのかな？」</p>
+    <p style="color:var(--muted);font-size:var(--step--1);">上記2点を統合した自然な表現です。</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-number">09</span>
+    <h2>まとめ：次に考案すべきもの</h2>
+  </div>
+  <p>
+    次のプロジェクトとしては、<strong>「Process Sentinel」</strong>を提案します。
+    Pipeline Viz の可視化哲学を継承しつつ、監視対象をデバイス上のプロセスに切り替えることで、
+    あなたの「不審な動きを視覚的に捉えたい」というニーズに直接応えられます。
+  </p>
+  <div class="card">
+    <h3>最初に作るべき最小原型</h3>
+    <ol>
+      <li>Mac で <code>ps</code> または ES API からプロセス一覧を取得するスクリプト</li>
+      <li>取得結果を <code>process_snapshot.json</code> に正規化する Swift ツール</li>
+      <li>その JSON を読み込み、プロセス名と PID をノードとして表示する SwiftUI / WebView ビューア</li>
+      <li>未署名プロセスだけを赤色で強調するフィルタ機能</li>
+    </ol>
+    <p style="margin-bottom:0;">
+      この4つが動けば、Pipeline Viz からの橋渡しが完了し、本格的な異常検知エンジンへの拡張が始められます。
+    </p>
+  </div>
+</section>
+
+<p class="note">
+  本資料は goose-sandbox の Pipeline Viz プロジェクトの構成と設計思想を参照して作成しました。
+  ブラウザで開いたあと、印刷 → PDF に保存 で紙面/PDF 版として保存できます。
+</p>
+
+</main>
+</body>
+</html>

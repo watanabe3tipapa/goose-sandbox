@@ -15,6 +15,7 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 |---|---|---|---|
 | 01 | [Pipeline Viz](PipelineViz/) | Active | [LP](PipelineViz/) / [Dashboard](PipelineViz/viewer/) / [README](PipelineViz/README.md) |
 | 02 | [Goose サンプル探訪](GooseSamples/) | Active | [LP](GooseSamples/) / [探訪ビュー](GooseSamples/explorer/) / [README](GooseSamples/README.md) |
+| 03 | [Process Sentinel](ProcessSentinel/) | Active | [LP](ProcessSentinel/) / [Viewer](ProcessSentinel/viewer/) / [README](ProcessSentinel/README.md) |
 
 ### Pipeline Viz
 
@@ -32,6 +33,15 @@ Goose 公式サンプル 31 本を、カテゴリ・難易度・必要な環境�
 - LP: [https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/](https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/)
 - 探訪ビュー: [https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/explorer/](https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/explorer/)
 - 収録: `aardappel/goose` @ `64d62fc`（Apache-2.0、無改変）
+
+### Process Sentinel
+
+Mac のプロセスを親子ツリーとして表示し、署名・CPU・メモリ・ネットワーク接続・前回スナップショットとの差分から不審な動きを読む静的ビューアです。
+
+- LP: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/)
+- Viewer: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/viewer/)
+- 実装提案資料: [ProcessSentinel/process_sentinel_proposal.html](ProcessSentinel/process_sentinel_proposal.html)
+- 収集: `tools/collect_processes.py`（`ps` / `codesign` / `lsof`、macOS のみ）
 
 ## リポジトリ構成
 
@@ -52,6 +62,14 @@ goose-sandbox/
 │   ├── explorer/                 # 探訪ビュー
 │   │   └── data/                 # samples.json とソース 31 本（Apache-2.0）
 │   └── README.md
+├── ProcessSentinel/              # プロジェクト 03
+│   ├── index.html                # プロジェクト LP
+│   ├── viewer/                   # プロセスツリービューア
+│   │   ├── data/                 # デモスナップショットとベースライン
+│   │   └── lib/                  # 分類・差分・レイアウト
+│   ├── tools/                    # macOS コレクタ
+│   ├── process_sentinel_proposal.html
+│   └── README.md
 ├── .github/
 │   └── workflows/
 │       └── pages.yml             # GitHub Pages デプロイ
@@ -67,6 +85,7 @@ goose-sandbox/
 - Sandbox ホーム: [https://watanabe3tipapa.github.io/goose-sandbox/](https://watanabe3tipapa.github.io/goose-sandbox/)
 - Pipeline Viz: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/)
 - Goose サンプル探訪: [https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/](https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/)
+- Process Sentinel: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/)
 
 初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。
 
@@ -83,6 +102,8 @@ python3 -m http.server 8000
 - Dashboard: `http://localhost:8000/PipelineViz/viewer/`
 - Goose サンプル探訪: `http://localhost:8000/GooseSamples/`
 - 探訪ビュー: `http://localhost:8000/GooseSamples/explorer/`
+- Process Sentinel: `http://localhost:8000/ProcessSentinel/`
+- Process Viewer: `http://localhost:8000/ProcessSentinel/viewer/`
 
 ## 新しいプロジェクトを追加する
 

@@ -1,0 +1,2359 @@
+{
+  "meta": {
+    "generated_at": "2026-10-27T18:30:02+09:00",
+    "host": "sentinel-mbp",
+    "os": "macOS 15.7",
+    "source": "demo snapshot (synthetic)",
+    "interval_ms": 2000,
+    "samples": 12,
+    "notes": "1 つ前のスナップショット。Diff 表示の確認用です。"
+  },
+  "processes": [
+    {
+      "pid": 0,
+      "ppid": 0,
+      "name": "kernel_task",
+      "path": "/System/Library/Kernels/kernel",
+      "user": "root",
+      "state": "S",
+      "command": "/System/Library/Kernels/kernel",
+      "cpu": 2.4,
+      "memory": 0.4,
+      "rss": 65536,
+      "signed": true,
+      "adhoc": false,
+      "teamId": "com.apple",
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 1.7,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 2.0,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 2.2,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 2.3,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 2.3,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 2.1,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 1.9,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 1.6,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 1.4,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 1.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 1.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 2.4,
+          "memory": 0.4
+        }
+      ]
+    },
+    {
+      "pid": 1,
+      "ppid": 0,
+      "name": "launchd",
+      "path": "/sbin/launchd",
+      "user": "root",
+      "state": "S",
+      "command": "/sbin/launchd",
+      "cpu": 0.1,
+      "memory": 0.1,
+      "rss": 12000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": "com.apple",
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.0,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.1,
+          "memory": 0.1
+        }
+      ]
+    },
+    {
+      "pid": 72,
+      "ppid": 1,
+      "name": "mds_stores",
+      "path": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+      "user": "root",
+      "state": "S",
+      "command": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+      "cpu": 3.8,
+      "memory": 0.9,
+      "rss": 88000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": "com.apple",
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 3.5,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 3.1,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 2.7,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 2.3,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 2.0,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 1.8,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 1.9,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 2.1,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 2.5,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 2.9,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 3.3,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 3.8,
+          "memory": 0.9
+        }
+      ]
+    },
+    {
+      "pid": 88,
+      "ppid": 1,
+      "name": "syslogd",
+      "path": "/usr/sbin/syslogd",
+      "user": "root",
+      "state": "S",
+      "command": "/usr/sbin/syslogd",
+      "cpu": 0.2,
+      "memory": 0.1,
+      "rss": 6400,
+      "signed": true,
+      "adhoc": false,
+      "teamId": "com.apple",
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.2,
+          "memory": 0.1
+        }
+      ]
+    },
+    {
+      "pid": 96,
+      "ppid": 1,
+      "name": "opendirectoryd",
+      "path": "/usr/libexec/opendirectoryd",
+      "user": "root",
+      "state": "S",
+      "command": "/usr/libexec/opendirectoryd",
+      "cpu": 0.5,
+      "memory": 0.3,
+      "rss": 14200,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.4,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.3,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.3,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.3,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.3,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.4,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.4,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.5,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.5,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.5,
+          "memory": 0.3
+        }
+      ]
+    },
+    {
+      "pid": 130,
+      "ppid": 1,
+      "name": "securityd",
+      "path": "/usr/sbin/securityd",
+      "user": "root",
+      "state": "S",
+      "command": "/usr/sbin/securityd",
+      "cpu": 0.3,
+      "memory": 0.2,
+      "rss": 9800,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.2,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.2,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.2,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.1,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.2,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.2,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.2,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.2,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.3,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.3,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.3,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.3,
+          "memory": 0.2
+        }
+      ]
+    },
+    {
+      "pid": 150,
+      "ppid": 1,
+      "name": "loginwindow",
+      "path": "/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow",
+      "user": "root",
+      "state": "S",
+      "command": "/System/Library/CoreServices/loginwindow.app/Contents/MacOS/loginwindow",
+      "cpu": 0.4,
+      "memory": 0.5,
+      "rss": 26400,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.3,
+          "memory": 0.5
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.3,
+          "memory": 0.5
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.3,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.2,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.2,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.2,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.2,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.3,
+          "memory": 0.4
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.3,
+          "memory": 0.5
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.3,
+          "memory": 0.5
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.4,
+          "memory": 0.5
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.4,
+          "memory": 0.5
+        }
+      ]
+    },
+    {
+      "pid": 151,
+      "ppid": 1,
+      "name": "WindowServer",
+      "path": "/System/Library/PrivateFrameworks/SkyLight.framework/Versions/A/Resources/WindowServer",
+      "user": "_windowserver",
+      "state": "S",
+      "command": "/System/Library/PrivateFrameworks/SkyLight.framework/Versions/A/Resources/WindowServer",
+      "cpu": 12.6,
+      "memory": 1.2,
+      "rss": 188000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 9.6,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 8.2,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 7.0,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 6.2,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 6.1,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 6.6,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 7.7,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 9.1,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 10.5,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 11.6,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 12.1,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 12.6,
+          "memory": 1.2
+        }
+      ]
+    },
+    {
+      "pid": 155,
+      "ppid": 1,
+      "name": "bluetoothd",
+      "path": "/usr/sbin/bluetoothd",
+      "user": "root",
+      "state": "S",
+      "command": "/usr/sbin/bluetoothd",
+      "cpu": 0.3,
+      "memory": 0.1,
+      "rss": 7100,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.3,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.3,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.3,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.3,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.3,
+          "memory": 0.1
+        }
+      ]
+    },
+    {
+      "pid": 180,
+      "ppid": 1,
+      "name": "coreaudiod",
+      "path": "/usr/sbin/coreaudiod",
+      "user": "_coreaudiod",
+      "state": "S",
+      "command": "/usr/sbin/coreaudiod",
+      "cpu": 0.6,
+      "memory": 0.2,
+      "rss": 11200,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.6,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.6,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.5,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.5,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.4,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.3,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.3,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.3,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.3,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.4,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.4,
+          "memory": 0.2
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.6,
+          "memory": 0.2
+        }
+      ]
+    },
+    {
+      "pid": 377,
+      "ppid": 1,
+      "name": "tailscaled",
+      "path": "/Applications/Tailscale.app/Contents/MacOS/Tailscale",
+      "user": "root",
+      "state": "S",
+      "command": "/Applications/Tailscale.app/Contents/MacOS/Tailscale",
+      "cpu": 1.2,
+      "memory": 0.9,
+      "rss": 48000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": "WXN6L5MQP8",
+      "signature": "Developer ID Application: Tailscale Inc.",
+      "network": [
+        {
+          "proto": "UDP",
+          "local": "0.0.0.0:41641",
+          "remote": "derp1.tailscale.com:41641",
+          "state": "—"
+        }
+      ],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 1.1,
+          "memory": 0.9
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 1.2,
+          "memory": 0.9
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 1.1,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 1.0,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.9,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.8,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.7,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.6,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.6,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.6,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.7,
+          "memory": 0.8
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 1.2,
+          "memory": 0.9
+        }
+      ]
+    },
+    {
+      "pid": 405,
+      "ppid": 1,
+      "name": "Dock",
+      "path": "/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock",
+      "cpu": 1.8,
+      "memory": 1.1,
+      "rss": 118000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 1.2,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 1.0,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.9,
+          "memory": 0.9
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.9,
+          "memory": 0.9
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.9,
+          "memory": 0.9
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 1.1,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 1.3,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 1.5,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 1.6,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 1.7,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 1.7,
+          "memory": 1.0
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 1.8,
+          "memory": 1.1
+        }
+      ]
+    },
+    {
+      "pid": 411,
+      "ppid": 1,
+      "name": "cloudd",
+      "path": "/System/Library/PrivateFrameworks/CloudKitDaemon.framework/Support/cloudd",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/System/Library/PrivateFrameworks/CloudKitDaemon.framework/Support/cloudd",
+      "cpu": 2.1,
+      "memory": 1.4,
+      "rss": 96000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [
+        {
+          "proto": "TCP",
+          "local": "192.168.1.24:52388",
+          "remote": "17.248.209.42:443",
+          "state": "ESTABLISHED"
+        }
+      ],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 2.0,
+          "memory": 1.3
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 2.0,
+          "memory": 1.3
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 1.8,
+          "memory": 1.3
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 1.6,
+          "memory": 1.3
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 1.4,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 1.2,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 1.0,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 1.0,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 1.1,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 1.3,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 1.5,
+          "memory": 1.3
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 2.1,
+          "memory": 1.4
+        }
+      ]
+    },
+    {
+      "pid": 412,
+      "ppid": 1,
+      "name": "Finder",
+      "path": "/System/Library/CoreServices/Finder.app/Contents/MacOS/Finder",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/System/Library/CoreServices/Finder.app/Contents/MacOS/Finder",
+      "cpu": 0.9,
+      "memory": 0.7,
+      "rss": 82000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.9,
+          "memory": 0.7
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.8,
+          "memory": 0.7
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.7,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.6,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.5,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.5,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.4,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.5,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.5,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.6,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.7,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.9,
+          "memory": 0.7
+        }
+      ]
+    },
+    {
+      "pid": 610,
+      "ppid": 1,
+      "name": "backupd",
+      "path": "/System/Library/CoreServices/backupd.bundle/Contents/Resources/backupd",
+      "user": "root",
+      "state": "S",
+      "command": "/System/Library/CoreServices/backupd.bundle/Contents/Resources/backupd",
+      "cpu": 11.2,
+      "memory": 1.8,
+      "rss": 196000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 10.6,
+          "memory": 1.7
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 10.0,
+          "memory": 1.7
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 9.0,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 7.7,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 6.5,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 5.7,
+          "memory": 1.5
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 5.4,
+          "memory": 1.5
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 5.7,
+          "memory": 1.5
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 6.5,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 7.7,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 8.9,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 11.2,
+          "memory": 1.8
+        }
+      ]
+    },
+    {
+      "pid": 620,
+      "ppid": 1,
+      "name": "sshd",
+      "path": "/usr/sbin/sshd",
+      "user": "root",
+      "state": "S",
+      "command": "/usr/sbin/sshd",
+      "cpu": 0.1,
+      "memory": 0.1,
+      "rss": 5200,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.0,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.0,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.1,
+          "memory": 0.1
+        }
+      ]
+    },
+    {
+      "pid": 820,
+      "ppid": 1,
+      "name": "Safari",
+      "path": "/Applications/Safari.app/Contents/MacOS/Safari",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/Applications/Safari.app/Contents/MacOS/Safari",
+      "cpu": 18.2,
+      "memory": 6.4,
+      "rss": 512000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [
+        {
+          "proto": "TCP",
+          "local": "192.168.1.24:52231",
+          "remote": "17.253.144.10:443",
+          "state": "ESTABLISHED"
+        }
+      ],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 16.6,
+          "memory": 6.0
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 15.0,
+          "memory": 5.9
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 13.0,
+          "memory": 5.8
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 11.0,
+          "memory": 5.6
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 9.5,
+          "memory": 5.5
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 8.8,
+          "memory": 5.4
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 9.0,
+          "memory": 5.5
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 10.2,
+          "memory": 5.5
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 12.0,
+          "memory": 5.7
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 14.1,
+          "memory": 5.8
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 15.9,
+          "memory": 6.0
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 18.2,
+          "memory": 6.4
+        }
+      ]
+    },
+    {
+      "pid": 845,
+      "ppid": 820,
+      "name": "com.apple.WebKit.WebContent",
+      "path": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+      "cpu": 6.1,
+      "memory": 7.9,
+      "rss": 662000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 4.1,
+          "memory": 7.0
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 3.5,
+          "memory": 6.9
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 3.1,
+          "memory": 6.8
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 2.9,
+          "memory": 6.7
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 3.1,
+          "memory": 6.8
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 3.6,
+          "memory": 6.9
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 4.3,
+          "memory": 7.1
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 4.9,
+          "memory": 7.3
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 5.5,
+          "memory": 7.4
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 5.8,
+          "memory": 7.5
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 5.8,
+          "memory": 7.5
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 6.1,
+          "memory": 7.9
+        }
+      ]
+    },
+    {
+      "pid": 846,
+      "ppid": 845,
+      "name": "com.apple.WebKit.Networking",
+      "path": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+      "cpu": 4.1,
+      "memory": 1.8,
+      "rss": 148000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [
+        {
+          "proto": "TCP",
+          "local": "192.168.1.24:52402",
+          "remote": "17.253.144.10:443",
+          "state": "ESTABLISHED"
+        }
+      ],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 2.4,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 2.1,
+          "memory": 1.5
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 2.0,
+          "memory": 1.5
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 2.1,
+          "memory": 1.5
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 2.3,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 2.8,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 3.2,
+          "memory": 1.6
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 3.6,
+          "memory": 1.7
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 3.9,
+          "memory": 1.7
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 3.9,
+          "memory": 1.7
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 3.8,
+          "memory": 1.7
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 4.1,
+          "memory": 1.8
+        }
+      ]
+    },
+    {
+      "pid": 847,
+      "ppid": 845,
+      "name": "com.apple.WebKit.GPU",
+      "path": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.GPU.xpc/Contents/MacOS/com.apple.WebKit.GPU",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.GPU.xpc/Contents/MacOS/com.apple.WebKit.GPU",
+      "cpu": 21.5,
+      "memory": 3.2,
+      "rss": 256000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 15.5,
+          "memory": 2.9
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 17.8,
+          "memory": 3.0
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 19.7,
+          "memory": 3.0
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 20.6,
+          "memory": 3.0
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 20.4,
+          "memory": 3.0
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 19.0,
+          "memory": 3.0
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 16.9,
+          "memory": 2.9
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 14.5,
+          "memory": 2.8
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 12.3,
+          "memory": 2.8
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 10.8,
+          "memory": 2.7
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 10.3,
+          "memory": 2.7
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 21.5,
+          "memory": 3.2
+        }
+      ]
+    },
+    {
+      "pid": 900,
+      "ppid": 1,
+      "name": "Terminal",
+      "path": "/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal",
+      "cpu": 2.6,
+      "memory": 1.3,
+      "rss": 106000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 1.8,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 1.5,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 1.3,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 1.2,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 1.3,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 1.5,
+          "memory": 1.1
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 1.8,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 2.1,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 2.3,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 2.5,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 2.5,
+          "memory": 1.2
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 2.6,
+          "memory": 1.3
+        }
+      ]
+    },
+    {
+      "pid": 905,
+      "ppid": 900,
+      "name": "zsh",
+      "path": "/bin/zsh",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/bin/zsh --login",
+      "cpu": 0.2,
+      "memory": 0.1,
+      "rss": 9800,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.2,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.1,
+          "memory": 0.1
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.2,
+          "memory": 0.1
+        }
+      ]
+    },
+    {
+      "pid": 2410,
+      "ppid": 1,
+      "name": "node",
+      "path": "/opt/homebrew/Cellar/node/22.9.0/bin/node",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "node ./scripts/dev-server.mjs",
+      "cpu": 31.4,
+      "memory": 4.8,
+      "rss": 386000,
+      "signed": true,
+      "adhoc": true,
+      "teamId": null,
+      "signature": "adhoc",
+      "network": [
+        {
+          "proto": "TCP",
+          "local": "127.0.0.1:3000",
+          "remote": "*:*",
+          "state": "LISTEN"
+        }
+      ],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 25.3,
+          "memory": 4.4
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 28.3,
+          "memory": 4.5
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 29.9,
+          "memory": 4.6
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 29.9,
+          "memory": 4.6
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 28.4,
+          "memory": 4.5
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 25.5,
+          "memory": 4.4
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 22.0,
+          "memory": 4.3
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 18.6,
+          "memory": 4.2
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 16.1,
+          "memory": 4.1
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 15.1,
+          "memory": 4.1
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 15.7,
+          "memory": 4.1
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 31.4,
+          "memory": 4.8
+        }
+      ]
+    },
+    {
+      "pid": 2412,
+      "ppid": 2410,
+      "name": "esbuild",
+      "path": "/Users/watanabe3tipapa/github/goose-sandbox/node_modules/@esbuild/darwin-arm64/bin/esbuild",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "esbuild --watch --bundle",
+      "cpu": 7.8,
+      "memory": 0.7,
+      "rss": 56000,
+      "signed": true,
+      "adhoc": true,
+      "teamId": null,
+      "signature": "adhoc",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 7.3,
+          "memory": 0.7
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 7.5,
+          "memory": 0.7
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 7.3,
+          "memory": 0.7
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 6.7,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 5.9,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 5.0,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 4.2,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 3.8,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 3.8,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 4.2,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 4.9,
+          "memory": 0.6
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 7.8,
+          "memory": 0.7
+        }
+      ]
+    },
+    {
+      "pid": 2600,
+      "ppid": 1,
+      "name": "Xcode",
+      "path": "/Applications/Xcode.app/Contents/MacOS/Xcode",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/Applications/Xcode.app/Contents/MacOS/Xcode",
+      "cpu": 6.1,
+      "memory": 7.8,
+      "rss": 624000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 5.8,
+          "memory": 7.4
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 5.7,
+          "memory": 7.4
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 5.3,
+          "memory": 7.3
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 4.7,
+          "memory": 7.1
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 4.0,
+          "memory": 6.9
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 3.4,
+          "memory": 6.8
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 3.0,
+          "memory": 6.7
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 2.9,
+          "memory": 6.6
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 3.2,
+          "memory": 6.7
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 3.7,
+          "memory": 6.8
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 4.3,
+          "memory": 7.0
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 6.1,
+          "memory": 7.8
+        }
+      ]
+    },
+    {
+      "pid": 2640,
+      "ppid": 2600,
+      "name": "sourcekit-lsp",
+      "path": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "sourcekit-lsp -background-index",
+      "cpu": 9.7,
+      "memory": 2.6,
+      "rss": 208000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": null,
+      "signature": "Apple Code Signing",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 7.0,
+          "memory": 2.3
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 8.1,
+          "memory": 2.4
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 8.9,
+          "memory": 2.4
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 9.3,
+          "memory": 2.5
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 9.2,
+          "memory": 2.5
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 8.6,
+          "memory": 2.4
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 7.6,
+          "memory": 2.4
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 6.5,
+          "memory": 2.3
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 5.5,
+          "memory": 2.3
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 4.9,
+          "memory": 2.2
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 4.7,
+          "memory": 2.2
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 9.7,
+          "memory": 2.6
+        }
+      ]
+    },
+    {
+      "pid": 2900,
+      "ppid": 1,
+      "name": "com.docker.backend",
+      "path": "/Applications/Docker.app/Contents/MacOS/com.docker.backend",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/Applications/Docker.app/Contents/MacOS/com.docker.backend",
+      "cpu": 5.6,
+      "memory": 12.8,
+      "rss": 1024000,
+      "signed": true,
+      "adhoc": false,
+      "teamId": "9BNSXJN65R",
+      "signature": "Developer ID Application: Docker Inc.",
+      "network": [
+        {
+          "proto": "TCP",
+          "local": "127.0.0.1:2375",
+          "remote": "*:*",
+          "state": "LISTEN"
+        }
+      ],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 4.7,
+          "memory": 11.9
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 4.1,
+          "memory": 11.6
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 3.5,
+          "memory": 11.3
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 3.0,
+          "memory": 11.0
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 2.7,
+          "memory": 10.9
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 2.7,
+          "memory": 10.9
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 3.0,
+          "memory": 11.0
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 3.6,
+          "memory": 11.3
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 4.2,
+          "memory": 11.6
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 4.8,
+          "memory": 11.9
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 5.2,
+          "memory": 12.1
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 5.6,
+          "memory": 12.8
+        }
+      ]
+    },
+    {
+      "pid": 31337,
+      "ppid": 1,
+      "name": "unknown_agent",
+      "path": "/private/tmp/.cache/unknown_agent",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/private/tmp/.cache/unknown_agent --daemon",
+      "cpu": 2.2,
+      "memory": 3.8,
+      "rss": 304000,
+      "signed": false,
+      "adhoc": false,
+      "teamId": null,
+      "signature": null,
+      "network": [
+        {
+          "proto": "TCP",
+          "local": "192.168.1.24:52811",
+          "remote": "45.77.12.9:8443",
+          "state": "ESTABLISHED"
+        },
+        {
+          "proto": "UDP",
+          "local": "192.168.1.24:53002",
+          "remote": "8.8.8.8:53",
+          "state": "—"
+        }
+      ],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 1.5,
+          "memory": 3.4
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 1.3,
+          "memory": 3.3
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 1.1,
+          "memory": 3.2
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 1.1,
+          "memory": 3.2
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 1.1,
+          "memory": 3.3
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 1.3,
+          "memory": 3.3
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 1.5,
+          "memory": 3.4
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 1.8,
+          "memory": 3.5
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 2.0,
+          "memory": 3.6
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 2.1,
+          "memory": 3.6
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 2.1,
+          "memory": 3.6
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 2.2,
+          "memory": 3.8
+        }
+      ]
+    },
+    {
+      "pid": 2210,
+      "ppid": 1,
+      "name": "old_helper",
+      "path": "/Users/watanabe3tipapa/Library/Application Support/BackupTools/old_helper",
+      "user": "watanabe3tipapa",
+      "state": "S",
+      "command": "/Users/watanabe3tipapa/Library/Application Support/BackupTools/old_helper --tick",
+      "cpu": 0.3,
+      "memory": 0.3,
+      "rss": 5120,
+      "signed": true,
+      "adhoc": true,
+      "teamId": null,
+      "signature": "adhoc",
+      "network": [],
+      "history": [
+        {
+          "t": "18:41:16",
+          "cpu": 0.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:18",
+          "cpu": 0.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:20",
+          "cpu": 0.1,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:22",
+          "cpu": 0.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:24",
+          "cpu": 0.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:26",
+          "cpu": 0.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:28",
+          "cpu": 0.2,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:30",
+          "cpu": 0.3,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:32",
+          "cpu": 0.3,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:34",
+          "cpu": 0.3,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:36",
+          "cpu": 0.3,
+          "memory": 0.3
+        },
+        {
+          "t": "18:41:38",
+          "cpu": 0.3,
+          "memory": 0.3
+        }
+      ]
+    }
+  ]
+}
