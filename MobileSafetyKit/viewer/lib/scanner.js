@@ -514,6 +514,11 @@
     return worst || "unknown";
   }
 
+  /*
+   * Weighted mean over the checks that have a score.
+   * The Japanese docs say 重み付き平均 rather than 加重平均 so the wording
+   * matches the `weight` field and this function name. Same meaning.
+   */
   function weightedScore(checks) {
     const scored = checks.filter((check) => typeof check.score === "number");
     const weight = scored.reduce((sum, check) => sum + check.weight, 0);
