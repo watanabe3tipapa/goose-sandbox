@@ -466,7 +466,7 @@ footer.site a { color: var(--muted); }
         <article class="step">
           <span class="step-no">02 / JUDGE</span>
           <h3>8 項目を採点</h3>
-          <p>重み 1–3 のチェックを重み付きで平均し、総合レベルは<strong>最弱のチェック</strong>に合わせます。観測できない項目は <code>Unknown</code> としてスコアから除外します。</p>
+          <p>重み 1–3 のチェックを重み付き平均し、総合レベルは<strong>最弱のチェック</strong>に合わせます。観測できない項目は <code>Unknown</code> としてスコアから除外します。</p>
         </article>
         <article class="step">
           <span class="step-no">03 / GUIDE</span>
@@ -496,7 +496,6 @@ footer.site a { color: var(--muted); }
           <ul>
             <li><span>HTTPS 通信</span><span class="w">w3</span></li>
             <li><span>回線品質</span><span class="w">w1</span></li>
-            <li><span>公衆 Wi-Fi の注意</span><span class="w manual">ガイド</span></li>
           </ul>
         </article>
         <article class="check-card privacy">
@@ -508,7 +507,7 @@ footer.site a { color: var(--muted); }
           </ul>
         </article>
       </div>
-      <p class="notes">画面ロックは Web から観測できないため、常に Unknown として「手動で確認する項目」に残します。公衆 Wi-Fi も同様に、判定ではなくガイドで扱います。</p>
+      <p class="notes">画面ロックは Web から観測できないため、常に Unknown のチェックとして残します。公衆 Wi-Fi はチェック項目にせず、ガイドで扱います。</p>
     </section>
 
     <section class="section" aria-labelledby="features-heading">

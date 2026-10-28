@@ -293,7 +293,7 @@
       status: "unknown",
       score: null,
       message: "通信プロトコルを判定できません",
-      advice: "HTTP サーバー経由で開くか、公開サイトで確認してください。",
+      advice: "HTTPS で公開されたページで確認してください（file:// では判定できません）。",
       detail: protocol || "不明",
     };
   }

@@ -192,7 +192,7 @@
     const change = state.diff ? state.diff.scoreDelta : null;
     if (typeof change === "number" && change !== 0) {
       delta.hidden = false;
-      delta.textContent = `${change > 0 ? "+" : ""}${change} vs 基準`;
+      delta.textContent = `基準比 ${change > 0 ? "+" : ""}${change}`;
       delta.className = `delta ${change > 0 ? "plus" : "minus"}`;
     } else {
       delta.hidden = true;

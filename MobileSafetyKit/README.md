@@ -59,7 +59,7 @@ Device Scan → Security Check → Privacy Check → Risk Judge
 | プライバシー | トラッキング防止 | 1 | DNT / GPC | `navigator.doNotTrack` など |
 | プライバシー | Referrer-Policy | 1 | 遷移先へ渡す URL 情報 | `document.referrerPolicy` |
 
-重みは「見る順番」の目安です。画面ロックと公衆 Wi-Fi は Web から観測できないため、判定ではなくガイドとして扱います。
+重みは「見る順番」の目安です。画面ロックは Web から観測できないため `Unknown` のチェックとして残し、公衆 Wi-Fi は判定ではなくガイドとして扱います。
 
 ## スコアと状態
 
@@ -140,7 +140,7 @@ node MobileSafetyKit/tools/build-demo-report.js
 - **前回比較** — 「基準を更新」で現在の結果を localStorage に保存。設定を変えて再スキャンすると増減が見える
 - **JSON エクスポート** — レポートをそのままダウンロード
 - **URL 同期** — デモ・フィルタ・選択中のチェックをクエリに反映
-- **レスポンシブ** — 360px 幅まで 1 カラムに整理
+- **レスポンシブ** — 360px 幅でも崩れないよう、狭い画面では 1 カラムに整理
 
 ### URL パラメータ
 
