@@ -41,7 +41,7 @@ Device Scan → Security Check → Privacy Check → Risk Judge
 ```
 
 1. **観測** — `navigator.userAgentData`、`navigator.permissions`、`navigator.connection`、`location`、`document.referrerPolicy` などから事実を集めます。
-2. **判定** — 8 つのチェックを重み付きで平均し、総合レベルは最も重い状態に合わせます。観測できない項目は `Unknown` としてスコアから除外します。
+2. **判定** — 8 つのチェックを重み付き平均し、総合レベルは最も重い状態に合わせます。観測できない項目は `Unknown` としてスコアから除外します。
 3. **可視化** — パイプラインの色・スコア・アラート・対処法を 1 画面にまとめます。結果は JSON で保存できます。
 
 サーバーもデータベースもビルド手順もありません。GitHub Pages に静的ファイルとして置けます。
