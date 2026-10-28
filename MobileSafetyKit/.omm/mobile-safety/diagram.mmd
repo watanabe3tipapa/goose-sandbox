@@ -1,0 +1,28 @@
+graph LR
+    subgraph Device["Device Scan"]
+        OS["OS バージョン<br/>iOS 16 · 60"]:::warning
+        Browser["ブラウザ更新<br/>Safari 16.6 · 60"]:::warning
+        Lock["画面ロック<br/>手動確認"]:::unknown
+    end
+
+    subgraph Network["Security Check"]
+        HTTPS["HTTPS 通信<br/>https · 100"]:::healthy
+        Conn["回線品質<br/>3g · 55"]:::warning
+    end
+
+    subgraph Privacy["Privacy Check"]
+        Perm["権限<br/>位置情報 許可 · 40"]:::warning
+        Track["トラッキング防止<br/>未設定"]:::unknown
+        Ref["Referrer-Policy<br/>strict-origin · 100"]:::healthy
+    end
+
+    Judge["Risk Judge<br/>67 / Warning"]:::warning
+
+    Device --> Judge
+    Network --> Judge
+    Privacy --> Judge
+
+    classDef healthy fill:#34d399,stroke:#0b0b0b,color:#0b0b0b
+    classDef warning fill:#fbbf24,stroke:#0b0b0b,color:#0b0b0b
+    classDef error fill:#f87171,stroke:#0b0b0b,color:#0b0b0b
+    classDef unknown fill:#94a3b8,stroke:#0b0b0b,color:#0b0b0b

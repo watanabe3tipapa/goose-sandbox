@@ -1,0 +1,306 @@
+{
+  "schema": "mobile-safety-kit/report@1",
+  "generated_at": "2026-10-28T12:00:00+09:00",
+  "demo": true,
+  "support_as_of": "2026-10",
+  "score": 67,
+  "level": "warning",
+  "counts": {
+    "error": 0,
+    "warning": 4,
+    "healthy": 2,
+    "unknown": 2
+  },
+  "checks": [
+    {
+      "id": "os_version",
+      "group": "device",
+      "label": "OS バージョン",
+      "hint": "UA / Client Hints",
+      "weight": 3,
+      "status": "warning",
+      "score": 60,
+      "message": "iOS 16 は更新を推奨します",
+      "advice": "目安は iOS 18 以降です。設定 > 一般 > ソフトウェアアップデート を確認してください。",
+      "detail": "iOS 16"
+    },
+    {
+      "id": "browser_version",
+      "group": "device",
+      "label": "ブラウザ更新",
+      "hint": "User-Agent",
+      "weight": 2,
+      "status": "warning",
+      "score": 60,
+      "message": "Safari 16 は更新を推奨します",
+      "advice": "目安は Safari 17 以降です。ブラウザを最新版に更新してください。",
+      "detail": "Safari 16.6"
+    },
+    {
+      "id": "device_lock",
+      "group": "device",
+      "label": "画面ロック",
+      "hint": "手動確認",
+      "weight": 1,
+      "status": "unknown",
+      "score": null,
+      "message": "画面ロックは Web から確認できません",
+      "advice": "端末の設定 > 画面ロック でパスコードや生体認証を確認してください。",
+      "detail": "手動確認"
+    },
+    {
+      "id": "https",
+      "group": "network",
+      "label": "HTTPS 通信",
+      "hint": "Location / isSecureContext",
+      "weight": 3,
+      "status": "healthy",
+      "score": 100,
+      "message": "HTTPS で通信しています",
+      "advice": "アドレスバーの鍵アイコンで証明書の状態も確認できます。",
+      "detail": "https:"
+    },
+    {
+      "id": "connection",
+      "group": "network",
+      "label": "回線品質",
+      "hint": "Network Information",
+      "weight": 1,
+      "status": "warning",
+      "score": 55,
+      "message": "接続は 3g（低速）です",
+      "advice": "更新確認や証明書失効確認が遅れることがあります。安定した回線で再確認してください。",
+      "detail": "3g"
+    },
+    {
+      "id": "permissions",
+      "group": "privacy",
+      "label": "権限の許可状態",
+      "hint": "Permissions API",
+      "weight": 3,
+      "status": "warning",
+      "score": 40,
+      "message": "位置情報が許可されています",
+      "advice": "不要なら端末またはブラウザの設定で拒否してください。許可中: 位置情報。",
+      "detail": "位置情報: granted / カメラ: prompt / マイク: denied"
+    },
+    {
+      "id": "tracking",
+      "group": "privacy",
+      "label": "トラッキング防止",
+      "hint": "DNT / GPC",
+      "weight": 1,
+      "status": "unknown",
+      "score": null,
+      "message": "トラッキング防止の意思表示は未設定です",
+      "advice": "GPC 対応ブラウザなら設定で有効化できます。未設定でも直ちに危険というわけではありません。",
+      "detail": "Global Privacy Control: 無効 / Do Not Track: 未設定"
+    },
+    {
+      "id": "referrer",
+      "group": "privacy",
+      "label": "Referrer-Policy",
+      "hint": "Document policy",
+      "weight": 1,
+      "status": "healthy",
+      "score": 100,
+      "message": "Referrer-Policy: strict-origin-when-cross-origin",
+      "advice": "遷移先へ渡す URL 情報が制限されています。",
+      "detail": "strict-origin-when-cross-origin"
+    }
+  ],
+  "groups": [
+    {
+      "id": "device",
+      "no": "01",
+      "label": "Device Scan",
+      "sub": "端末・OS",
+      "checks": [
+        {
+          "id": "os_version",
+          "group": "device",
+          "label": "OS バージョン",
+          "hint": "UA / Client Hints",
+          "weight": 3,
+          "status": "warning",
+          "score": 60,
+          "message": "iOS 16 は更新を推奨します",
+          "advice": "目安は iOS 18 以降です。設定 > 一般 > ソフトウェアアップデート を確認してください。",
+          "detail": "iOS 16"
+        },
+        {
+          "id": "browser_version",
+          "group": "device",
+          "label": "ブラウザ更新",
+          "hint": "User-Agent",
+          "weight": 2,
+          "status": "warning",
+          "score": 60,
+          "message": "Safari 16 は更新を推奨します",
+          "advice": "目安は Safari 17 以降です。ブラウザを最新版に更新してください。",
+          "detail": "Safari 16.6"
+        },
+        {
+          "id": "device_lock",
+          "group": "device",
+          "label": "画面ロック",
+          "hint": "手動確認",
+          "weight": 1,
+          "status": "unknown",
+          "score": null,
+          "message": "画面ロックは Web から確認できません",
+          "advice": "端末の設定 > 画面ロック でパスコードや生体認証を確認してください。",
+          "detail": "手動確認"
+        }
+      ],
+      "score": 60
+    },
+    {
+      "id": "network",
+      "no": "02",
+      "label": "Security Check",
+      "sub": "接続・通信",
+      "checks": [
+        {
+          "id": "https",
+          "group": "network",
+          "label": "HTTPS 通信",
+          "hint": "Location / isSecureContext",
+          "weight": 3,
+          "status": "healthy",
+          "score": 100,
+          "message": "HTTPS で通信しています",
+          "advice": "アドレスバーの鍵アイコンで証明書の状態も確認できます。",
+          "detail": "https:"
+        },
+        {
+          "id": "connection",
+          "group": "network",
+          "label": "回線品質",
+          "hint": "Network Information",
+          "weight": 1,
+          "status": "warning",
+          "score": 55,
+          "message": "接続は 3g（低速）です",
+          "advice": "更新確認や証明書失効確認が遅れることがあります。安定した回線で再確認してください。",
+          "detail": "3g"
+        }
+      ],
+      "score": 89
+    },
+    {
+      "id": "privacy",
+      "no": "03",
+      "label": "Privacy Check",
+      "sub": "権限・追跡",
+      "checks": [
+        {
+          "id": "permissions",
+          "group": "privacy",
+          "label": "権限の許可状態",
+          "hint": "Permissions API",
+          "weight": 3,
+          "status": "warning",
+          "score": 40,
+          "message": "位置情報が許可されています",
+          "advice": "不要なら端末またはブラウザの設定で拒否してください。許可中: 位置情報。",
+          "detail": "位置情報: granted / カメラ: prompt / マイク: denied"
+        },
+        {
+          "id": "tracking",
+          "group": "privacy",
+          "label": "トラッキング防止",
+          "hint": "DNT / GPC",
+          "weight": 1,
+          "status": "unknown",
+          "score": null,
+          "message": "トラッキング防止の意思表示は未設定です",
+          "advice": "GPC 対応ブラウザなら設定で有効化できます。未設定でも直ちに危険というわけではありません。",
+          "detail": "Global Privacy Control: 無効 / Do Not Track: 未設定"
+        },
+        {
+          "id": "referrer",
+          "group": "privacy",
+          "label": "Referrer-Policy",
+          "hint": "Document policy",
+          "weight": 1,
+          "status": "healthy",
+          "score": 100,
+          "message": "Referrer-Policy: strict-origin-when-cross-origin",
+          "advice": "遷移先へ渡す URL 情報が制限されています。",
+          "detail": "strict-origin-when-cross-origin"
+        }
+      ],
+      "score": 55
+    }
+  ],
+  "alerts": [
+    {
+      "id": "permissions",
+      "group": "privacy",
+      "label": "権限の許可状態",
+      "hint": "Permissions API",
+      "weight": 3,
+      "status": "warning",
+      "score": 40,
+      "message": "位置情報が許可されています",
+      "advice": "不要なら端末またはブラウザの設定で拒否してください。許可中: 位置情報。",
+      "detail": "位置情報: granted / カメラ: prompt / マイク: denied"
+    },
+    {
+      "id": "connection",
+      "group": "network",
+      "label": "回線品質",
+      "hint": "Network Information",
+      "weight": 1,
+      "status": "warning",
+      "score": 55,
+      "message": "接続は 3g（低速）です",
+      "advice": "更新確認や証明書失効確認が遅れることがあります。安定した回線で再確認してください。",
+      "detail": "3g"
+    },
+    {
+      "id": "os_version",
+      "group": "device",
+      "label": "OS バージョン",
+      "hint": "UA / Client Hints",
+      "weight": 3,
+      "status": "warning",
+      "score": 60,
+      "message": "iOS 16 は更新を推奨します",
+      "advice": "目安は iOS 18 以降です。設定 > 一般 > ソフトウェアアップデート を確認してください。",
+      "detail": "iOS 16"
+    },
+    {
+      "id": "browser_version",
+      "group": "device",
+      "label": "ブラウザ更新",
+      "hint": "User-Agent",
+      "weight": 2,
+      "status": "warning",
+      "score": 60,
+      "message": "Safari 16 は更新を推奨します",
+      "advice": "目安は Safari 17 以降です。ブラウザを最新版に更新してください。",
+      "detail": "Safari 16.6"
+    }
+  ],
+  "facts": {
+    "host": "watanabe3tipapa.github.io",
+    "protocol": "https:",
+    "os": "iOS 16",
+    "os_raw": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+    "browser": "Safari 16.6",
+    "platform": "iPhone",
+    "screen": "390×844 @3x",
+    "languages": [
+      "ja-JP",
+      "ja",
+      "en-US",
+      "en"
+    ],
+    "touch": true,
+    "standalone": false,
+    "cookie_enabled": true,
+    "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
+  }
+}

@@ -16,6 +16,7 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 | 01 | [Pipeline Viz](PipelineViz/) | Active | [LP](PipelineViz/) / [Dashboard](PipelineViz/viewer/) / [README](PipelineViz/README.md) |
 | 02 | [Goose サンプル探訪](GooseSamples/) | Active | [LP](GooseSamples/) / [探訪ビュー](GooseSamples/explorer/) / [README](GooseSamples/README.md) |
 | 03 | [Process Sentinel](ProcessSentinel/) | Active | [LP](ProcessSentinel/) / [Viewer](ProcessSentinel/viewer/) / [README](ProcessSentinel/README.md) |
+| 04 | [Mobile Safety Kit](MobileSafetyKit/) | Active | [LP](MobileSafetyKit/) / [Dashboard](MobileSafetyKit/viewer/) / [README](MobileSafetyKit/README.md) |
 
 ### Pipeline Viz
 
@@ -41,6 +42,15 @@ Mac のプロセスを親子ツリーとして表示し、署名・CPU・メモ�
 - LP: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/)
 - Viewer: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/viewer/)
 - 収集: `tools/collect_processes.py`（`ps` / `codesign` / `lsof`、macOS のみ）
+
+### Mobile Safety Kit
+
+スマホの OS・通信・権限・追跡防止をブラウザ標準 API だけで診断し、Device → Network → Privacy → Risk Judge のパイプラインとして表示する静的ダッシュボードです。
+
+- LP: [https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/](https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/)
+- Dashboard: [https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/viewer/)
+- デモ表示: [https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/viewer/?demo=1](https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/viewer/?demo=1)
+- 判定: `viewer/lib/scanner.js`（8 チェック / 重み付きスコア / Unknown は除外）
 
 ## リポジトリ構成
 
@@ -68,6 +78,14 @@ goose-sandbox/
 │   │   └── lib/                  # 分類・差分・レイアウト
 │   ├── tools/                    # macOS コレクタ
 │   └── README.md
+├── MobileSafetyKit/              # プロジェクト 04
+│   ├── index.html                # プロジェクト LP
+│   ├── viewer/                   # セキュリティ診断ダッシュボード
+│   │   ├── lib/                  # 判定・スコア・差分
+│   │   └── data/                 # 合成デモレポート
+│   ├── tools/                    # デモレポート生成
+│   ├── .omm/                     # oh-my-mermaid の Perspective 定義
+│   └── README.md
 ├── .github/
 │   └── workflows/
 │       └── pages.yml             # GitHub Pages デプロイ
@@ -84,6 +102,7 @@ goose-sandbox/
 - Pipeline Viz: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/)
 - Goose サンプル探訪: [https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/](https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/)
 - Process Sentinel: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/)
+- Mobile Safety Kit: [https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/](https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/)
 
 初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。
 
@@ -102,6 +121,8 @@ python3 -m http.server 8000
 - 探訪ビュー: `http://localhost:8000/GooseSamples/explorer/`
 - Process Sentinel: `http://localhost:8000/ProcessSentinel/`
 - Process Viewer: `http://localhost:8000/ProcessSentinel/viewer/`
+- Mobile Safety Kit: `http://localhost:8000/MobileSafetyKit/`
+- Safety Dashboard: `http://localhost:8000/MobileSafetyKit/viewer/`
 
 ## 新しいプロジェクトを追加する
 

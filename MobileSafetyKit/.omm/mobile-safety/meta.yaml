@@ -1,0 +1,13 @@
+# Mobile Safety Kit runtime config
+# - paths are resolved relative to this file
+# - the viewer runs the scan in-browser; this file documents how a
+#   Pipeline Viz style consumer can pick up the latest report
+updated: 2026-10-28T12:00:00Z
+live_metrics_url: ../../viewer/data/demo-report.json
+poll_interval_ms: 0
+default_view: mobile-safety
+status_map:
+  Healthy: "classDef healthy fill:#34d399,stroke:#0b0b0b,color:#0b0b0b"
+  Warning: "classDef warning fill:#fbbf24,stroke:#0b0b0b,color:#0b0b0b"
+  Error: "classDef error fill:#f87171,stroke:#0b0b0b,color:#0b0b0b"
+  Unknown: "classDef unknown fill:#94a3b8,stroke:#0b0b0b,color:#0b0b0b"
