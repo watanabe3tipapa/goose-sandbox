@@ -3,272 +3,400 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f19'/%3E%3Crect x='4.5' y='4.5' width='23' height='23' rx='5' fill='none' stroke='%2338bdf8'/%3E%3Cpath d='M16 8l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8v-5z' fill='none' stroke='%237dd3fc' stroke-width='2'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23ffffff'/%3E%3Crect x='7' y='7' width='18' height='18' fill='%2300e5a8' stroke='%230b0b0b' stroke-width='4'/%3E%3C/svg%3E">
 <title>Mobile Safety Kit — スマホの状態を、ブラウザだけで診断する</title>
 <meta name="description" content="OS・通信・権限・追跡防止をブラウザ標準 API で診断し、Device → Network → Privacy → Risk Judge のパイプラインとして可視化する実験プロジェクト。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
 <style>
 :root {
-  color-scheme: dark;
-  --bg: #0b0f19;
-  --bg-2: #0d1421;
-  --panel: #111827;
-  --panel-2: #162033;
-  --ink: #f3f4f6;
-  --muted: #9ca3af;
-  --faint: #6b7f9c;
-  --line: rgba(148, 163, 184, 0.16);
-  --line-strong: rgba(148, 163, 184, 0.3);
-  --accent: #38bdf8;
-  --accent-bright: #7dd3fc;
-  --accent-soft: rgba(56, 189, 248, 0.12);
-  --healthy: #34d399;
-  --warning: #fbbf24;
-  --error: #f87171;
-  --unknown: #94a3b8;
-  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, system-ui, sans-serif;
-  --radius: 12px;
+  --bg: #ffffff;
+  --fg: #0b0b0b;
+  --accent: #00e5a8;
+  --accent-ink: #007a5a;
+  --muted: #f2f2f2;
+  --muted-2: #e9e9e9;
+  --border: #0b0b0b;
+  --faint: #525252;
+  --radius: 4px;
+  --healthy: #8ef0cf;
+  --warning: #ffc857;
+  --error: #ff6b6b;
+  --external: #b8dcff;
+  --font-ui: Inter, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Noto Mono", monospace;
 }
-*, *::before, *::after { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  margin: 0;
-  background:
-    radial-gradient(1100px 620px at 12% -10%, rgba(56, 189, 248, 0.11), transparent 62%),
-    radial-gradient(900px 560px at 96% 2%, rgba(167, 139, 250, 0.09), transparent 58%),
-    var(--bg);
-  color: var(--ink);
-  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: 1.0625rem;
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3, p, ul, ol, figure { margin: 0; }
 ul, ol { padding-left: 1.25rem; }
 li { margin-bottom: 0.35rem; }
-a { color: var(--accent-bright); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a { color: inherit; }
 button { font: inherit; }
-code, kbd { font-family: var(--mono); }
+code, kbd { font-family: var(--font-mono); }
 code {
-  padding: 1px 5px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: var(--bg-2);
-  color: #bae6fd;
+  padding: 1px 6px;
+  border: 2px dashed var(--border);
+  border-radius: 2px;
+  background: var(--bg);
   font-size: 0.86em;
+  white-space: nowrap;
 }
-::selection { background: var(--accent); color: #06121c; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.step code, .feature code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-ink);
+  font-size: 0.86em;
+  font-weight: 700;
+  white-space: normal;
+}
+pre code {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: inherit;
+  white-space: inherit;
+}
+::selection { background: var(--accent); color: var(--fg); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
-.wrap { max-width: 1080px; margin: 0 auto; padding: 0 clamp(14px, 3vw, 28px) 40px; }
+.wrap {
+  max-width: 980px;
+  margin: 28px auto 48px;
+  padding: 26px 28px 40px;
+  border: 6px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--muted), transparent 40%);
+}
 
 header.site {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0;
+  margin-bottom: 22px;
+  border-bottom: 0;
 }
-.brand { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 12px;
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: inherit;
+  text-decoration: none;
+}
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(56, 189, 248, 0.55);
-  border-radius: 8px;
-  background: linear-gradient(145deg, rgba(56, 189, 248, 0.3), rgba(56, 189, 248, 0.05));
-  color: var(--accent-bright);
-  font-family: var(--mono);
-  font-size: 11px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  background: var(--accent);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: -0.04em;
 }
-.brand b { font-size: 14px; font-weight: 900; letter-spacing: -0.01em; }
-.brand small { display: block; color: var(--faint); font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+.brand b { display: block; font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; }
+.brand small { display: block; color: var(--faint); font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em; line-height: 1.3; }
 .site-nav { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
 .site-nav a {
-  padding: 5px 9px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 500;
+  padding: 6px 12px;
+  white-space: nowrap;
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+  font-weight: 700;
   text-decoration: none;
 }
-.site-nav a:hover { border-color: var(--line-strong); color: var(--ink); }
-.site-nav a.primary { border-color: var(--accent); background: var(--accent); color: #06121c; font-weight: 700; }
-.site-nav a.primary:hover { background: var(--accent-bright); color: #06121c; }
+.site-nav a:hover { background: var(--accent); }
+.site-nav a.primary { background: var(--accent); }
+.site-nav a.primary:hover { background: var(--fg); color: var(--bg); }
 
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: clamp(24px, 4vw, 52px);
   align-items: center;
-  padding: clamp(34px, 6vw, 72px) 0 clamp(30px, 5vw, 58px);
+  padding: 0 0 34px;
 }
 .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 3px 9px;
-  margin-bottom: 16px;
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent-bright);
-  font-family: var(--mono);
-  font-size: 9px;
+  display: inline-block;
+  padding: 2px 9px;
+  margin-bottom: 14px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  background: var(--muted);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.eyebrow::before { display: none; }
 h1 {
-  font-size: clamp(2.5rem, 1.7rem + 3.4vw, 4.4rem);
-  line-height: 1.02;
-  letter-spacing: -0.045em;
-  font-weight: 900;
+  display: inline-block;
+  padding: 6px 16px;
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  font-size: clamp(2.2rem, 1.6rem + 2.4vw, 3.3rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
 }
-h1 span { color: var(--accent); }
+h1 span { color: var(--fg); }
 .hero .lead {
   max-width: 54ch;
-  margin-top: 18px;
-  color: var(--muted);
-  font-size: clamp(0.96rem, 0.9rem + 0.2vw, 1.05rem);
+  margin-top: 16px;
+  color: var(--fg);
+  font-size: 1.05rem;
 }
-.hero .lead strong { color: var(--ink); font-weight: 700; }
-.cta { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 24px; }
+.hero .lead strong { font-weight: 700; border-bottom: 3px solid var(--accent); }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 10px 15px;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: var(--panel-2);
-  color: var(--ink);
-  font-family: var(--mono);
-  font-size: 11px;
+  padding: 9px 16px;
+  border: 4px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
   font-weight: 700;
   text-decoration: none;
 }
-.btn:hover { border-color: var(--accent); color: var(--accent-bright); }
-.btn.primary { border-color: var(--accent); background: var(--accent); color: #06121c; }
-.btn.primary:hover { background: var(--accent-bright); color: #06121c; }
-.hero-note { margin-top: 14px; color: var(--faint); font-family: var(--mono); font-size: 9.5px; }
+.btn:hover { background: var(--fg); color: var(--bg); }
+.btn.primary { background: var(--accent); }
+.btn.primary:hover { background: var(--fg); color: var(--bg); }
+.hero-note { margin-top: 12px; color: var(--faint); font-family: var(--font-mono); font-size: 0.78rem; }
 
 .hero-figure {
   padding: 12px;
-  border: 1px solid var(--line);
+  border: 5px solid var(--border);
   border-radius: var(--radius);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent), var(--panel);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  background: var(--bg);
 }
 .figure-bar {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 2px 3px 9px;
+  padding: 0 2px 9px;
   color: var(--faint);
-  font-family: var(--mono);
-  font-size: 8.5px;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.figure-bar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+.figure-bar .dot { width: 10px; height: 10px; border: 2px solid var(--border); border-radius: 2px; background: var(--warning); }
 .figure-bar .spacer { margin-left: auto; }
-.hero-figure svg { display: block; width: 100%; height: auto; border-radius: 7px; background: #080f1b; }
+.hero-figure svg { display: block; width: 100%; height: auto; border: 2px solid var(--border); border-radius: 2px; background: var(--bg); }
 .figure-caption {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 10px;
-  padding: 9px 3px 1px;
+  gap: 4px 10px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 2px dashed var(--border);
   color: var(--faint);
-  font-family: var(--mono);
-  font-size: 8.5px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
 }
-.figure-caption b { color: var(--warning); font-weight: 700; }
+.figure-caption b { color: var(--fg); font-weight: 700; }
 
-.section { padding: clamp(28px, 4vw, 44px) 0; border-top: 1px solid var(--line); }
-.section-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-.kicker { color: var(--accent); font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.16em; }
-h2 { font-size: clamp(1.35rem, 1.1rem + 1vw, 1.85rem); line-height: 1.25; letter-spacing: -0.025em; }
-.section > p { max-width: 74ch; color: var(--muted); }
+.section { padding: 0; margin-bottom: 42px; border-top: 0; }
+.section-head { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.kicker { color: var(--faint); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; }
+h2 {
+  display: table;
+  padding: 5px 12px;
+  border: 3px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+h2::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  vertical-align: 2px;
+  background: var(--accent);
+  border: 2px solid var(--border);
+}
+.section > p { max-width: 74ch; }
 .section > p + p { margin-top: 10px; }
+.section > p a { font-weight: 700; text-decoration: none; border-bottom: 3px solid var(--border); padding: 0 2px; }
+.section > p a:hover { background: var(--accent); }
 
-.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
 .step {
-  position: relative;
   padding: 16px;
-  border: 1px solid var(--line);
+  border: 4px solid var(--border);
   border-radius: var(--radius);
-  background: var(--panel);
+  background: var(--bg);
 }
-.step-no { color: var(--accent); font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; }
-.step h3 { margin-top: 4px; font-size: 1rem; letter-spacing: -0.01em; }
-.step p { margin-top: 5px; color: var(--muted); font-size: 0.83rem; line-height: 1.65; }
-.step code { font-size: 0.78em; }
+.step-no { color: var(--accent-ink); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; }
+.step h3 { margin-top: 4px; font-size: 1.05rem; font-weight: 700; }
+.step p { margin-top: 5px; font-size: 0.92rem; }
 
-.checks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+.checks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
 .check-card {
   padding: 16px;
-  border: 1px solid var(--line);
+  border: 4px solid var(--border);
   border-radius: var(--radius);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent), var(--panel);
+  background: var(--bg);
 }
-.check-card h3 { display: flex; align-items: center; gap: 7px; font-size: 0.95rem; letter-spacing: -0.01em; }
-.check-card h3::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--group-color, var(--accent)); }
-.check-card.device { --group-color: var(--accent); }
-.check-card.network { --group-color: var(--healthy); }
-.check-card.privacy { --group-color: #c4b5fd; }
+.check-card h3 { display: flex; align-items: center; gap: 8px; font-size: 1.02rem; font-weight: 700; }
+.check-card h3::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  background: var(--accent);
+  border: 2px solid var(--border);
+}
 .check-card ul { list-style: none; padding: 0; margin: 10px 0 0; }
-.check-card li { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 0.82rem; color: var(--muted); }
-.check-card li:last-child { border-bottom: 0; }
-.check-card .w { flex-shrink: 0; color: var(--faint); font-family: var(--mono); font-size: 8.5px; }
-.check-card .manual { color: var(--unknown); }
-
-.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
-.feature {
-  padding: 15px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent), var(--panel);
+.check-card li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 2px solid var(--muted);
+  font-size: 0.9rem;
 }
-.feature .icon { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-bottom: 9px; border: 1px solid var(--line-strong); border-radius: 6px; color: var(--accent); font-family: var(--mono); font-size: 10px; font-weight: 700; }
-.feature h3 { font-size: 0.94rem; letter-spacing: -0.01em; }
-.feature p { margin-top: 4px; color: var(--muted); font-size: 0.81rem; line-height: 1.65; }
+.check-card li:last-child { border-bottom: 0; }
+.check-card .w { flex-shrink: 0; color: var(--faint); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; }
+.check-card .manual { color: var(--faint); }
 
-.status-table { width: 100%; margin-top: 20px; border-collapse: collapse; table-layout: fixed; font-size: 0.86rem; }
-.status-table th, .status-table td { padding: 9px 11px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-.status-table th { color: var(--faint); font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; }
-.status-table td { overflow-wrap: anywhere; }
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.feature {
+  padding: 16px;
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.feature:hover { background: var(--accent); }
+.feature .icon {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 9px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  background: var(--muted);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.feature:hover .icon { background: var(--bg); }
+.feature h3 { font-size: 1rem; font-weight: 700; }
+.feature p { margin-top: 4px; font-size: 0.9rem; }
+
+.status-table {
+  width: 100%;
+  margin-top: 18px;
+  border: 3px solid var(--border);
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.92rem;
+}
+.status-table th, .status-table td {
+  padding: 9px 12px;
+  border-bottom: 2px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.status-table th { background: var(--muted); font-family: var(--font-mono); font-size: 0.74rem; font-weight: 700; }
+.status-table tr:last-child td { border-bottom: 0; }
 .status-table th:nth-child(1), .status-table td:nth-child(1) { width: 20%; }
 .status-table th:nth-child(3), .status-table td:nth-child(3) { width: 30%; }
-.status-pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; font-weight: 700; }
-.status-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--pill); }
-.status-pill.error { --pill: var(--error); color: var(--error); }
-.status-pill.warning { --pill: var(--warning); color: var(--warning); }
-.status-pill.healthy { --pill: var(--healthy); color: var(--healthy); }
-.status-pill.unknown { --pill: var(--unknown); color: var(--unknown); }
+.status-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+.status-pill::before { display: none; }
+.status-pill.error { background: var(--error); }
+.status-pill.warning { background: var(--warning); }
+.status-pill.healthy { background: var(--healthy); }
+.status-pill.unknown { background: var(--muted); }
 
-.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 22px; }
-.code-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); overflow: hidden; }
-.code-card header { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-bottom: 1px solid var(--line); color: var(--faint); font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; }
-.code-card header .spacer { margin-left: auto; color: var(--faint); font-size: 8px; }
-.code-card pre { margin: 0; padding: 12px 14px; overflow-x: auto; color: #d8e2f2; font-family: var(--mono); font-size: 10.5px; line-height: 1.8; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 18px; }
+.code-card { border: 3px solid var(--border); border-radius: var(--radius); background: var(--bg); overflow: hidden; }
+.code-card header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-bottom: 2px solid var(--border);
+  background: var(--muted);
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.code-card header .spacer { margin-left: auto; }
+.code-card pre {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.8;
+}
 .code-card pre .c { color: var(--faint); }
-.code-card pre .a { color: var(--accent-bright); }
-.code-card pre .g { color: var(--healthy); }
-.notes { margin-top: 12px; color: var(--faint); font-size: 0.78rem; }
+.code-card pre .a { color: var(--accent-ink); font-weight: 700; }
+.code-card pre .g { color: #0b6b52; font-weight: 700; }
+.notes { margin-top: 12px; color: var(--faint); font-size: 0.82rem; }
 
-.limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; margin-top: 18px; }
-.limits div { padding-left: 12px; border-left: 2px solid var(--line-strong); }
-.limits b { display: block; font-size: 0.87rem; }
-.limits p { color: var(--muted); font-size: 0.8rem; }
+.limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; margin-top: 18px; }
+.limits div { padding-left: 12px; border-left: 4px solid var(--border); }
+.limits b { display: block; font-size: 0.95rem; }
+.limits p { color: var(--fg); font-size: 0.88rem; }
 
 footer.site {
   display: flex;
@@ -276,37 +404,43 @@ footer.site {
   align-items: center;
   justify-content: space-between;
   gap: 8px 18px;
-  padding: 20px 0 0;
-  border-top: 1px solid var(--line);
+  margin-top: 34px;
+  padding-top: 18px;
+  border-top: 4px solid var(--border);
   color: var(--faint);
-  font-family: var(--mono);
-  font-size: 9px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
 }
-footer.site a { color: var(--muted); }
+footer.site a { color: var(--fg); text-decoration: underline; text-decoration-thickness: 2px; }
 
 @media (max-width: 900px) {
-  .hero { grid-template-columns: minmax(0, 1fr); padding-top: 32px; }
-  .hero-figure { order: -1; max-width: 560px; }
+  .hero { grid-template-columns: minmax(0, 1fr); padding-top: 8px; }
+  .hero-figure { max-width: 560px; }
   .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 680px) {
-  .site-nav a:not(.primary) { display: none; }
+  .wrap { margin: 14px; padding: 20px 16px 30px; border-width: 4px; }
+  .site-nav { width: 100%; margin-left: 0; }
+  .site-nav a { flex: 1; text-align: center; font-size: 0.86rem; }
+  .site-nav a.primary { flex-basis: 100%; }
   .steps, .checks, .features, .split, .limits { grid-template-columns: minmax(0, 1fr); }
-  .status-table th:nth-child(1), .status-table td:nth-child(1) { width: 23%; }
-  .status-table { font-size: 0.8rem; }
-  h1 { letter-spacing: -0.04em; }
+  .status-table th:nth-child(1), .status-table td:nth-child(1) { width: 24%; }
+  .status-table { font-size: 0.84rem; }
+  h1 { font-size: 2rem; }
 }
 @media (max-width: 400px) {
-  .wrap { padding: 0 11px 28px; }
+  .wrap { padding: 16px 12px 26px; }
   .brand small { display: none; }
   .cta .btn { flex: 1; justify-content: center; }
   .hero-figure { padding: 8px; }
 }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
 @media print {
-  body { background: #fff; color: #000; }
+  body { background: #fff; }
   .site-nav, .cta, .hero-figure { display: none; }
-  .section, .hero { break-inside: avoid; }
+  .section, .hero, .step, .check-card, .feature, .code-card { break-inside: avoid; }
 }
 </style>
 </head>
@@ -353,93 +487,93 @@ footer.site a { color: var(--muted); }
         <svg viewBox="0 0 540 360" role="img" aria-label="スマホの画面に Safety Score 67 と Warning が表示され、Device・Network・Privacy のチェックが Risk Judge へ流れ込む図。">
           <defs>
             <linearGradient id="nodeBg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#18273d"/>
-              <stop offset="1" stop-color="#101b2c"/>
+              <stop offset="0" stop-color="#ffffff"/>
+              <stop offset="1" stop-color="#f2f2f2"/>
             </linearGradient>
             <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L0,5 L7,2.5 z" fill="#38bdf8" fill-opacity="0.55"/>
+              <path d="M0,0 L0,5 L7,2.5 z" fill="#0b0b0b"/>
             </marker>
           </defs>
 
           <!-- left pipeline labels -->
-          <g font-family="JetBrains Mono, monospace" font-size="7.5">
-            <rect x="14" y="70" width="106" height="30" rx="6" fill="#111827" stroke="#38bdf8" stroke-opacity="0.35"/>
-            <text x="24" y="83" fill="#7dd3fc" font-size="6" letter-spacing="0.08em">01 / DEVICE</text>
-            <text x="24" y="93" fill="#dbe7f7" font-size="7.5">OS · Browser · Lock</text>
+          <g font-family="Roboto Mono, monospace" font-size="7.5">
+            <rect x="14" y="70" width="106" height="30" rx="2" fill="#ffffff" stroke="#0b0b0b" stroke-width="1.2"/>
+            <text x="24" y="83" fill="#007a5a" font-size="6" font-weight="700" letter-spacing="0.08em">01 / DEVICE</text>
+            <text x="24" y="93" fill="#0b0b0b" font-size="7.5">OS · Browser · Lock</text>
 
-            <rect x="14" y="150" width="106" height="30" rx="6" fill="#111827" stroke="#34d399" stroke-opacity="0.35"/>
-            <text x="24" y="163" fill="#6ee7b7" font-size="6" letter-spacing="0.08em">02 / NETWORK</text>
-            <text x="24" y="173" fill="#dbe7f7" font-size="7.5">HTTPS · Connection</text>
+            <rect x="14" y="150" width="106" height="30" rx="2" fill="#ffffff" stroke="#0b0b0b" stroke-width="1.2"/>
+            <text x="24" y="163" fill="#007a5a" font-size="6" font-weight="700" letter-spacing="0.08em">02 / NETWORK</text>
+            <text x="24" y="173" fill="#0b0b0b" font-size="7.5">HTTPS · Connection</text>
 
-            <rect x="14" y="230" width="106" height="30" rx="6" fill="#111827" stroke="#c4b5fd" stroke-opacity="0.4"/>
-            <text x="24" y="243" fill="#c4b5fd" font-size="6" letter-spacing="0.08em">03 / PRIVACY</text>
-            <text x="24" y="253" fill="#dbe7f7" font-size="7.5">Permissions · Policy</text>
+            <rect x="14" y="230" width="106" height="30" rx="2" fill="#ffffff" stroke="#0b0b0b" stroke-width="1.2"/>
+            <text x="24" y="243" fill="#007a5a" font-size="6" font-weight="700" letter-spacing="0.08em">03 / PRIVACY</text>
+            <text x="24" y="253" fill="#0b0b0b" font-size="7.5">Permissions · Policy</text>
           </g>
-          <g stroke="#38bdf8" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arr)">
+          <g stroke="#0b0b0b" stroke-width="1.1" stroke-dasharray="3 3" marker-end="url(#arr)">
             <line x1="120" y1="85" x2="166" y2="85"/>
             <line x1="120" y1="165" x2="166" y2="165"/>
             <line x1="120" y1="245" x2="166" y2="245"/>
           </g>
 
           <!-- phone -->
-          <rect x="168" y="16" width="208" height="328" rx="30" fill="#0e1726" stroke="#38bdf8" stroke-opacity="0.42" stroke-width="1.5"/>
-          <rect x="178" y="38" width="188" height="284" rx="20" fill="#080f1b" stroke="#1c2a40"/>
-          <rect x="244" y="25" width="56" height="5" rx="2.5" fill="#1c2a40"/>
+          <rect x="168" y="16" width="208" height="328" rx="18" fill="#ffffff" stroke="#0b0b0b" stroke-width="2.5"/>
+          <rect x="178" y="38" width="188" height="284" rx="10" fill="#ffffff" stroke="#d4d4d4" stroke-width="1.2"/>
+          <rect x="244" y="25" width="56" height="5" rx="2.5" fill="#e9e9e9" stroke="#0b0b0b" stroke-width="1"/>
 
-          <g font-family="JetBrains Mono, monospace">
-            <text x="190" y="58" fill="#6b7f9c" font-size="6" letter-spacing="0.1em">MOBILE SAFETY KIT</text>
-            <text x="190" y="96" fill="#f3f4f6" font-size="30" font-weight="700" letter-spacing="-1">67</text>
-            <text x="228" y="96" fill="#6b7f9c" font-size="7.5">/ 100</text>
+          <g font-family="Roboto Mono, monospace">
+            <text x="190" y="58" fill="#525252" font-size="6" letter-spacing="0.1em">MOBILE SAFETY KIT</text>
+            <text x="190" y="96" fill="#0b0b0b" font-size="30" font-weight="700" letter-spacing="-1">67</text>
+            <text x="228" y="96" fill="#525252" font-size="7.5">/ 100</text>
 
-            <rect x="292" y="78" width="62" height="16" rx="8" fill="#fbbf24" fill-opacity="0.14" stroke="#fbbf24" stroke-opacity="0.6"/>
-            <text x="323" y="89" text-anchor="middle" fill="#fbbf24" font-size="6.5" font-weight="700">WARNING</text>
+            <rect x="292" y="78" width="62" height="16" rx="2" fill="#ffc857" stroke="#0b0b0b" stroke-width="1.2"/>
+            <text x="323" y="89" text-anchor="middle" fill="#0b0b0b" font-size="6.5" font-weight="700">WARNING</text>
 
             <!-- rows -->
             <g>
-              <rect x="190" y="118" width="164" height="24" rx="5" fill="#111827" stroke="#94a3b8" stroke-opacity="0.14"/>
-              <circle cx="200" cy="130" r="2.6" fill="#fbbf24"/>
-              <text x="208" y="128" fill="#e5e7eb" font-size="7.2">OS バージョン</text>
-              <text x="208" y="137" fill="#6b7f9c" font-size="5.6">iOS 16 · 更新を推奨</text>
-              <text x="344" y="133" text-anchor="end" fill="#fbbf24" font-size="7" font-weight="700">60</text>
+              <rect x="190" y="118" width="164" height="24" rx="2" fill="#ffffff" stroke="#d4d4d4"/>
+              <rect x="196.5" y="126.5" width="7" height="7" fill="#ffc857" stroke="#0b0b0b" stroke-width="1"/>
+              <text x="208" y="128" fill="#0b0b0b" font-size="7.2">OS バージョン</text>
+              <text x="208" y="137" fill="#525252" font-size="5.6">iOS 16 · 更新を推奨</text>
+              <text x="344" y="133" text-anchor="end" fill="#8a5a00" font-size="7" font-weight="700">60</text>
             </g>
             <g>
-              <rect x="190" y="148" width="164" height="24" rx="5" fill="#111827" stroke="#94a3b8" stroke-opacity="0.14"/>
-              <circle cx="200" cy="160" r="2.6" fill="#34d399"/>
-              <text x="208" y="158" fill="#e5e7eb" font-size="7.2">HTTPS 通信</text>
-              <text x="208" y="167" fill="#6b7f9c" font-size="5.6">https · 証明書あり</text>
-              <text x="344" y="163" text-anchor="end" fill="#34d399" font-size="7" font-weight="700">100</text>
+              <rect x="190" y="148" width="164" height="24" rx="2" fill="#ffffff" stroke="#d4d4d4"/>
+              <rect x="196.5" y="156.5" width="7" height="7" fill="#8ef0cf" stroke="#0b0b0b" stroke-width="1"/>
+              <text x="208" y="158" fill="#0b0b0b" font-size="7.2">HTTPS 通信</text>
+              <text x="208" y="167" fill="#525252" font-size="5.6">https · 証明書あり</text>
+              <text x="344" y="163" text-anchor="end" fill="#0b6b52" font-size="7" font-weight="700">100</text>
             </g>
             <g>
-              <rect x="190" y="178" width="164" height="24" rx="5" fill="#111827" stroke="#94a3b8" stroke-opacity="0.14"/>
-              <circle cx="200" cy="190" r="2.6" fill="#fbbf24"/>
-              <text x="208" y="188" fill="#e5e7eb" font-size="7.2">権限の許可状態</text>
-              <text x="208" y="197" fill="#6b7f9c" font-size="5.6">位置情報が許可</text>
-              <text x="344" y="193" text-anchor="end" fill="#fbbf24" font-size="7" font-weight="700">40</text>
+              <rect x="190" y="178" width="164" height="24" rx="2" fill="#ffffff" stroke="#d4d4d4"/>
+              <rect x="196.5" y="186.5" width="7" height="7" fill="#ffc857" stroke="#0b0b0b" stroke-width="1"/>
+              <text x="208" y="188" fill="#0b0b0b" font-size="7.2">権限の許可状態</text>
+              <text x="208" y="197" fill="#525252" font-size="5.6">位置情報が許可</text>
+              <text x="344" y="193" text-anchor="end" fill="#8a5a00" font-size="7" font-weight="700">40</text>
             </g>
             <g>
-              <rect x="190" y="208" width="164" height="24" rx="5" fill="#111827" stroke="#94a3b8" stroke-opacity="0.14"/>
-              <circle cx="200" cy="220" r="2.6" fill="#94a3b8"/>
-              <text x="208" y="218" fill="#e5e7eb" font-size="7.2">画面ロック</text>
-              <text x="208" y="227" fill="#6b7f9c" font-size="5.6">Web からは確認できません</text>
-              <text x="344" y="223" text-anchor="end" fill="#94a3b8" font-size="7" font-weight="700">—</text>
+              <rect x="190" y="208" width="164" height="24" rx="2" fill="#ffffff" stroke="#d4d4d4"/>
+              <rect x="196.5" y="216.5" width="7" height="7" fill="#e5e5e5" stroke="#0b0b0b" stroke-width="1"/>
+              <text x="208" y="218" fill="#0b0b0b" font-size="7.2">画面ロック</text>
+              <text x="208" y="227" fill="#525252" font-size="5.6">Web からは確認できません</text>
+              <text x="344" y="223" text-anchor="end" fill="#525252" font-size="7" font-weight="700">—</text>
             </g>
 
-            <rect x="190" y="246" width="164" height="5" rx="2.5" fill="#1c2a40"/>
-            <rect x="190" y="246" width="110" height="5" rx="2.5" fill="#fbbf24" fill-opacity="0.8"/>
-            <text x="190" y="266" fill="#6b7f9c" font-size="5.8">8 checks · 4 warnings · 2 unknown</text>
-            <text x="190" y="304" fill="#38bdf8" font-size="5.6" letter-spacing="0.06em">DEVICE → NETWORK → PRIVACY → JUDGE</text>
+            <rect x="190" y="246" width="164" height="6" rx="2" fill="#e9e9e9" stroke="#0b0b0b" stroke-width="1"/>
+            <rect x="191.5" y="247.5" width="107" height="3" rx="1" fill="#ffc857"/>
+            <text x="190" y="266" fill="#525252" font-size="5.8">8 checks · 4 warnings · 2 unknown</text>
+            <text x="190" y="304" fill="#007a5a" font-size="5.6" font-weight="700" letter-spacing="0.06em">DEVICE → NETWORK → PRIVACY → JUDGE</text>
           </g>
 
           <!-- right judge card -->
-          <rect x="402" y="156" width="124" height="54" rx="8" fill="url(#nodeBg)" stroke="#38bdf8" stroke-opacity="0.4"/>
-          <text x="414" y="175" fill="#f3f4f6" font-size="8" font-weight="700" font-family="JetBrains Mono, monospace">Risk Judge</text>
-          <text x="414" y="189" fill="#fbbf24" font-size="7" font-family="JetBrains Mono, monospace">67 / Warning</text>
-          <text x="414" y="201" fill="#6b7f9c" font-size="5.6" font-family="JetBrains Mono, monospace">weakest check wins</text>
-          <g stroke="#38bdf8" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#arr)">
+          <rect x="402" y="156" width="124" height="54" rx="2" fill="url(#nodeBg)" stroke="#0b0b0b" stroke-width="1.5"/>
+          <text x="414" y="175" fill="#0b0b0b" font-size="8" font-weight="700" font-family="Roboto Mono, monospace">Risk Judge</text>
+          <text x="414" y="189" fill="#8a5a00" font-size="7" font-weight="700" font-family="Roboto Mono, monospace">67 / Warning</text>
+          <text x="414" y="201" fill="#525252" font-size="5.6" font-family="Roboto Mono, monospace">weakest check wins</text>
+          <g stroke="#0b0b0b" stroke-width="1.1" stroke-dasharray="3 3" marker-end="url(#arr)">
             <line x1="376" y1="183" x2="400" y2="183"/>
           </g>
 
-          <text x="14" y="342" fill="#6b7f9c" font-size="6" font-family="JetBrains Mono, monospace">診断はブラウザ内で完結。メトリクスだけをレポートとして出力します。</text>
+          <text x="14" y="342" fill="#525252" font-size="6" font-family="Roboto Mono, monospace">診断はブラウザ内で完結。メトリクスだけをレポートとして出力します。</text>
         </svg>
         <figcaption class="figure-caption">
           <span>観測から判定まで、ひと続きの流れ。</span>

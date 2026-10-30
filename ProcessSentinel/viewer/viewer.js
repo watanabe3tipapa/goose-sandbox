@@ -10,7 +10,7 @@
 
   const MODEL = window.SentinelModel;
   if (!MODEL) {
-    document.body.innerHTML = '<p style="padding:24px;color:#fecaca">model.js を読み込めませんでした。</p>';
+    document.body.innerHTML = '<p style="padding:24px;color:#b3261e">model.js を読み込めませんでした。</p>';
     return;
   }
 
@@ -695,8 +695,8 @@
       `<div class="fact"><dt>Network</dt><dd>${(process.network || []).length}</dd></div>` +
       `</dl>` +
       `<div class="insp-section"><h3>History <span class="tag">${history.length} samples</span></h3>` +
-      sparkline(history, "cpu", "#f59e0b") +
-      sparkline(history, "memory", "#8ef0cf") +
+      sparkline(history, "cpu", "#a16207") +
+      sparkline(history, "memory", "#007a5a") +
       `</div>` +
       `<div class="insp-section"><h3>Signature</h3><dl class="sql-grid">` +
       `<dt>Status</dt><dd>${escapeHtml(signatureLabel)}</dd>` +
