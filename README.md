@@ -17,6 +17,7 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 | 02 | [Goose サンプル探訪](GooseSamples/) | Active | [LP](GooseSamples/) / [探訪ビュー](GooseSamples/explorer/) / [README](GooseSamples/README.md) |
 | 03 | [Process Sentinel](ProcessSentinel/) | Active | [LP](ProcessSentinel/) / [Viewer](ProcessSentinel/viewer/) / [README](ProcessSentinel/README.md) |
 | 04 | [Mobile Safety Kit](MobileSafetyKit/) | Active | [LP](MobileSafetyKit/) / [Dashboard](MobileSafetyKit/viewer/) / [README](MobileSafetyKit/README.md) |
+| 05 | [Bootprint](Bootprint/) | Active | [LP](Bootprint/) / [Viewer](Bootprint/viewer/) / [README](Bootprint/README.md) |
 
 ### Pipeline Viz
 
@@ -52,6 +53,15 @@ Mac のプロセスを親子ツリーとして表示し、署名・CPU・メモ�
 - デモ表示: [https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/viewer/?demo=1](https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/viewer/?demo=1)
 - 判定: `viewer/lib/scanner.js`（8 チェック / 重み付きスコア / Unknown は除外）
 
+### Bootprint
+
+macOS の launchd ジョブを 4 つの配置レーンとベンダーで読み、トリガー・署名・前回差分・24 時間スケジュールを可視化する静的ビューアです。起動時に何が動くのかを「読む順番」として組み立てます。
+
+- LP: [https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/](https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/)
+- Viewer: [https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/viewer/)
+- 提案資料: [Bootprint/bootprint_proposal.html](Bootprint/bootprint_proposal.html)
+- 収集: `tools/collect_launch_jobs.py`（`plutil` / `launchctl` / `codesign`、macOS のみ）
+
 ## リポジトリ構成
 
 ```text
@@ -86,6 +96,14 @@ goose-sandbox/
 │   ├── tools/                    # デモレポート生成
 │   ├── .omm/                     # oh-my-mermaid の Perspective 定義
 │   └── README.md
+├── Bootprint/                    # プロジェクト 05
+│   ├── index.html                # プロジェクト LP
+│   ├── bootprint_proposal.html   # 提案資料
+│   ├── viewer/                   # 永続化マップ / インスペクタ / 24h リボン
+│   │   ├── data/                 # デモスナップショットとベースライン
+│   │   └── lib/                  # 検証・分類・差分・スケジュール
+│   ├── tools/                    # launchd コレクタ
+│   └── README.md
 ├── .github/
 │   └── workflows/
 │       └── pages.yml             # GitHub Pages デプロイ
@@ -103,6 +121,7 @@ goose-sandbox/
 - Goose サンプル探訪: [https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/](https://watanabe3tipapa.github.io/goose-sandbox/GooseSamples/)
 - Process Sentinel: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/)
 - Mobile Safety Kit: [https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/](https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/)
+- Bootprint: [https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/](https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/)
 
 初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。
 
@@ -123,6 +142,8 @@ python3 -m http.server 8000
 - Process Viewer: `http://localhost:8000/ProcessSentinel/viewer/`
 - Mobile Safety Kit: `http://localhost:8000/MobileSafetyKit/`
 - Safety Dashboard: `http://localhost:8000/MobileSafetyKit/viewer/`
+- Bootprint: `http://localhost:8000/Bootprint/`
+- Bootprint Viewer: `http://localhost:8000/Bootprint/viewer/`
 
 ## 新しいプロジェクトを追加する
 

@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bootprint — 起動と常駐の地図 | Project 04 提案</title>
+<meta name="description" content="macOS の launchd ジョブを、ドメイン・ベンダー・トリガー・署名の関係で可視化する Project 04 の実装提案。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2306111f'/%3E%3Crect x='4.5' y='4.5' width='23' height='23' rx='5' fill='none' stroke='%2338bdf8'/%3E%3Cpath d='M10 23V9h6a4 4 0 0 1 0 8h-6' fill='none' stroke='%2367e8f9' stroke-width='2.2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #06111f;
+  --bg-2: #081728;
+  --panel: #0b1a2d;
+  --panel-2: #0f2238;
+  --ink: #e8f1ff;
+  --muted: #93a9c6;
+  --faint: #6b829f;
+  --line: rgba(125, 211, 252, 0.15);
+  --line-strong: rgba(125, 211, 252, 0.34);
+  --accent: #38bdf8;
+  --accent-bright: #7dd3fc;
+  --accent-soft: rgba(56, 189, 248, 0.1);
+  --coral: #fb7185;
+  --healthy: #5eead4;
+  --warning: #fbbf24;
+  --error: #fb7185;
+  --external: #93c5fd;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, system-ui, sans-serif;
+  --radius: 12px;
+  --step--2: clamp(0.62rem, 0.6rem + 0.1vw, 0.7rem);
+  --step--1: clamp(0.77rem, 0.74rem + 0.18vw, 0.87rem);
+  --step-0: clamp(0.98rem, 0.94rem + 0.22vw, 1.08rem);
+  --step-1: clamp(1.15rem, 1.02rem + 0.6vw, 1.45rem);
+  --step-2: clamp(1.5rem, 1.25rem + 1.2vw, 2.1rem);
+  --step-3: clamp(2rem, 1.55rem + 2.4vw, 3.15rem);
+  --step-4: clamp(2.6rem, 1.8rem + 4vw, 4.9rem);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background:
+    linear-gradient(rgba(56, 189, 248, 0.025) 1px, transparent 1px) 0 0 / 42px 42px,
+    linear-gradient(90deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px) 0 0 / 42px 42px,
+    radial-gradient(1100px 620px at 12% -8%, rgba(56, 189, 248, 0.11), transparent 62%),
+    radial-gradient(900px 500px at 92% 0%, rgba(251, 113, 133, 0.07), transparent 58%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--step-0);
+  line-height: 1.85;
+  line-break: strict;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p, ul, ol, figure, dl, dd { margin: 0; }
+ul, ol { padding-left: 1.25rem; }
+li { margin-bottom: 0.35rem; }
+a { color: var(--accent-bright); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: #bae6fd; }
+code, kbd { font-family: var(--mono); }
+code {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg-2);
+  color: #bae6fd;
+  font-size: 0.86em;
+  overflow-wrap: anywhere;
+}
+::selection { background: var(--accent); color: #04121f; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 clamp(14px, 3vw, 30px) 44px;
+}
+
+/* ---------- nav ---------- */
+.doc-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+}
+.doc-nav a {
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--muted);
+  text-decoration: none;
+}
+.doc-nav a:hover { border-color: var(--line-strong); color: var(--ink); }
+.doc-nav .here { border-color: var(--line-strong); background: var(--accent-soft); color: var(--accent-bright); }
+.doc-nav .spacer { margin-left: auto; }
+.doc-nav .stamp { color: var(--faint); }
+
+/* ---------- hero ---------- */
+header.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+  gap: clamp(22px, 4vw, 48px);
+  align-items: center;
+  padding: clamp(34px, 6vw, 68px) 0 clamp(28px, 5vw, 52px);
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 9px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.42);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 9px var(--accent);
+}
+h1 {
+  font-family: var(--mono);
+  font-size: var(--step-4);
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+  font-weight: 700;
+}
+h1 span { color: var(--accent); }
+.subtitle {
+  max-width: 46ch;
+  margin-top: 15px;
+  color: var(--muted);
+  font-size: var(--step-1);
+  line-height: 1.65;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 18px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 9.5px;
+}
+.hero-meta b { color: var(--muted); font-weight: 500; }
+
+.hero-art {
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.04), transparent 55%), var(--panel);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.4);
+}
+.art-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 1px 3px 9px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.art-bar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--healthy); }
+.art-bar .spacer { margin-left: auto; }
+.hero-art svg { display: block; width: 100%; height: auto; border-radius: 7px; background: #071526; }
+
+/* ---------- sections ---------- */
+section { padding: clamp(24px, 4vw, 40px) 0; border-top: 1px solid var(--line); }
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.section-no {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+h2 {
+  font-size: var(--step-2);
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+}
+h3 {
+  margin: 22px 0 7px;
+  font-size: var(--step-1);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+p { max-width: 76ch; }
+p + p { margin-top: 9px; }
+.lead { color: var(--muted); }
+strong { color: var(--ink); font-weight: 700; }
+
+.cols, .grid-2, .grid-3 {
+  display: grid;
+  gap: 11px;
+  margin-top: 16px;
+}
+.cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card {
+  padding: 15px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent), var(--panel);
+}
+.card h3, .card h4 { margin: 0 0 4px; font-size: 0.98rem; letter-spacing: -0.01em; }
+.card p { color: var(--muted); font-size: 0.88rem; line-height: 1.7; }
+.card .label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.card.warn { border-color: rgba(251, 191, 36, 0.28); background: rgba(251, 191, 36, 0.04); }
+.card.danger { border-color: rgba(251, 113, 133, 0.32); background: rgba(251, 113, 133, 0.055); }
+
+.note {
+  margin-top: 14px;
+  padding: 10px 13px;
+  border-left: 2px solid var(--accent);
+  background: rgba(56, 189, 248, 0.055);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.note strong { color: var(--ink); }
+.note.warn { border-left-color: var(--warning); background: rgba(251, 191, 36, 0.055); }
+
+/* ---------- tables ---------- */
+.table-wrap { margin-top: 14px; overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+th, td { padding: 9px 11px; border-bottom: 1px solid rgba(125, 211, 252, 0.09); text-align: left; vertical-align: top; }
+th {
+  background: rgba(56, 189, 248, 0.05);
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+tr:last-child td { border-bottom: 0; }
+td code { font-size: 0.8rem; }
+td:first-child { white-space: nowrap; }
+
+/* ---------- status ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 7px;
+  border: 1px solid var(--pill, var(--line-strong));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pill, var(--line-strong)) 11%, transparent);
+  color: var(--pill, var(--muted));
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.pill::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--pill); }
+.pill.error { --pill: var(--error); }
+.pill.warning { --pill: var(--warning); }
+.pill.healthy { --pill: var(--healthy); }
+.pill.external { --pill: var(--external); }
+.pill.removed { --pill: var(--faint); }
+
+/* ---------- code ---------- */
+pre {
+  margin: 13px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #050f1b;
+  overflow-x: auto;
+  color: #d7e8fa;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  line-height: 1.75;
+  tab-size: 2;
+}
+pre .c { color: var(--faint); }
+pre .a { color: var(--accent-bright); }
+pre .g { color: var(--healthy); }
+pre .r { color: var(--error); }
+pre .w { color: var(--warning); }
+
+/* ---------- flow ---------- */
+.flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) 26px minmax(0, 1fr) 26px minmax(0, 1.1fr);
+  align-items: stretch;
+  gap: 0;
+  margin-top: 16px;
+}
+.flow-box {
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.flow-box .k {
+  display: block;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.flow-box b { display: block; margin: 2px 0 3px; font-size: 0.88rem; }
+.flow-box p { color: var(--muted); font-size: 0.78rem; line-height: 1.6; }
+.flow-arrow {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 14px;
+  opacity: 0.65;
+}
+
+/* ---------- wireframe ---------- */
+.wire {
+  margin-top: 16px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.wire svg { display: block; width: 100%; height: auto; border-radius: 7px; background: #071526; }
+.wire figcaption { padding: 8px 3px 0; color: var(--faint); font-family: var(--mono); font-size: 8.5px; }
+
+/* ---------- steps ---------- */
+.steps { counter-reset: step; margin-top: 14px; display: grid; gap: 8px; }
+.step {
+  position: relative;
+  padding: 10px 12px 10px 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 0.87rem;
+}
+.step::before {
+  counter-increment: step;
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  top: 9px;
+  left: 12px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+}
+.step b { color: var(--ink); }
+
+/* ---------- checklist ---------- */
+.check {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+  padding: 0;
+  list-style: none;
+}
+.check li {
+  margin: 0;
+  padding: 8px 11px 8px 30px;
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+.check li::before {
+  content: "✓";
+  position: absolute;
+  left: 10px;
+  top: 7px;
+  color: var(--healthy);
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+/* ---------- footer ---------- */
+footer.doc {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 18px;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 9px;
+}
+footer.doc a { color: var(--muted); }
+
+@media (max-width: 940px) {
+  header.hero { grid-template-columns: minmax(0, 1fr); padding-top: 30px; }
+  .hero-art { order: -1; max-width: 560px; }
+  .flow { grid-template-columns: minmax(0, 1fr); }
+  .flow-arrow { padding: 4px 0; transform: rotate(90deg); }
+}
+@media (max-width: 760px) {
+  .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .doc-nav .stamp { display: none; }
+}
+@media (max-width: 620px) {
+  .cols, .grid-3, .check { grid-template-columns: minmax(0, 1fr); }
+  .doc-nav .spacer { display: none; }
+  .doc-nav a:nth-child(3) { display: none; }
+  h1 { letter-spacing: -0.04em; }
+  th, td { padding: 7px 8px; }
+  .table-wrap { overflow: visible; border: 0; }
+  .table-wrap table { display: block; min-width: 0; font-size: 0.86rem; }
+  .table-wrap thead { display: none; }
+  .table-wrap tbody { display: grid; gap: 8px; }
+  .table-wrap tr {
+    display: grid;
+    gap: 3px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+  .table-wrap td {
+    display: block;
+    position: relative;
+    padding: 1px 0 1px 86px;
+    border: 0;
+  }
+  .table-wrap td::before {
+    content: attr(data-label);
+    position: absolute;
+    top: 3px;
+    left: 0;
+    width: 78px;
+    color: var(--faint);
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .table-wrap td:first-child {
+    padding: 0 0 4px;
+    white-space: normal;
+  }
+  .table-wrap td:first-child::before { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print {
+  body { background: #fff; color: #000; }
+  .doc-nav, .hero-art, .flow-arrow { display: none; }
+  section, header.hero { break-inside: avoid; }
+  .card, .flow-box, .note, .wire { border-color: #999; background: #fff; color: #000; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <nav class="doc-nav" aria-label="サイト内ナビゲーション">
+    <a href="../">Sandbox</a>
+    <a href="../ProcessSentinel/">Process Sentinel</a>
+    <a href="../PipelineViz/">Pipeline Viz</a>
+    <span class="spacer"></span>
+    <span class="here">Bootprint</span>
+    <span class="stamp">Project 04 · proposal</span>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <span class="badge">Project 04 · macOS · read only</span>
+      <h1>Boot<br><span>print</span></h1>
+      <p class="subtitle">
+        起動のたびに、何が動き出すのか。macOS の <strong>launchd ジョブ</strong>を、
+        ドメイン・ベンダー・トリガー・署名の関係として一枚の地図に描く試作提案です。
+      </p>
+      <p class="hero-meta">
+        <span>2026年11月</span>
+        <span>対象: <b>macOS</b></span>
+        <span>構成: <b>静的ビューア + ローカルコレクタ</b></span>
+      </p>
+    </div>
+
+    <figure class="hero-art">
+      <div class="art-bar">
+        <span class="dot" aria-hidden="true"></span>
+        <span>sentinel-mbp · launchd</span>
+        <span class="spacer">persistence map</span>
+      </div>
+      <svg viewBox="0 0 600 336" role="img" aria-label="4つのレーンに launchd ジョブが並び、未署名のジョブが赤く強調された永続化マップ。">
+        <defs>
+          <pattern id="bpGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M20 0H0V20" fill="none" stroke="#38bdf8" stroke-opacity="0.07" stroke-width="1"/>
+          </pattern>
+          <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <rect width="600" height="336" fill="#071526"/>
+        <rect width="600" height="336" fill="url(#bpGrid)"/>
+
+        <text x="18" y="24" fill="#7dd3fc" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="2">BOOTPRINT / PERSISTENCE MAP</text>
+        <text x="582" y="24" fill="#6b829f" font-family="JetBrains Mono, monospace" font-size="7" text-anchor="end">04 · READ ONLY</text>
+
+        <!-- lanes -->
+        <g font-family="JetBrains Mono, monospace">
+          <line x1="142" y1="38" x2="142" y2="268" stroke="#38bdf8" stroke-opacity="0.12"/>
+          <line x1="288" y1="38" x2="288" y2="268" stroke="#38bdf8" stroke-opacity="0.12"/>
+          <line x1="434" y1="38" x2="434" y2="268" stroke="#38bdf8" stroke-opacity="0.12"/>
+
+          <text x="18" y="50" fill="#93c5fd" font-size="6.5" letter-spacing="1.4">SYSTEM</text>
+          <text x="164" y="50" fill="#93c5fd" font-size="6.5" letter-spacing="1.4">GLOBAL</text>
+          <text x="310" y="50" fill="#93c5fd" font-size="6.5" letter-spacing="1.4">GUI</text>
+          <text x="456" y="50" fill="#93c5fd" font-size="6.5" letter-spacing="1.4">USER</text>
+
+          <!-- system -->
+          <rect x="18" y="60" width="108" height="38" rx="4" fill="#0d2035" stroke="#93c5fd" stroke-opacity="0.4"/>
+          <rect x="18" y="60" width="2.5" height="38" rx="1" fill="#93c5fd"/>
+          <text x="27" y="74" fill="#e8f1ff" font-size="6.4" font-weight="700">com.apple.WindowServer</text>
+          <text x="27" y="84" fill="#6b829f" font-size="5.8">RunAtLoad · Apple</text>
+          <text x="27" y="92" fill="#93c5fd" font-size="5.4">EXTERNAL</text>
+
+          <rect x="18" y="106" width="108" height="38" rx="4" fill="#0d2035" stroke="#5eead4" stroke-opacity="0.38"/>
+          <rect x="18" y="106" width="2.5" height="38" rx="1" fill="#5eead4"/>
+          <text x="27" y="120" fill="#e8f1ff" font-size="6.4" font-weight="700">com.docker.vmnetd</text>
+          <text x="27" y="130" fill="#6b829f" font-size="5.8">signed · daemon</text>
+          <text x="27" y="138" fill="#5eead4" font-size="5.4">HEALTHY</text>
+
+          <!-- global -->
+          <rect x="164" y="60" width="108" height="38" rx="4" fill="#0d2035" stroke="#5eead4" stroke-opacity="0.38"/>
+          <rect x="164" y="60" width="2.5" height="38" rx="1" fill="#5eead4"/>
+          <text x="173" y="74" fill="#e8f1ff" font-size="6.4" font-weight="700">com.tailscale.tailscaled</text>
+          <text x="173" y="84" fill="#6b829f" font-size="5.8">KeepAlive · signed</text>
+          <text x="173" y="92" fill="#5eead4" font-size="5.4">HEALTHY</text>
+
+          <rect x="164" y="106" width="108" height="38" rx="4" fill="#0d2035" stroke="#fbbf24" stroke-opacity="0.4"/>
+          <rect x="164" y="106" width="2.5" height="38" rx="1" fill="#fbbf24"/>
+          <text x="173" y="120" fill="#e8f1ff" font-size="6.4" font-weight="700">homebrew.mxcl.ollama</text>
+          <text x="173" y="130" fill="#6b829f" font-size="5.8">adhoc · RunAtLoad</text>
+          <text x="173" y="138" fill="#fbbf24" font-size="5.4">WARNING</text>
+
+          <!-- gui -->
+          <rect x="310" y="60" width="108" height="38" rx="4" fill="#0d2035" stroke="#5eead4" stroke-opacity="0.35"/>
+          <rect x="310" y="60" width="2.5" height="38" rx="1" fill="#5eead4"/>
+          <text x="319" y="74" fill="#e8f1ff" font-size="6.4" font-weight="700">com.google.keystone.agent</text>
+          <text x="319" y="84" fill="#6b829f" font-size="5.8">signed · StartInterval</text>
+          <text x="319" y="92" fill="#5eead4" font-size="5.4">HEALTHY</text>
+
+          <rect x="310" y="106" width="108" height="52" rx="4" fill="#1b1118" stroke="#fb7185" stroke-opacity="0.85" filter="url(#softGlow)"/>
+          <rect x="310" y="106" width="2.5" height="52" rx="1" fill="#fb7185"/>
+          <text x="319" y="120" fill="#ffe4e6" font-size="6.4" font-weight="700">com.example.helper</text>
+          <text x="319" y="130" fill="#fda4af" font-size="5.8">unsigned · writable path</text>
+          <text x="319" y="139" fill="#fda4af" font-size="5.8">RunAtLoad · KeepAlive</text>
+          <text x="319" y="150" fill="#fb7185" font-size="5.4" font-weight="700">ERROR · 100</text>
+
+          <!-- user -->
+          <rect x="456" y="60" width="108" height="38" rx="4" fill="#0d2035" stroke="#5eead4" stroke-opacity="0.35"/>
+          <rect x="456" y="60" width="2.5" height="38" rx="1" fill="#5eead4"/>
+          <text x="465" y="74" fill="#e8f1ff" font-size="6.4" font-weight="700">io.example.sync</text>
+          <text x="465" y="84" fill="#6b829f" font-size="5.8">StartCalendarInterval</text>
+          <text x="465" y="92" fill="#5eead4" font-size="5.4">HEALTHY</text>
+
+          <rect x="456" y="106" width="108" height="38" rx="4" fill="#0d2035" stroke="#93c5fd" stroke-opacity="0.28"/>
+          <rect x="456" y="106" width="2.5" height="38" rx="1" fill="#93c5fd"/>
+          <text x="465" y="120" fill="#e8f1ff" font-size="6.4" font-weight="700">com.apple.metadata</text>
+          <text x="465" y="130" fill="#6b829f" font-size="5.8">WatchPaths</text>
+          <text x="465" y="138" fill="#93c5fd" font-size="5.4">EXTERNAL</text>
+        </g>
+
+        <!-- schedule ribbon -->
+        <g font-family="JetBrains Mono, monospace">
+          <text x="18" y="286" fill="#7dd3fc" font-size="7" letter-spacing="1.6">24H SCHEDULE</text>
+          <line x1="18" y1="306" x2="582" y2="306" stroke="#38bdf8" stroke-opacity="0.25"/>
+          <g fill="#6b829f" font-size="5.6">
+            <text x="18" y="322">00</text>
+            <text x="110" y="322">04</text>
+            <text x="204" y="322">08</text>
+            <text x="298" y="322">12</text>
+            <text x="390" y="322">16</text>
+            <text x="484" y="322">20</text>
+            <text x="576" y="322" text-anchor="end">24</text>
+          </g>
+          <g>
+            <rect x="50" y="300" width="4" height="12" rx="1" fill="#fbbf24"/>
+            <rect x="188" y="300" width="4" height="12" rx="1" fill="#5eead4"/>
+            <rect x="278" y="300" width="4" height="12" rx="1" fill="#93c5fd"/>
+            <rect x="356" y="300" width="4" height="12" rx="1" fill="#5eead4"/>
+            <rect x="470" y="300" width="4" height="12" rx="1" fill="#fbbf24"/>
+            <rect x="548" y="300" width="4" height="12" rx="1" fill="#fb7185"/>
+          </g>
+        </g>
+      </svg>
+      <figcaption class="art-bar" style="padding:8px 3px 0">
+        <span class="spacer"></span>
+        <span>demo: synthetic snapshot</span>
+      </figcaption>
+    </figure>
+  </header>
+
+  <main>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">01</span>
+        <h2>コンセプトと狙い</h2>
+      </div>
+      <p class="lead">
+        macOS では <code>launchd</code> が PID 1 として起動し、システムデーモンとユーザーエージェントを管理します。
+        アプリを閉じても、再起動しても、あるいは一定間隔で、ジョブは静かに動き続けます。
+        しかし <code>launchctl list</code> はフラットな一覧で、plist は複数のディレクトリに散らばり、
+        トリガーと署名は別々の場所にあります。
+      </p>
+      <p>
+        Bootprint は、ジョブの<strong>定義（plist）と実行状態（launchctl）</strong>を収集し、
+        ドメイン・ベンダー・トリガー・署名の関係として可視化します。
+        「いま何が動いているか」を扱う Process Sentinel に対して、
+        <strong>「次に何が動き出すか」</strong>を扱う姉妹プロジェクトです。
+      </p>
+
+      <div class="grid-3">
+        <article class="card">
+          <span class="label">見つける</span>
+          <h3>見慣れない常駐</h3>
+          <p>未署名、ユーザー書き込み可能領域、過剰な KeepAlive。単独ではなく組み合わせで候補を浮かび上がらせます。</p>
+        </article>
+        <article class="card">
+          <span class="label">理解する</span>
+          <h3>起動の順番</h3>
+          <p>ログイン時、カレンダー、一定間隔、パス監視。いつ・何が起点で動くのかを時間軸で読みます。</p>
+        </article>
+        <article class="card">
+          <span class="label">比べる</span>
+          <h3>前回との差分</h3>
+          <p>新しいジョブ、消えたジョブ、トリガーが変わったジョブ。ベースラインとの比較で変化を追います。</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">02</span>
+        <h2>Process Sentinel からの連続性</h2>
+      </div>
+      <p>
+        03 の Process Sentinel は「現在のプロセス」を親子ツリーで描きました。
+        Bootprint は同じ macOS の層を、<strong>起動・永続化</strong>という時間方向へ延長します。
+        データの持ち方と画面の作法は共通です。
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>プロジェクト</th><th>対象</th><th>構造</th><th>状態</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>01 Pipeline Viz</td>
+              <td>データ処理パイプライン</td>
+              <td>ステップの流れ</td>
+              <td>レイテンシ・件数・エラー</td>
+            </tr>
+            <tr>
+              <td>03 Process Sentinel</td>
+              <td>現在のプロセス</td>
+              <td>親子ツリー</td>
+              <td>CPU・メモリ・署名・接続</td>
+            </tr>
+            <tr>
+              <td><strong>04 Bootprint</strong></td>
+              <td><strong>起動・常駐ジョブ</strong></td>
+              <td><strong>レーン × ベンダー</strong></td>
+              <td><strong>トリガー・loaded・終了コード・署名</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">
+        <strong>共通する設計原則:</strong>
+        生の事実だけを JSON に置き、状態・スコア・差分はブラウザ側で計算する。
+        これにより、判定ルールを変えてもスナップショットを作り直さずに済みます。
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">03</span>
+        <h2>全体アーキテクチャ</h2>
+      </div>
+      <p>
+        常駐エージェントもデータベースも作りません。macOS 標準の <code>launchctl</code> と <code>plutil</code>、
+        <code>codesign</code> でスナップショットを採り、静的ファイルとしてブラウザへ渡します。
+      </p>
+
+      <div class="flow" aria-label="収集から可視化までの流れ">
+        <div class="flow-box">
+          <span class="k">collect</span>
+          <b>plist + launchctl</b>
+          <p>LaunchAgents / LaunchDaemons を探索し、<code>plutil</code> で JSON 化。<code>launchctl</code> から loaded / PID / 終了コードを取得。</p>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">→</div>
+        <div class="flow-box">
+          <span class="k">normalize</span>
+          <b>jobs_snapshot.json</b>
+          <p>ジョブを <code>domain:label</code> で一意化。トリガーを正規化し、署名と秘匿情報のマスクを付与。</p>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">→</div>
+        <div class="flow-box">
+          <span class="k">visualize</span>
+          <b>model.js → viewer</b>
+          <p>分類・スコア・差分・スケジュールを計算し、永続化マップ・24h リボン・インスペクタに描画。</p>
+        </div>
+      </div>
+
+      <h3>主要コンポーネント</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>層</th><th>役割</th><th>技術要素</th></tr></thead>
+          <tbody>
+            <tr><td>収集層</td><td>ジョブ定義と実行状態を取得</td><td><code>launchctl</code> / <code>plutil</code> / <code>codesign</code></td></tr>
+            <tr><td>正規化層</td><td>トリガーを統一形式に変換し、秘密情報をマスク</td><td>Python 3 標準ライブラリ</td></tr>
+            <tr><td>解釈層</td><td>状態・スコア・差分・スケジュールを計算</td><td><code>model.js</code>（純粋関数）</td></tr>
+            <tr><td>可視化層</td><td>マップ・時間軸・インスペクタを描画</td><td>素の HTML / CSS / JavaScript</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">
+        <strong>root なしで始める:</strong>
+        この Mac では <code>launchctl print system</code>、<code>gui/$UID</code>、<code>user/$UID</code> を一般ユーザーで読めました。
+        権限不足で取れない項目は <code>null</code> にし、推測で埋めません。
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">04</span>
+        <h2>データモデル</h2>
+      </div>
+      <p>
+        スナップショットは <code>meta</code> と <code>jobs</code> だけの単純な構造です。
+        <strong>PID ではなく <code>domain:label</code></strong> をキーにします。PID は再起動で変わるため、
+        同じジョブの再出現を「新規」と誤認しないようにするためです。
+      </p>
+
+<pre><code>{
+  <span class="a">"meta"</span>: {
+    <span class="a">"generated_at"</span>: <span class="g">"2026-11-09T09:00:00+09:00"</span>,
+    <span class="a">"host"</span>: <span class="g">"sentinel-mbp"</span>,
+    <span class="a">"os"</span>: <span class="g">"macOS 15.7"</span>,
+    <span class="a">"uid"</span>: 502
+  },
+  <span class="a">"jobs"</span>: [
+    {
+      <span class="a">"label"</span>: <span class="g">"com.example.helper"</span>,
+      <span class="a">"domain"</span>: <span class="g">"gui/502"</span>,
+      <span class="a">"lane"</span>: <span class="g">"gui"</span>,
+      <span class="a">"scope"</span>: <span class="g">"agent"</span>,
+      <span class="a">"plist"</span>: <span class="g">"~/Library/LaunchAgents/com.example.helper.plist"</span>,
+      <span class="a">"program"</span>: <span class="g">"~/Library/Application Support/Helper/helper"</span>,
+      <span class="a">"args"</span>: [<span class="g">"--daemon"</span>],
+      <span class="a">"triggers"</span>: {
+        <span class="a">"run_at_load"</span>: <span class="w">true</span>,
+        <span class="a">"keep_alive"</span>: <span class="w">true</span>,
+        <span class="a">"start_interval"</span>: <span class="w">null</span>,
+        <span class="a">"start_calendar"</span>: [],
+        <span class="a">"watch_paths"</span>: []
+      },
+      <span class="a">"disabled"</span>: <span class="w">false</span>,
+      <span class="a">"loaded"</span>: <span class="w">true</span>,
+      <span class="a">"pid"</span>: 31337,
+      <span class="a">"last_exit_status"</span>: 0,
+      <span class="a">"signed"</span>: <span class="w">false</span>,
+      <span class="a">"adhoc"</span>: <span class="w">false</span>,
+      <span class="a">"team_id"</span>: <span class="w">null</span>
+    }
+  ]
+}</code></pre>
+
+      <h3>主要フィールド</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>フィールド</th><th>型</th><th>説明</th></tr></thead>
+          <tbody>
+            <tr><td><code>label</code></td><td>string</td><td>ジョブの一意名。plist の <code>Label</code></td></tr>
+            <tr><td><code>domain</code></td><td>string</td><td><code>system</code> / <code>gui/502</code> / <code>user/502</code></td></tr>
+            <tr><td><code>lane</code></td><td>string</td><td>表示用の分類。<code>system</code> / <code>global</code> / <code>gui</code> / <code>user</code>。plist の配置場所から決める</td></tr>
+            <tr><td><code>scope</code></td><td>string</td><td><code>daemon</code>（ログイン不要） / <code>agent</code>（ユーザーセッション）</td></tr>
+            <tr><td><code>program</code></td><td>string</td><td><code>Program</code>、<code>ProgramArguments[0]</code>、<code>BundleProgram</code> から解決</td></tr>
+            <tr><td><code>triggers</code></td><td>object</td><td>起動・常駐・定期・監視の条件を正規化して格納</td></tr>
+            <tr><td><code>loaded</code> / <code>pid</code></td><td>bool / int</td><td>現在ロードされているか、実行中なら PID</td></tr>
+            <tr><td><code>last_exit_status</code></td><td>int / null</td><td>最後の終了コード。取得できなければ <code>null</code></td></tr>
+            <tr><td><code>signed</code> / <code>adhoc</code></td><td>bool / null</td><td>署名済みか、アドホック署名か。未確認は <code>null</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>トリガーの正規化</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>plist キー</th><th>意味</th><th>画面での扱い</th></tr></thead>
+          <tbody>
+            <tr><td><code>RunAtLoad</code></td><td>ロード直後に実行</td><td>「起動時」バッジ</td></tr>
+            <tr><td><code>KeepAlive</code></td><td>終了しても再起動（bool または条件辞書）</td><td>「常駐」バッジ</td></tr>
+            <tr><td><code>StartInterval</code></td><td>N 秒ごとに実行</td><td>24h リボンに間隔マーク</td></tr>
+            <tr><td><code>StartCalendarInterval</code></td><td>時・分・曜日・日付で実行</td><td>24h リボンにカレンダーマーク</td></tr>
+            <tr><td><code>WatchPaths</code></td><td>パスの変更を監視</td><td>「監視」バッジと監視パス一覧</td></tr>
+            <tr><td><code>Sockets</code></td><td>ソケット起動（オンデマンド）</td><td>待受ポート数として表示</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">05</span>
+        <h2>収集方法とプライバシー</h2>
+      </div>
+      <p>
+        コレクタは <code>collect_launch_jobs.py</code> 1 本です。Python 3 以外の依存はありません。
+        plist を定義の正とし、<code>launchctl</code> の実行状態を重ねます。
+      </p>
+
+      <div class="grid-2">
+        <article class="card">
+          <span class="label">discover</span>
+          <h3>plist の探索</h3>
+          <p><code>/System/Library/LaunchDaemons</code>、<code>/System/Library/LaunchAgents</code>、<code>/Library/LaunchDaemons</code>、<code>/Library/LaunchAgents</code>、<code>~/Library/LaunchAgents</code>。</p>
+        </article>
+        <article class="card">
+          <span class="label">state</span>
+          <h3>実行状態の取得</h3>
+          <p><code>launchctl print system</code> / <code>gui/$UID</code> / <code>user/$UID</code> と <code>launchctl list</code>。loaded、PID、最後の終了コードを突き合わせます。</p>
+        </article>
+        <article class="card">
+          <span class="label">signature</span>
+          <h3>署名の確認</h3>
+          <p><code>codesign -dv --verbose=2</code> を実行パス単位でキャッシュ。Team ID とアドホック署名を記録します。</p>
+        </article>
+        <article class="card">
+          <span class="label">redact</span>
+          <h3>秘密情報のマスク</h3>
+          <p><code>EnvironmentVariables</code> の値と、<code>--token</code> 系の引数を既定で伏せます。公開デモは合成データのみです。</p>
+        </article>
+      </div>
+
+      <h3>マージ規則</h3>
+      <ul>
+        <li><code>Disabled</code> は <code>launchctl print-disabled</code> の上書きを優先し、なければ plist の値を使う。</li>
+        <li>同じ label が複数ドメインに存在する場合は <code>domain:label</code> で別ジョブとして扱う。</li>
+        <li><code>ProgramArguments</code> しかない場合は先頭を実行パスとして扱い、残りを引数にする。</li>
+        <li>署名や実行状態が取れない場合は <code>null</code>。推測値は入れない。</li>
+      </ul>
+
+      <div class="note warn">
+        <strong>マスクの限界:</strong>
+        引数や環境変数に含まれる秘密情報を完全に検出することはできません。実スナップショットを公開しない運用を前提にし、
+        コレクタはローカル保存を既定にします。
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">06</span>
+        <h2>状態分類とスコア</h2>
+      </div>
+      <p>
+        常駐していること自体は危険ではありません。Bootprint は<strong>署名・実行場所・トリガーの組み合わせ</strong>で
+        「先に見る候補」を決めます。判定はブラウザ側の純粋関数で行います。
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>状態</th><th>主な条件</th><th>表示</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="pill error">Error</span></td>
+              <td>実行ファイルが存在しない / 未署名かつユーザー書き込み可能領域 / <code>/tmp</code>・<code>/Users/Shared</code> 配下</td>
+              <td>赤。スコア最大 100。アラート最上位。</td>
+            </tr>
+            <tr>
+              <td><span class="pill warning">Warning</span></td>
+              <td>第三者で未署名またはアドホック / <code>RunAtLoad</code> + <code>KeepAlive</code> + 未署名 / 60 秒未満の高頻度実行 / 前回から変更</td>
+              <td>黄。理由とスコアを表示。</td>
+            </tr>
+            <tr>
+              <td><span class="pill healthy">Healthy</span></td>
+              <td>署名済みで、通常のトリガーと実行場所</td>
+              <td>ミント。静かに一覧に残る。</td>
+            </tr>
+            <tr>
+              <td><span class="pill external">External</span></td>
+              <td><code>com.apple.*</code>、<code>/System</code>・<code>/usr/libexec</code> など Apple 領域</td>
+              <td>青。スコアは 0 に固定し、ノイズを抑える。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>スコアの加点例</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>シグナル</th><th>加点</th><th>補足</th></tr></thead>
+          <tbody>
+            <tr><td>実行ファイル消失</td><td>+50</td><td>Error の主条件</td></tr>
+            <tr><td>未署名</td><td>+40</td><td>署名が <code>false</code> のとき</td></tr>
+            <tr><td>ユーザー書き込み可能領域</td><td>+25</td><td>ホーム、Application Support、共有領域など</td></tr>
+            <tr><td>アドホック署名</td><td>+25</td><td>Team ID なし</td></tr>
+            <tr><td><code>RunAtLoad</code></td><td>+10</td><td>起動時実行</td></tr>
+            <tr><td><code>KeepAlive</code></td><td>+10</td><td>終了しても再起動</td></tr>
+            <tr><td>60 秒未満の <code>StartInterval</code></td><td>+10</td><td>高頻度実行</td></tr>
+            <tr><td>前回以降の新規出現</td><td>+15</td><td>ベースラインがある場合</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        スコアは 0–100 に丸め、Error → Warning の順、スコア降順でアラートに並べます。
+        最終判断は plist・実行パス・署名・トリガーを並べて行うための補助線です。
+      </p>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">07</span>
+        <h2>画面構成</h2>
+      </div>
+      <p>
+        中心は <strong>Persistence map</strong>。4 つのレーンにジョブカードを並べ、
+        第三者ジョブをベンダー単位でまとめます。Apple のジョブは初期状態で折りたたみ、
+        実データ 800 件超でも読める密度にします。
+      </p>
+
+      <figure class="wire">
+        <svg viewBox="0 0 600 340" role="img" aria-label="Bootprint ビューアのワイヤーフレーム。上に KPI、中央に4つのレーン、右にインスペクタとアラート、下に24時間スケジュール。">
+          <rect width="600" height="340" fill="#071526"/>
+          <g font-family="JetBrains Mono, monospace">
+            <!-- topbar -->
+            <rect x="10" y="10" width="580" height="24" rx="3" fill="#0b1a2d" stroke="#38bdf8" stroke-opacity="0.2"/>
+            <text x="18" y="25" fill="#7dd3fc" font-size="6.5" font-weight="700">BOOTPRINT</text>
+            <text x="80" y="25" fill="#6b829f" font-size="5.5">sentinel-mbp · macOS 15.7</text>
+            <rect x="500" y="15" width="38" height="14" rx="3" fill="#38bdf8" fill-opacity="0.16" stroke="#38bdf8" stroke-opacity="0.4"/>
+            <text x="519" y="24" fill="#7dd3fc" font-size="5" text-anchor="middle">LIVE</text>
+            <rect x="544" y="15" width="38" height="14" rx="3" fill="#0f2238" stroke="#38bdf8" stroke-opacity="0.25"/>
+            <text x="563" y="24" fill="#93a9c6" font-size="5" text-anchor="middle">RELOAD</text>
+
+            <!-- kpis -->
+            <g>
+              <rect x="10" y="40" width="110" height="28" rx="3" fill="#0b1a2d" stroke="#38bdf8" stroke-opacity="0.16"/>
+              <text x="18" y="50" fill="#6b829f" font-size="4.6">JOBS</text>
+              <text x="18" y="62" fill="#e8f1ff" font-size="9" font-weight="700">42</text>
+              <rect x="126" y="40" width="110" height="28" rx="3" fill="#0b1a2d" stroke="#38bdf8" stroke-opacity="0.16"/>
+              <text x="134" y="50" fill="#6b829f" font-size="4.6">THIRD-PARTY</text>
+              <text x="134" y="62" fill="#e8f1ff" font-size="9" font-weight="700">11</text>
+              <rect x="242" y="40" width="110" height="28" rx="3" fill="#0b1a2d" stroke="#fb7185" stroke-opacity="0.24"/>
+              <text x="250" y="50" fill="#6b829f" font-size="4.6">UNSIGNED</text>
+              <text x="250" y="62" fill="#fb7185" font-size="9" font-weight="700">2</text>
+              <rect x="358" y="40" width="110" height="28" rx="3" fill="#0b1a2d" stroke="#38bdf8" stroke-opacity="0.16"/>
+              <text x="366" y="50" fill="#6b829f" font-size="4.6">RUN AT LOAD</text>
+              <text x="366" y="62" fill="#e8f1ff" font-size="9" font-weight="700">14</text>
+              <rect x="474" y="40" width="116" height="28" rx="3" fill="#0b1a2d" stroke="#38bdf8" stroke-opacity="0.16"/>
+              <text x="482" y="50" fill="#6b829f" font-size="4.6">DIFF</text>
+              <text x="482" y="62" fill="#5eead4" font-size="7" font-weight="700">+2</text>
+              <text x="506" y="62" fill="#fbbf24" font-size="7" font-weight="700">~3</text>
+              <text x="530" y="62" fill="#93a9c6" font-size="7" font-weight="700">-1</text>
+            </g>
+
+            <!-- map -->
+            <rect x="10" y="76" width="420" height="190" rx="4" fill="#081728" stroke="#38bdf8" stroke-opacity="0.18"/>
+            <text x="18" y="88" fill="#7dd3fc" font-size="5.5" letter-spacing="1.2">PERSISTENCE MAP</text>
+            <line x1="116" y1="94" x2="116" y2="258" stroke="#38bdf8" stroke-opacity="0.1"/>
+            <line x1="218" y1="94" x2="218" y2="258" stroke="#38bdf8" stroke-opacity="0.1"/>
+            <line x1="320" y1="94" x2="320" y2="258" stroke="#38bdf8" stroke-opacity="0.1"/>
+            <text x="18" y="102" fill="#93c5fd" font-size="4.8">SYSTEM</text>
+            <text x="124" y="102" fill="#93c5fd" font-size="4.8">GLOBAL</text>
+            <text x="226" y="102" fill="#93c5fd" font-size="4.8">GUI</text>
+            <text x="328" y="102" fill="#93c5fd" font-size="4.8">USER</text>
+
+            <g>
+              <rect x="18" y="110" width="90" height="24" rx="3" fill="#0d2035" stroke="#93c5fd" stroke-opacity="0.3"/>
+              <rect x="18" y="110" width="2" height="24" fill="#93c5fd"/>
+              <text x="25" y="120" fill="#e8f1ff" font-size="4.4">com.apple.mDNSResponder</text>
+              <text x="25" y="129" fill="#6b829f" font-size="4">RunAtLoad · Apple</text>
+
+              <rect x="18" y="140" width="90" height="24" rx="3" fill="#0d2035" stroke="#5eead4" stroke-opacity="0.3"/>
+              <rect x="18" y="140" width="2" height="24" fill="#5eead4"/>
+              <text x="25" y="150" fill="#e8f1ff" font-size="4.4">com.docker.vmnetd</text>
+              <text x="25" y="159" fill="#6b829f" font-size="4">signed · daemon</text>
+
+              <rect x="124" y="110" width="90" height="24" rx="3" fill="#0d2035" stroke="#5eead4" stroke-opacity="0.3"/>
+              <rect x="124" y="110" width="2" height="24" fill="#5eead4"/>
+              <text x="131" y="120" fill="#e8f1ff" font-size="4.4">com.tailscale.tailscaled</text>
+              <text x="131" y="129" fill="#6b829f" font-size="4">KeepAlive · signed</text>
+
+              <rect x="226" y="110" width="90" height="24" rx="3" fill="#0d2035" stroke="#5eead4" stroke-opacity="0.3"/>
+              <rect x="226" y="110" width="2" height="24" fill="#5eead4"/>
+              <text x="233" y="120" fill="#e8f1ff" font-size="4.4">com.google.keystone.agent</text>
+              <text x="233" y="129" fill="#6b829f" font-size="4">StartInterval · signed</text>
+
+              <rect x="226" y="140" width="90" height="32" rx="3" fill="#1b1118" stroke="#fb7185" stroke-opacity="0.7"/>
+              <rect x="226" y="140" width="2" height="32" fill="#fb7185"/>
+              <text x="233" y="150" fill="#ffe4e6" font-size="4.4">com.example.helper</text>
+              <text x="233" y="159" fill="#fda4af" font-size="4">unsigned · writable</text>
+              <text x="233" y="168" fill="#fb7185" font-size="4" font-weight="700">ERROR · 100</text>
+
+              <rect x="328" y="110" width="90" height="24" rx="3" fill="#0d2035" stroke="#5eead4" stroke-opacity="0.3"/>
+              <rect x="328" y="110" width="2" height="24" fill="#5eead4"/>
+              <text x="335" y="120" fill="#e8f1ff" font-size="4.4">io.example.sync</text>
+              <text x="335" y="129" fill="#6b829f" font-size="4">Calendar · signed</text>
+
+              <rect x="124" y="140" width="90" height="24" rx="3" fill="#0d2035" stroke="#fbbf24" stroke-opacity="0.3"/>
+              <rect x="124" y="140" width="2" height="24" fill="#fbbf24"/>
+              <text x="131" y="150" fill="#e8f1ff" font-size="4.4">homebrew.mxcl.ollama</text>
+              <text x="131" y="159" fill="#6b829f" font-size="4">adhoc · RunAtLoad</text>
+            </g>
+
+            <!-- rail -->
+            <rect x="440" y="76" width="150" height="92" rx="4" fill="#081728" stroke="#38bdf8" stroke-opacity="0.18"/>
+            <text x="448" y="88" fill="#7dd3fc" font-size="5" letter-spacing="1">INSPECTOR</text>
+            <text x="448" y="99" fill="#e8f1ff" font-size="6" font-weight="700">com.example.helper</text>
+            <text x="448" y="108" fill="#fb7185" font-size="4.2">ERROR · 100</text>
+            <text x="448" y="120" fill="#6b829f" font-size="4">PID — · exit 0 · GUI/502</text>
+            <text x="448" y="129" fill="#6b829f" font-size="4">RunAtLoad · KeepAlive</text>
+            <text x="448" y="138" fill="#6b829f" font-size="4">~/Library/Application Support/…</text>
+            <rect x="448" y="146" width="40" height="13" rx="2" fill="#0f2238" stroke="#38bdf8" stroke-opacity="0.3"/>
+            <text x="468" y="155" fill="#7dd3fc" font-size="4" text-anchor="middle">plist ↗</text>
+
+            <rect x="440" y="176" width="150" height="42" rx="4" fill="#081728" stroke="#38bdf8" stroke-opacity="0.18"/>
+            <text x="448" y="188" fill="#7dd3fc" font-size="5" letter-spacing="1">ALERTS</text>
+            <circle cx="451" cy="199" r="2" fill="#fb7185"/><text x="458" y="201" fill="#e8f1ff" font-size="4.2">com.example.helper</text>
+            <circle cx="451" cy="210" r="2" fill="#fbbf24"/><text x="458" y="212" fill="#e8f1ff" font-size="4.2">homebrew.mxcl.ollama</text>
+
+            <rect x="440" y="226" width="150" height="40" rx="4" fill="#081728" stroke="#38bdf8" stroke-opacity="0.18"/>
+            <text x="448" y="238" fill="#7dd3fc" font-size="5" letter-spacing="1">BASELINE DIFF</text>
+            <text x="448" y="250" fill="#5eead4" font-size="4.2">+2 new</text>
+            <text x="490" y="250" fill="#fbbf24" font-size="4.2">~3 changed</text>
+            <text x="540" y="250" fill="#93a9c6" font-size="4.2">-1 removed</text>
+
+            <!-- ribbon -->
+            <rect x="10" y="274" width="580" height="56" rx="4" fill="#081728" stroke="#38bdf8" stroke-opacity="0.18"/>
+            <text x="18" y="286" fill="#7dd3fc" font-size="5" letter-spacing="1.2">24H SCHEDULE</text>
+            <line x1="18" y1="304" x2="582" y2="304" stroke="#38bdf8" stroke-opacity="0.22"/>
+            <g fill="#6b829f" font-size="4">
+              <text x="18" y="318">00</text><text x="110" y="318">04</text><text x="202" y="318">08</text>
+              <text x="294" y="318">12</text><text x="386" y="318">16</text><text x="478" y="318">20</text>
+              <text x="576" y="318" text-anchor="end">24</text>
+            </g>
+            <g>
+              <rect x="52" y="299" width="3" height="10" fill="#fbbf24"/>
+              <rect x="176" y="299" width="3" height="10" fill="#5eead4"/>
+              <rect x="266" y="299" width="3" height="10" fill="#93c5fd"/>
+              <rect x="340" y="299" width="3" height="10" fill="#5eead4"/>
+              <rect x="452" y="299" width="3" height="10" fill="#fbbf24"/>
+              <rect x="540" y="299" width="3" height="10" fill="#fb7185"/>
+            </g>
+            <text x="18" y="328" fill="#6b829f" font-size="4">カレンダー / 間隔 / 監視を同じ時間軸で比較</text>
+          </g>
+        </svg>
+        <figcaption>ワイヤーフレーム。実装ではベンダーグループの折りたたみとフィルタを追加します。</figcaption>
+      </figure>
+
+      <div class="grid-2">
+        <article class="card">
+          <span class="label">interaction</span>
+          <h3>読む順番を設計する</h3>
+          <p>検索、レーン、トリガー、未署名、差分で絞り込み。アラートをクリックすると該当カードへ移動します。Apple のジョブは「表示する」で展開します。</p>
+        </article>
+        <article class="card">
+          <span class="label">context</span>
+          <h3>状態を URL に載せる</h3>
+          <p><code>?job=gui%2F502%3Acom.example.helper&amp;filter=unsigned</code> のように選択とフィルタを共有。LIVE は 8 秒ごとに再取得します。</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">08</span>
+        <h2>デモシナリオ</h2>
+      </div>
+      <p>
+        公開デモは 40 件前後の合成ジョブで構成します。実在の macOS ジョブを模しつつ、
+        危険な組み合わせと差分が一目で分かるようにします。
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ジョブ</th><th>レーン</th><th>状態</th><th>見どころ</th></tr></thead>
+          <tbody>
+            <tr><td><code>com.apple.WindowServer</code></td><td>system</td><td><span class="pill external">External</span></td><td>Apple 領域。スコア 0 でノイズを抑える</td></tr>
+            <tr><td><code>com.docker.vmnetd</code></td><td>system</td><td><span class="pill healthy">Healthy</span></td><td>署名済みの第三者デーモン</td></tr>
+            <tr><td><code>com.tailscale.tailscaled</code></td><td>global</td><td><span class="pill healthy">Healthy</span></td><td>KeepAlive でも署名済みなら静かに残る</td></tr>
+            <tr><td><code>homebrew.mxcl.ollama</code></td><td>global</td><td><span class="pill warning">Warning</span></td><td>アドホック署名 + RunAtLoad</td></tr>
+            <tr><td><code>com.example.helper</code></td><td>gui</td><td><span class="pill error">Error</span></td><td>未署名 + 書き込み可能領域 + KeepAlive</td></tr>
+            <tr><td><code>com.example.sync</code></td><td>gui</td><td><span class="pill warning">Warning</span></td><td>前回から StartInterval が変化</td></tr>
+            <tr><td><code>com.example.legacy</code></td><td>gui</td><td><span class="pill removed">Removed</span></td><td>ベースラインだけに存在</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        レーンは plist の配置場所（System / Library / GUI agent / user agent）を表し、
+        launchd のドメイン（<code>system</code> / <code>gui/502</code> / <code>user/502</code>）とは別に持ちます。
+        同じ label でも配置が違えば別ジョブとして扱います。
+      </p>
+      <p class="note">
+        差分は <strong>+2 new / ~3 changed / −1 removed</strong> を初期状態にします。
+        「新しい常駐が増えた」ことが、フィルタを開かずに分かる構成です。
+      </p>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">09</span>
+        <h2>スコープと制約</h2>
+      </div>
+      <div class="cols">
+        <article class="card">
+          <span class="label">v1 でやること</span>
+          <h3>launchd の可視化に集中</h3>
+          <ul>
+            <li>plist の探索と正規化</li>
+            <li>loaded / PID / 終了コードの突き合わせ</li>
+            <li>署名・トリガー・差分の表示</li>
+            <li>読み取り専用。有効化・無効化はしない</li>
+          </ul>
+        </article>
+        <article class="card danger">
+          <span class="label">v1 でやらないこと</span>
+          <h3>検知エンジンにはしない</h3>
+          <ul>
+            <li>ログイン項目 / BTM / System Extensions</li>
+            <li>マルウェア判定や自動削除</li>
+            <li>イベントの常時監視（Endpoint Security）</li>
+            <li>Windows / Linux 対応</li>
+          </ul>
+        </article>
+      </div>
+      <div class="note warn">
+        <strong>正直な限界:</strong>
+        <code>launchctl</code> の情報は権限や macOS のバージョンで欠けることがあります。
+        Bootprint は「見つけるための地図」であり、見つけた後の判断を自動化するものではありません。
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">10</span>
+        <h2>実装ロードマップ</h2>
+      </div>
+      <div class="steps">
+        <div class="step"><b>Phase 1 — コレクタとスキーマ。</b> plist 探索、<code>plutil</code> 解析、<code>launchctl</code> 突き合わせ、署名確認、マスク。合成デモとベースラインを作る。</div>
+        <div class="step"><b>Phase 2 — モデルとテスト。</b> 検証、分類、差分、トリガー解析、ベンダー grouping、URL 変換。Node テストを 20 件以上。</div>
+        <div class="step"><b>Phase 3 — ビューアと LP。</b> 永続化マップ、24h リボン、インスペクタ、アラート、差分、レスポンシブ。GitHub Pages に公開。</div>
+        <div class="step"><b>Phase 4 — 将来。</b> ログイン項目 / BTM、起動シミュレーション、<code>--watch</code> による履歴、通知。必要になったら拡張する。</div>
+      </div>
+
+      <h3>最初に動かす最小原型</h3>
+      <ul class="check">
+        <li>5 つの plist ディレクトリを走査し、JSON にできる</li>
+        <li>launchctl から loaded / PID を突き合わせられる</li>
+        <li>未署名ジョブを Error として強調できる</li>
+        <li>前回スナップショットとの差分を表示できる</li>
+      </ul>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">11</span>
+        <h2>成功条件</h2>
+      </div>
+      <p>
+        完成度の基準は「機能が多いこと」ではなく、<strong>読む順番が生まれること</strong>です。
+      </p>
+      <ul class="check">
+        <li>デモを開いて 30 秒以内に未署名ジョブへ辿り着ける</li>
+        <li>ログイン時・定期・監視の違いを説明できる</li>
+        <li>前回から増えた常駐を差分で発見できる</li>
+        <li>実スナップショットで JSON 検証が通り、秘密情報が露出しない</li>
+        <li>360px 幅で横溢れせず、コンソールエラーが 0</li>
+        <li>Process Sentinel と並べても、同じ設計思想だと分かる</li>
+      </ul>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <span class="section-no">12</span>
+        <h2>まとめ</h2>
+      </div>
+      <p>
+        Bootprint は、macOS の起動と常駐を「見えない背景」から「読める地図」へ変える試作です。
+        Process Sentinel が現在を見るのに対して、Bootprint は<strong>これから動くもの</strong>を見ます。
+        事実を JSON に分離し、ブラウザで状態と差分を計算する構成は、そのまま小さく始められます。
+      </p>
+      <div class="note">
+        <strong>次の一歩:</strong>
+        まずはコレクタと合成デモを作り、40 件のジョブが意図どおり Error / Warning / External に分かれることを確認します。
+        その後、ビューアと LP を仕上げて公開します。
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="doc">
+    <span>Bootprint · goose-sandbox project 05 · proposal</span>
+    <span><a href="../">Sandbox</a> / <a href="../ProcessSentinel/">Process Sentinel</a> / <a href="https://github.com/watanabe3tipapa/goose-sandbox">GitHub</a></span>
+  </footer>
+
+</div>
+
+<script>
+  // モバイルで表をカード表示にするため、見出しを各セルの data-label に写す
+  document.querySelectorAll('.table-wrap table').forEach(function (table) {
+    var heads = Array.prototype.map.call(
+      table.querySelectorAll('thead th'),
+      function (th) { return th.textContent.trim(); }
+    );
+    table.querySelectorAll('tbody tr').forEach(function (tr) {
+      Array.prototype.forEach.call(tr.children, function (td, i) {
+        if (heads[i]) { td.setAttribute('data-label', heads[i]); }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
