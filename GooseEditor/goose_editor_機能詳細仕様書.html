@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goose Editor 機能詳細仕様書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-raised: #1c2128;
+  --ink: #c9d1d9;
+  --ink-dim: #8b949e;
+  --ink-bright: #f0f6fc;
+  --accent: #58a6ff;
+  --accent-weak: color-mix(in oklab, var(--accent) 15%, var(--surface));
+  --accent-glow: color-mix(in oklab, var(--accent) 30%, transparent);
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --line: color-mix(in oklab, var(--ink) 12%, transparent);
+  --line-strong: color-mix(in oklab, var(--ink) 25%, transparent);
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  --step-0: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
+  --step-1: clamp(1.1rem, 1rem + 0.5vw, 1.35rem);
+  --step-2: clamp(1.4rem, 1.2rem + 1vw, 2rem);
+  --step-3: clamp(2rem, 1.5rem + 2vw, 3rem);
+  --space: clamp(1.2rem, 1rem + 1vw, 2rem);
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: var(--step-0);
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+}
+
+code, pre, .mono {
+  font-family: "JetBrains Mono", "Noto Sans JP", "Hiragino Sans", monospace;
+  font-size: 0.92em;
+}
+
+header {
+  padding: calc(var(--space) * 3) var(--space) calc(var(--space) * 2);
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+}
+
+header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, var(--accent-glow) 0%, transparent 60%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+header h1 {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--step-3);
+  color: var(--ink-bright);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  position: relative;
+}
+
+header .subtitle {
+  color: var(--ink-dim);
+  font-size: var(--step-0);
+  margin-top: 0.6em;
+  position: relative;
+}
+
+header .meta {
+  margin-top: 1.2em;
+  color: var(--ink-dim);
+  font-size: 0.85em;
+  position: relative;
+}
+
+main {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: calc(var(--space) * 2) var(--space);
+}
+
+section {
+  margin-bottom: calc(var(--space) * 2.5);
+}
+
+h2 {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--step-2);
+  color: var(--ink-bright);
+  margin-bottom: 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--line-strong);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+h2 .num {
+  color: var(--accent);
+  font-size: 0.75em;
+  font-weight: 700;
+}
+
+h3 {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--step-1);
+  color: var(--accent);
+  margin-top: 1.6em;
+  margin-bottom: 0.5em;
+}
+
+h4 {
+  font-size: 1em;
+  color: var(--ink-bright);
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+
+p { margin-bottom: 1em; }
+
+ul, ol {
+  margin-bottom: 1em;
+  padding-left: 1.6em;
+}
+
+li { margin-bottom: 0.4em; }
+
+li::marker { color: var(--accent); }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover { text-decoration: underline; }
+
+.table-wrap {
+  overflow-x: auto;
+  margin-bottom: 1.2em;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+}
+
+th, td {
+  padding: 0.7em 1em;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  background: var(--surface-raised);
+  color: var(--ink-bright);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+tr:last-child td { border-bottom: none; }
+
+td code { color: var(--warning); }
+
+pre {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1em 1.3em;
+  overflow-x: auto;
+  margin-bottom: 1.2em;
+  line-height: 1.6;
+  box-shadow: var(--shadow);
+}
+
+code {
+  background: var(--surface);
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+  color: var(--warning);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.keyword { color: #ff7b72; }
+.type { color: #ffa657; }
+.fn { color: #d2a8ff; }
+.str { color: #a5d6ff; }
+.comment { color: #8b949e; font-style: italic; }
+.num { color: #79c0ff; }
+
+.info-box {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  padding: 1em 1.2em;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin-bottom: 1.2em;
+}
+
+.info-box p:last-child { margin-bottom: 0; }
+
+.info-box.success {
+  border-left-color: var(--success);
+}
+
+.info-box.warning {
+  border-left-color: var(--warning);
+}
+
+.toc {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.2em 1.5em;
+  margin-bottom: calc(var(--space) * 1.5);
+}
+
+.toc h3 {
+  margin-top: 0;
+  font-size: 1em;
+}
+
+.toc ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.toc li { margin-bottom: 0.25em; }
+
+.toc a { color: var(--ink-dim); }
+.toc a:hover { color: var(--accent); }
+
+.tag {
+  display: inline-block;
+  font-size: 0.78em;
+  padding: 0.15em 0.5em;
+  border-radius: 4px;
+  margin-right: 0.3em;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.tag-core { background: color-mix(in oklab, var(--success) 20%, var(--surface)); color: var(--success); }
+.tag-ui { background: color-mix(in oklab, var(--accent) 20%, var(--surface)); color: var(--accent); }
+.tag-export { background: color-mix(in oklab, var(--warning) 20%, var(--surface)); color: var(--warning); }
+.tag-infra { background: color-mix(in oklab, var(--danger) 20%, var(--surface)); color: var(--danger); }
+
+kbd {
+  font-family: "JetBrains Mono", monospace;
+  background: var(--surface-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  padding: 0.1em 0.4em;
+  font-size: 0.88em;
+  box-shadow: 0 2px 0 var(--line-strong);
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: calc(var(--space) * 0.9);
+  margin-bottom: 1.2em;
+  box-shadow: var(--shadow);
+}
+
+.feature-card h4 {
+  margin-top: 0;
+  color: var(--accent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1em;
+}
+
+.feature-card p:last-child,
+.feature-card ul:last-child {
+  margin-bottom: 0;
+}
+
+footer {
+  text-align: center;
+  padding: calc(var(--space) * 2) var(--space);
+  border-top: 1px solid var(--line);
+  color: var(--ink-dim);
+  font-size: 0.85em;
+}
+
+@media print {
+  body { background: #fff; color: #222; }
+  :root {
+    --bg: #fff;
+    --surface: #f6f8fa;
+    --ink: #222;
+    --ink-dim: #555;
+    --accent: #0366d6;
+    --line: #d0d7de;
+  }
+  header::before, .toc, .info-box { display: none; }
+  pre { background: #f6f8fa; border: 1px solid #d0d7de; }
+}
+
+@page { size: A4; margin: 16mm; }
+
+@media (prefers-reduced-motion: no-preference) {
+  header h1, header .subtitle, header .meta {
+    animation: fadeInUp 0.8s ease both;
+  }
+  header .subtitle { animation-delay: 0.15s; }
+  header .meta { animation-delay: 0.3s; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Goose Editor 機能詳細仕様書</h1>
+  <p class="subtitle">Toolsmith Editor 相当の機能を Goose 言語で実装するための詳細設計</p>
+  <p class="mono meta">Document: Functional Specification &nbsp;|&nbsp; Target: goose-lang &nbsp;|&nbsp; Version: 1.0</p>
+</header>
+
+<main>
+
+<nav class="toc">
+  <h3>目次</h3>
+  <ul>
+    <li><a href="#sec-edit">1. リッチテキスト編集機能</a></li>
+    <li><a href="#sec-md">2. Markdown 双方向変換</a></li>
+    <li><a href="#sec-autosave">3. 自動保存と復元</a></li>
+    <li><a href="#sec-export">4. エクスポート機能詳細</a></li>
+    <li><a href="#sec-workspace">5. ワークスペース管理</a></li>
+    <li><a href="#sec-search">6. 検索・置換</a></li>
+    <li><a href="#sec-undo">7. Undo / Redo</a></li>
+    <li><a href="#sec-shortcuts">8. キーボードショートカット</a></li>
+    <li><a href="#sec-pwa">9. PWA / ブラウザ機能</a></li>
+    <li><a href="#sec-ui">10. UI / UX 設計方針</a></li>
+  </ul>
+</nav>
+
+<section id="sec-edit">
+  <h2><span class="num">01</span> リッチテキスト編集機能</h2>
+  <p>
+    Goose Editor は、WYSIWYG（見たまま編集）と Markdown ソース編集の両方をサポートします。ユーザーはいつでもモードを切り替えられ、一方の編集が他方に即座に反映されます。
+  </p>
+
+  <h3>1.1 サポートするブロック種別</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>ブロック種別</th><th>説明</th><th>Markdown 表現</th><th>備考</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Paragraph</td>
+          <td>通常の段落</td>
+          <td>連続したテキスト行</td>
+          <td>インラインスタイル対応</td>
+        </tr>
+        <tr>
+          <td>Heading 1〜6</td>
+          <td>見出し</td>
+          <td><code>#</code> 〜 <code>######</code></td>
+          <td>フォントサイズ階層あり</td>
+        </tr>
+        <tr>
+          <td>Unordered List</td>
+          <td>箇条書き（黒丸・ハイフン）</td>
+          <td><code>-</code> または <code>*</code></td>
+          <td>ネスト対応</td>
+        </tr>
+        <tr>
+          <td>Ordered List</td>
+          <td>番号付きリスト</td>
+          <td><code>1.</code> <code>2.</code></td>
+          <td>自動採番・再採番</td>
+        </tr>
+        <tr>
+          <td>Code Block</td>
+          <td>コードブロック</td>
+          <td><code>```lang</code></td>
+          <td>言語指定・シンタックスハイライト予約</td>
+        </tr>
+        <tr>
+          <td>Blockquote</td>
+          <td>引用ブロック</td>
+          <td><code>&gt;</code></td>
+          <td>ネスト対応・複数段落を含む</td>
+        </tr>
+        <tr>
+          <td>Horizontal Rule</td>
+          <td>水平線</td>
+          <td><code>---</code> / <code>***</code></td>
+          <td>読み取り専用ブロック</td>
+        </tr>
+        <tr>
+          <td>Thematic Break</td>
+          <td>区切り線</td>
+          <td><code>---</code></td>
+          <td>編集不可・キャレットは通過</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>1.2 インラインスタイル</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>スタイル</th><th>Markdown</th><th>操作</th><th>備考</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Bold</td><td><code>**text**</code></td><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>強調・太字</td></tr>
+        <tr><td>Italic</td><td><code>*text*</code></td><td><kbd>Ctrl</kbd>+<kbd>I</kbd></td><td>斜体</td></tr>
+        <tr><td>Inline Code</td><td><code>`code`</code></td><td><kbd>Ctrl</kbd>+<kbd>`</kbd></td><td>等幅フォント・背景色変更</td></tr>
+        <tr><td>Strikethrough</td><td><code>~~text~~</code></td><td>ツールバー</td><td>打ち消し線</td></tr>
+        <tr><td>Link</td><td><code>[text](url)</code></td><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>URL 入力ダイアログ</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>1.3 ロック操作</h3>
+  <ul>
+    <li><strong>ブロック変換：</strong> キャレット行で <kbd>Ctrl</kbd>+<kbd>0</kbd>〜<kbd>6</kbd> で見出しレベル切り替え、<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>7</kbd> で番号付きリスト、<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>8</kbd> で箇条書きリストに変換</li>
+    <li><strong>ブロック移動：</strong> <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> で現在のブロックを上下に入れ替え</li>
+    <li><strong>ブロック分割・結合：</strong> 空行で <kbd>Enter</kbd> を押すと新規ブロック生成、Backspace で前のブロックと結合</li>
+    <li><strong>インデント：</strong> <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> でリストのネストレベルを変更</li>
+  </ul>
+
+  <div class="info-box">
+    <p><strong>Goose 実装上の注意：</strong> ブロックツリーの変更は「コマンドパターン」でラップし、Undo スタックに積みます。各コマンドは <code>execute()</code> / <code>undo()</code> の 2 メソッドを持つ構造体として実装し、<code>Command[>..]</code> グローイング配列で履歴を管理します。</p>
+  </div>
+</section>
+
+<section id="sec-md">
+  <h2><span class="num">02</span> Markdown 双方向変換</h2>
+
+  <h3>2.1 パーサ仕様</h3>
+  <p>
+    Markdown パーサは CommonMark サブセットに準拠し、Goose の <code>u8[:]</code> スライスを使ったゼロコピー解析を基本とします。
+  </p>
+
+  <h4>パースパイプライン</h4>
+  <pre><code><span class="comment">// パースパイプライン（3 パス構成）</span>
+<span class="keyword">fn</span> <span class="fn">parse_markdown</span>(src: <span class="type">u8</span>[:]) -&gt; <span class="type">Document</span> {
+    <span class="keyword">var</span> lines = <span class="fn">split_lines</span>(src);          <span class="comment">// Pass 1: 行分割</span>
+    <span class="keyword">var</span> blocks = <span class="fn">parse_blocks</span>(lines);       <span class="comment">// Pass 2: ブロック境界検出</span>
+    <span class="keyword">var</span> doc = <span class="fn">parse_inlines</span>(blocks);         <span class="comment">// Pass 3: インライン解析</span>
+    <span class="keyword">return</span> doc;
+}</code></pre>
+
+  <h4>各パスの詳細</h4>
+  <ul>
+    <li><strong>Pass 1（行分割）：</strong> <code>\n</code> / <code>\r\n</code> で分割。空行はブロック境界のマーカーとして保持</li>
+    <li><strong>Pass 2（ブロック解析）：</strong> 行頭マーカー（<code>#</code>, <code>-</code>, <code>&gt;</code>, <code>```</code> など）を検出し、ブロック境界を確定。ネスト構造（引用内リストなど）はスタックで管理</li>
+    <li><strong>Pass 3（インライン解析）：</strong> 各ブロックのテキスト内で <code>**</code>, <code>*</code>, <code>`</code>, <code>[</code> などのデリミタを走査し、<code>InlineStyle</code> 範囲を構築。デリミタの優先順位とネスト制限を CommonMark 準拠で処理</li>
+  </ul>
+
+  <h3>2.2 シリアライズ仕様</h3>
+  <pre><code><span class="comment">// Markdown シリアライザの出力例</span>
+<span class="keyword">fn</span> <span class="fn">serialize_markdown</span>(out: <span class="type">u8</span>[>..], doc: <span class="type">Document</span>&amp;) {
+    <span class="keyword">for</span> b <span class="keyword">in</span> doc.blocks {
+        <span class="keyword">match</span> b {
+            Heading { level, inlines } =&gt; {
+                <span class="fn">repeat_byte</span>(out, <span class="str">'#'</span>, level);
+                <span class="fn">push_byte</span>(out, <span class="str">' '</span>);
+                <span class="fn">serialize_inlines</span>(out, inlines);
+            }
+            ListItem { bullet, inlines } =&gt; {
+                <span class="keyword">let</span> marker = <span class="keyword">if</span> bullet { <span class="str">"- "</span> } <span class="keyword">else</span> { <span class="str">"1. "</span> };
+                <span class="fn">append</span>(out, marker);
+                <span class="fn">serialize_inlines</span>(out, inlines);
+            }
+            <span class="comment">// ...</span>
+        }
+        <span class="fn">push_byte</span>(out, <span class="str">'\n'</span>);
+    }
+}</code></pre>
+
+  <h3>2.3 双方向同期戦略</h3>
+  <div class="feature-card">
+    <h4>モード A：WYSIWYG 優先モード（デフォルト）</h4>
+    <ul>
+      <li>ユーザーはリッチテキストで編集。内部ドキュメントモデルが真のデータソース</li>
+      <li>Markdown パネルは内部モデルを遅延シリアライズして表示（300ms デバウンス）</li>
+      <li>Markdown パネルは原則として読み取り専用。編集した場合は即座にパースして内部モデルを置き換え</li>
+    </ul>
+  </div>
+
+  <div class="feature-card">
+    <h4>モード B：ソース優先モード</h4>
+    <ul>
+      <li>Markdown ソースが真のデータソース。編集のたびにパースして WYSIWYG 側を更新</li>
+      <li>パースエラー時は WYSIWYG 側を前回成功状態のまま維持し、エラー位置をハイライト</li>
+      <li>大きな文書ではパース負荷が高いため、ブロック単位の差分パースを検討</li>
+    </ul>
+  </div>
+
+  <div class="info-box warning">
+    <p><strong>注意：</strong> 双方向変換で「ラウンドトリップの等価性」を完全に保証することは困難です（例：改行の扱い、HTML コメント、空行の数）。Goose Editor では「意味的等価性」を目標とし、表示上の差異は許容する方針とします。</p>
+  </div>
+</section>
+
+<section id="sec-autosave">
+  <h2><span class="num">03</span> 自動保存と復元</h2>
+
+  <h3>3.1 保存戦略</h3>
+  <p>
+    Toolsmith Editor と同様に、データは端末内にのみ保存し、外部サーバーには一切送信しません。
+  </p>
+
+  <h4>ネイティブ版</h4>
+  <ul>
+    <li><strong>保存先：</strong> ユーザー指定のローカルディレクトリ内 <code>.goose-editor/</code> フォルダ</li>
+    <li><strong>ファイル形式：</strong> 各文書を <code>{doc_id}.md</code> として保存。メタデータは <code>workspace.json</code></li>
+    <li><strong>タイミング：</strong> 編集から 2 秒無操作後にトリガー、または <kbd>Ctrl</kbd>+<kbd>S</kbd> で即時保存</li>
+    <li><strong>バックアップ：</strong> 保存前に <code>{doc_id}.md.backup</code> を作成。クラッシュ時に復元可能</li>
+  </ul>
+
+  <h4>ブラウザ版（WASM）</h4>
+  <ul>
+    <li><strong>保存先：</strong> Origin Private File System（OPFS）または IndexedDB</li>
+    <li><strong>容量：</strong> OPFS はブラウザの割り当て容量まで利用可能（localStorage の 5MB 制限なし）</li>
+    <li><strong>同期：</strong> File System Access API が利用可能な場合は、ユーザー指定のローカルファイルと直接同期</li>
+  </ul>
+
+  <h3>3.2 復元フロー</h3>
+  <pre><code><span class="comment">// 起動時の復元処理</span>
+<span class="keyword">fn</span> <span class="fn">restore_session</span>() -&gt; <span class="type">Workspace</span> {
+    <span class="keyword">let</span> meta_path = <span class="fn">get_config_dir</span>() + <span class="str">"/workspace.json"</span>;
+    <span class="keyword">if</span> <span class="fn">file_exists</span>(meta_path) {
+        <span class="keyword">let</span> ws = <span class="fn">load_workspace</span>(meta_path);
+        <span class="keyword">for</span> doc_ref <span class="keyword">in</span> ws.open_docs {
+            <span class="keyword">let</span> backup = doc_ref.path + <span class="str">".backup"</span>;
+            <span class="keyword">if</span> <span class="fn">file_exists</span>(backup) &amp;&amp; <span class="fn">is_newer</span>(backup, doc_ref.path) {
+                <span class="fn">show_recovery_dialog</span>(doc_ref);   <span class="comment">// バックアップが新しければ復元確認</span>
+            }
+        }
+        <span class="keyword">return</span> ws;
+    }
+    <span class="keyword">return</span> <span class="fn">create_default_workspace</span>();
+}</code></pre>
+
+  <h3>3.3 保存状態インジケータ</h3>
+  <ul>
+    <li>ツールバー右端に「保存済み / 未保存」アイコンを常時表示</li>
+    <li>未保存状態でウィンドウを閉じようとした場合、確認ダイアログを表示</li>
+    <li>最終保存時刻をステータスバーに表示（例：「2 分前に保存」）</li>
+  </ul>
+</section>
+
+<section id="sec-export">
+  <h2><span class="num">04</span> エクスポート機能詳細</h2>
+
+  <h3>4.1 Markdown エクスポート</h3>
+  <ul>
+    <li>内部ドキュメントモデルを CommonMark 準拠のテキストに変換</li>
+    <li>見出しの <code>#</code> 後には必ず 1 つの空白を挿入</li>
+    <li>リストのインデントは 2 スペース（または設定で 4 スペースに変更可能）</li>
+    <li>コードブロックの言語指定は元の情報を保持</li>
+    <li>出力エンコーディングは UTF-8（BOM なし）</li>
+  </ul>
+
+  <h3>4.2 HTML エクスポート</h3>
+  <pre><code><span class="comment">// HTML テンプレート構造</span>
+&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="str">"ja"</span>&gt;
+&lt;head&gt;
+  &lt;meta charset=<span class="str">"UTF-8"</span>&gt;
+  &lt;title&gt;{document.title}&lt;/title&gt;
+  &lt;style&gt;{embedded_css}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;article <span class="keyword">class</span>=<span class="str">"goose-document"</span>&gt;
+    {rendered_blocks}
+  &lt;/article&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  <ul>
+    <li>各ブロックをセマンティック HTML タグにマッピング（<code>&lt;p&gt;</code>, <code>&lt;h1&gt;</code>〜<code>&lt;h6&gt;</code>, <code>&lt;ul&gt;</code>, <code>&lt;ol&gt;</code>, <code>&lt;pre&gt;&lt;code&gt;</code>, <code>&lt;blockquote&gt;</code>）</li>
+    <li>インラインスタイルは <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, <code>&lt;code&gt;</code>, <code>&lt;del&gt;</code>, <code>&lt;a&gt;</code> に変換</li>
+    <li>埋め込み CSS はシンプルなタイポグラフィ設定（フォント、行間、余白）のみ</li>
+  </ul>
+
+  <h3>4.3 JSON エクスポート</h3>
+  <p>ドキュメント構造をそのまま JSON として出力。外部ツールとの連携やバックアップ用。</p>
+  <pre><code>{
+  <span class="str">"version"</span>: <span class="str">"1.0"</span>,
+  <span class="str">"title"</span>: <span class="str">"ドキュメントタイトル"</span>,
+  <span class="str">"blocks"</span>: [
+    { <span class="str">"type"</span>: <span class="str">"heading"</span>, <span class="str">"level"</span>: <span class="num">1</span>, <span class="str">"inlines"</span>: [...] },
+    { <span class="str">"type"</span>: <span class="str">"paragraph"</span>, <span class="str">"inlines"</span>: [...] }
+  ]
+}</code></pre>
+
+  <h3>4.4 Quarto エクスポート</h3>
+  <ul>
+    <li>YAML フロントマターを先頭に挿入（title, author, date, format など）</li>
+    <li>本文は Markdown として出力し、Quarto レンダラにそのまま渡せる形式</li>
+    <li>コードブロックの言語指定は Quarto のコードセル属性に変換</li>
+  </ul>
+
+  <h3>4.5 Plain Text エクスポート</h3>
+  <ul>
+    <li>すべての Markdown 記号、HTML タグ、インライン装飾を除去</li>
+    <li>見出しはテキストのみ出力（<code>#</code> 記号なし）</li>
+    <li>リスト記号も除去し、ネストは 2 スペースのインデントで表現</li>
+    <li>用途：プレーンテキストへのコピー、文字数カウント、翻訳ツール連携</li>
+  </ul>
+</section>
+
+<section id="sec-workspace">
+  <h2><span class="num">05</span> ワークスペース管理</h2>
+
+  <h3>5.1 文書管理</h3>
+  <ul>
+    <li><strong>新規作成：</strong> <kbd>Ctrl</kbd>+<kbd>N</kbd>。未保存の新規文書は「Untitled-1」などの一時名称</li>
+    <li><strong>開く：</strong> <kbd>Ctrl</kbd>+<kbd>O</kbd>。<code>.md</code>, <code>.txt</code>, <code>.goose</code>（JSON 形式）をサポート</li>
+    <li><strong>最近使った文書：</strong> 最大 20 件を履歴して保持。パスが無効な場合はグレーアウト表示</li>
+    <li><strong>複数文書の同時編集：</strong> タブバーで切り替え。未保存タブにはドットマーカー</li>
+  </ul>
+
+  <h3>5.2 フォルダツリー</h3>
+  <ul>
+    <li>左サイドバーにフォルダツリーを表示。ワークスペースルート以下の <code>.md</code> ファイルを一覧</li>
+    <li>クリックで文書を開く。ドラッグアンドドロップでフォルダ間移動（ネイティブ版のみ）</li>
+    <li>フォルダの展開・折りたたみ状態はワークスペース設定に保存</li>
+  </ul>
+
+  <h3>5.3 ワークスペース設定ファイル（workspace.json）</h3>
+  <pre><code>{
+  <span class="str">"version"</span>: <span class="str">"1.0"</span>,
+  <span class="str">"root_path"</span>: <span class="str">"/home/user/documents"</span>,
+  <span class="str">"open_docs"</span>: [
+    { <span class="str">"id"</span>: <span class="str">"doc_001"</span>, <span class="str">"path"</span>: <span class="str">"notes/ideas.md"</span>, <span class="str">"cursor_block"</span>: <span class="num">4</span>, <span class="str">"cursor_offset"</span>: <span class="num">12</span> }
+  ],
+  <span class="str">"active_doc"</span>: <span class="str">"doc_001"</span>,
+  <span class="str">"sidebar_width"</span>: <span class="num">240</span>,
+  <span class="str">"theme"</span>: <span class="str">"dark"</span>
+}</code></pre>
+</section>
+
+<section id="sec-search">
+  <h2><span class="num">06</span> 検索・置換</h2>
+
+  <h3>6.1 検索機能</h3>
+  <ul>
+    <li><strong>ショートカット：</strong> <kbd>Ctrl</kbd>+<kbd>F</kbd> で検索バー表示</li>
+    <li><strong>検索対象：</strong> 現在の文書内のすべてのブロック・インライン対象</li>
+    <li><strong>オプション：</strong>
+      <ul>
+        <li>大文字小文字を区別 / 区別しない</li>
+        <li>正規表現（サブセット：<code>.</code>, <code>*</code>, <code>+</code>, <code>?</code>, <code>[]</code>, <code>()</code>）</li>
+        <li>全角半角を同一視するオプション</li>
+      </ul>
+    </li>
+    <li><strong>結果表示：</strong> 一致箇所をハイライト、一致数をステータスバーに表示（例：「3 / 12」）</li>
+    <li><strong>ナビゲーション：</strong> <kbd>Enter</kbd> / <kbd>Shift</kbd>+<kbd>Enter</kbd> で次・前の一致へ移動</li>
+  </ul>
+
+  <h3>6.2 置換機能</h3>
+  <ul>
+    <li><strong>ショートカット：</strong> <kbd>Ctrl</kbd>+<kbd>H</kbd></li>
+    <li><strong>単一置換：</strong> 現在の一致箇所のみ置換し、次の一致へ自動移動</li>
+    <li><strong>すべて置換：</strong> 文書内のすべての一致を一括置換。操作前に確認ダイアログ</li>
+    <li><strong>正規表現置換：</strong> キャプチャグループを <code>$1</code>, <code>$2</code> で参照可能</li>
+  </ul>
+
+  <h3>6.3 Goose 実装方針</h3>
+  <pre><code><span class="keyword">struct</span> <span class="type">SearchResult</span> {
+    block_idx: <span class="type">u32</span>,
+    inline_idx: <span class="type">u32</span>,
+    start: <span class="type">u32</span>,
+    end: <span class="type">u32</span>
+}
+
+<span class="keyword">fn</span> <span class="fn">search_document</span>(doc: <span class="type">Document</span>&amp;, query: <span class="type">u8</span>[:], options: <span class="type">SearchOptions</span>) -&gt; <span class="type">SearchResult</span>[>..] {
+    <span class="keyword">var</span> results: <span class="type">SearchResult</span>[>..] = [];
+    <span class="keyword">for</span> bi, b <span class="keyword">in</span> doc.blocks {
+        <span class="keyword">for</span> ii, inl <span class="keyword">in</span> b.inlines {
+            <span class="keyword">var</span> pos = <span class="num">0</span>;
+            <span class="keyword">while</span> <span class="keyword">let</span> m = <span class="fn">find_next</span>(inl.text, query, pos, options) {
+                results.push(<span class="type">SearchResult</span> { block_idx: bi, inline_idx: ii,
+                                         start: m.start, end: m.end });
+                pos = m.end;
+            }
+        }
+    }
+    <span class="keyword">return</span> results;
+}</code></pre>
+</section>
+
+<section id="sec-undo">
+  <h2><span class="num">07</span> Undo / Redo</h2>
+
+  <h3>7.1 コマンドパターンによる実装</h3>
+  <p>
+    すべての編集操作は「コマンド」としてカプセル化し、Undo スタックに積みます。Goose の <code>enum..</code> を使い、コマンド種別ごとに異なるペイロードを持たせます。
+  </p>
+
+  <pre><code><span class="keyword">enum</span> <span class="type">EditCommand</span>.. {
+    InsertText { block: <span class="type">u32</span>, offset: <span class="type">u32</span>, text: <span class="type">u8</span>[varint] },
+    DeleteText { block: <span class="type">u32</span>, offset: <span class="type">u32</span>, deleted: <span class="type">u8</span>[varint] },
+    ApplyStyle { block: <span class="type">u32</span>, inline: <span class="type">u32</span>, start: <span class="type">u32</span>, end: <span class="type">u32</span>, style: <span class="type">InlineStyle</span>.. },
+    RemoveStyle { block: <span class="type">u32</span>, inline: <span class="type">u32</span>, start: <span class="type">u32</span>, end: <span class="type">u32</span>, style: <span class="type">InlineStyle</span>.. },
+    InsertBlock { idx: <span class="type">u32</span>, block: <span class="type">Block</span>.. },
+    DeleteBlock { idx: <span class="type">u32</span>, block: <span class="type">Block</span>.. },
+    MoveBlock { from: <span class="type">u32</span>, to: <span class="type">u32</span> }
+}
+
+<span class="keyword">struct</span> <span class="type">History</span> {
+    undo_stack: <span class="type">EditCommand</span>..[>..],
+    redo_stack: <span class="type">EditCommand</span>..[>..],
+    max_size: <span class="type">u32</span>   <span class="comment">// デフォルト 500 コマンド</span>
+}</code></pre>
+
+  <h3>7.2 動作仕様</h3>
+  <ul>
+    <li><strong>Undo：</strong> <kbd>Ctrl</kbd>+<kbd>Z</kbd>。undo_stack からポップし、inverse 操作を実行して redo_stack にプッシュ</li>
+    <li><strong>Redo：</strong> <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> または <kbd>Ctrl</kbd>+<kbd>Y</kbd>。redo_stack からポップし、元の操作を再実行</li>
+    <li><strong>グループ化：</strong> 連続した文字入力（「あ」「い」「う」）は 1 つの「タイプセッション」としてグループ化し、Undo 時にまとめて巻き戻し</li>
+    <li><strong>上限管理：</strong> undo_stack が max_size を超えると、古いコマンドから破棄。メモリ使用量を一定に保つ</li>
+    <li><strong>新規操作時：</strong> ユーザーが新しい編集を行うと redo_stack はクリアされる</li>
+  </ul>
+
+  <div class="info-box success">
+    <p><strong>Goose の利点：</strong> <code>EditCommand..[>..]</code>（可変サイズ列挙型のグローイング配列）により、削除したブロックの内容も含めて履歴を 1 つの連続メモリ領域に保持できます。ヒープアロケーションなしで、Undo 履歴のシリアライズも容易です。</p>
+  </div>
+</section>
+
+<section id="sec-shortcuts">
+  <h2><span class="num">08</span> キーボードショートカット</h2>
+
+  <h3>8.1 編集操作</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>ショートカット</th><th>機能</th><th>備考</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>N</kbd></td><td>新規文書</td><td></td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>文書を開く</td><td></td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>保存</td><td></td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td>名前を付けて保存</td><td></td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo</td><td></td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td><td>Redo</td><td>または <kbd>Ctrl</kbd>+<kbd>Y</kbd></td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>X</kbd></td><td>切り取り</td><td>ブロックまたは選択テキスト</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>コピー</td><td>Markdown 形式でクリップボードに</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>V</kbd></td><td>貼り付け</td><td>Markdown をパースして挿入</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>すべて選択</td><td>文書全体</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>検索</td><td></td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>H</kbd></td><td>置換</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>8.2 書式設定</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>ショートカット</th><th>機能</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>Bold 切り替え</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>I</kbd></td><td>Italic 切り替え</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>`</kbd></td><td>Inline Code 切り替え</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>リンク挿入</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>1</kbd>〜<kbd>6</kbd></td><td>見出しレベル 1〜6 に変換</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>0</kbd></td><td>見出しを Paragraph に戻す</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>7</kbd></td><td>番号付きリスト</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>8</kbd></td><td>箇条書きリスト</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>&gt;</kbd></td><td>Blockquote に変換</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>リストのインデント増加</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>リストのインデント減少</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>8.3 ナビゲーション</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>ショートカット</th><th>機能</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Home</kbd></td><td>文書先頭へ</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>End</kbd></td><td>文書末尾へ</td></tr>
+        <tr><td><kbd>Alt</kbd>+<kbd>↑</kbd></td><td>ブロックを上へ移動</td></tr>
+        <tr><td><kbd>Alt</kbd>+<kbd>↓</kbd></td><td>ブロックを下へ移動</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Tab</kbd></td><td>次の文書タブへ</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>前の文書タブへ</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>\</kbd></td><td>サイドバーの表示切り替え</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>/</kbd></td><td>Markdown ソースパネルの表示切り替え</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="sec-pwa">
+  <h2><span class="num">09</span> PWA / ブラウザ機能</h2>
+
+  <h3>9.1 インストールとオフライン動作</h3>
+  <ul>
+    <li><strong>Web App Manifest：</strong> <code>manifest.json</code> でアプリ名・アイコン・テーマカラーを定義</li>
+    <li><strong>Service Worker：</strong> 静的アセット（HTML, JS, WASM, フォント）をキャッシュ。初回アクセス後はオフラインで動作</li>
+    <li><strong>ホーム画面追加：</strong> モバイルブラウザで「ホーム画面に追加」が可能</li>
+    <li><strong>スタンドアロン表示：</strong> ブラウザ UI（アドレスバーなど）を非表示にしてネイティブアプリ風に動作</li>
+  </ul>
+
+  <h3>9.2 ファイルシステム連携</h3>
+  <ul>
+    <li><strong>File System Access API：</strong> Chromium 系ブラウザで、ローカルファイルへの直接読み書きが可能</li>
+    <li><strong>ファイルハンドルの保持：</strong> 一度開いたファイルのハンドルを保存し、次回起動時に自動再オープン（許可があれば）</li>
+    <li><strong>ドラッグアンドドロップ：</strong> ブラウザウィンドウに <code>.md</code> ファイルをドロップして開く</li>
+  </ul>
+
+  <h3>9.3 クリップボード連携</h3>
+  <ul>
+    <li><strong>コピー：</strong> 選択範囲を Markdown 形式でクリップボードに書き込み。他のエディタへ貼り付け可能</li>
+    <li><strong>り付け：</strong> クリップボードの内容を Markdown としてパース。プレーンテキストの場合は Paragraph として挿入</li>
+    <li><strong>HTML 貼り付け：</strong> リッチテキスト（Web ページなど）からの貼り付けは、HTML → Markdown 変換を試行</li>
+  </ul>
+
+  <h3>9.4 レスポンシブ対応</h3>
+  <ul>
+    <li><strong>画面幅 &lt; 768px：</strong> サイドバーを自動折りたたみ、ツールバーをアイコン最小化</li>
+    <li><strong>画面幅 &lt; 480px：</strong> Markdown ソースパネルを非表示（メニューから手動表示可能）</li>
+    <li><strong>タッチ操作：</strong> ダブルタップで単語選択、長押しでコンテキストメニュー</li>
+  </ul>
+</section>
+
+<section id="sec-ui">
+  <h2><span class="num">10</span> UI / UX 設方針</h2>
+
+  <h3>10.1 レイアウト構成</h3>
+  <pre><code>+----------------------------------------------------------+
+| [File] [Edit] [View]              [保存済み]  [検索 ▼]    |  &lt;-- ツールバー
++----------+-----------------------------------------------+
+| フォルダ  |                                               |
+| ツリー    |                                               |
+|           |           エディタ領域                        |
+| (サイド   |           (WYSIWYG / ソース切替)               |
+|  バー)    |                                               |
+|           |                                               |
+|           +-------------------+-------------------------+
+|           | Markdown ソース   | プレビュー               |  &lt;-- オプション分割
+|           | (読み取り専用)    |                          |
++-----------+-------------------+-------------------------+
+| Ln 12, Col 5  |  UTF-8  |  142 語  |  最後に保存: 1分前   |  &lt;-- ステータスバー
++----------------------------------------------------------+</code></pre>
+
+  <h3>10.2 デザイン原則</h3>
+  <ul>
+    <li><strong>最小主義：</strong> 必要な機能のみを表示。頻度の低い操作はメニューに格納</li>
+    <li><strong>視覚的階層：</strong> 見出しはフォントサイズと色で明確に区別。段落間に適切な余白</li>
+    <li><strong>フィードバック：</strong> 保存状態、検索結果数、Undo 可否を常時表示</li>
+    <li><strong>フォーカス重視：</strong> 編集領域以外の要素は低彩度で、文章に集中できる環境</li>
+  </ul>
+
+  <h3>10.3 テーマ</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>テーマ</th><th>背景</th><th>文字色</th><th>アクセント</th><th>用途</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Dark（デフォルト）</td><td><code>#0d1117</code></td><td><code>#c9d1d9</code></td><td><code>#58a6ff</code></td><td>暗い環境・長時間執筆</td></tr>
+        <tr><td>Light</td><td><code>#ffffff</code></td><td><code>#24292f</code></td><td><code>#0969da</code></td><td>明るい環境・印刷確認</td></tr>
+        <tr><td>Sepia</td><td><code>#f4ecd8</code></td><td><code>#433422</code></td><td><code>#8b6914</code></td><td>目の疲労軽減・読書風</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>10.4 アクセシビリティ</h3>
+  <ul>
+    <li><strong>キーボードナビゲーション：</strong> すべての機能をキーボードのみで操作可能</li>
+    <li><strong>スクリーンリーダー：</strong> ブロック種別を ARIA ラベルで通知（「見出しレベル 1」「箇条書き」）</li>
+    <li><strong>コントラスト：</strong> 本文テキストは WCAG AA 基準（4.5:1）以上を確保</li>
+    <li><strong>フォントサイズ：</strong> 設定で 12px〜20px の範囲で変更可能</li>
+    <li><strong> reduced motion：</strong> システム設定に連動し、アニメーションを無効化可能</li>
+  </ul>
+
+  <div class="info-box">
+    <p><strong>Toolsmith Editor との差異</strong> Goose Editor は元の「余計な選択肢を減らす」哲学を継承しつつ、キーボードショートカットとカスタマイズ性を追加します。ただし、設定項目は「テーマ・フォントサイズ・自動保存間隔・エクスポート形式」のみに制限し、複雑さを抑えます。</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p class="mono">Goose Editor Functional Specification &nbsp;|&nbsp; Generated 2026-11-10</p>
+  <p style="margin-top:0.4em;">本仕様書は Goose 言語によるローカルファーストエディタの機能設計を詳述するものです。</p>
+</footer>
+
+</body>
+</html>

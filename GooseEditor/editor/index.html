@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#071526">
+<meta name="description" content="Goose Editor は、リッチテキストと Markdown を往復しながら、文章を端末内に保存できるローカルファーストの軽量編集環境です。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23071526'/%3E%3Cpath d='M22 5c-6 3-9 8-9 13 0 3 1 6 3 8 3-4 6-9 6-13 0-3 0-6 0-8z' fill='%2357e8ff'/%3E%3Cpath d='M22 5c-1 8-2 14-5 20' stroke='%2304101d' stroke-width='1.3' fill='none'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<title>Goose Editor — local-first Markdown workspace</title>
+<meta name="application-name" content="Goose Editor">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Goose Editor">
+<meta name="format-detection" content="telephone=no">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #071526;
+  --bg-deep: #04101d;
+  --panel: #0a1c31;
+  --panel-2: #0d2440;
+  --raised: #102b4b;
+  --fg: #e6f2ff;
+  --fg-soft: #c2d6ea;
+  --faint: #7f9bb5;
+  --line: rgba(87, 232, 255, 0.19);
+  --line-strong: rgba(87, 232, 255, 0.42);
+  --accent: #57e8ff;
+  --accent-2: #2ea8ff;
+  --accent-ink: #04121f;
+  --glow: rgba(87, 232, 255, 0.28);
+  --selection: rgba(87, 232, 255, 0.26);
+  --danger: #ff7b8a;
+  --ok: #6ff2b2;
+  --editor-bg: #081a2c;
+  --editor-size: 16px;
+  --radius: 10px;
+  --font-ui: "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  --font-display: "Orbitron", "Inter", "Noto Sans JP", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  color-scheme: dark;
+}
+[data-theme="light"] {
+  --bg: #eef4f9;
+  --bg-deep: #dfe9f2;
+  --panel: #ffffff;
+  --panel-2: #f3f8fc;
+  --raised: #e7f1f9;
+  --fg: #0a2233;
+  --fg-soft: #274559;
+  --faint: #5b7386;
+  --line: rgba(10, 74, 105, 0.16);
+  --line-strong: rgba(10, 74, 105, 0.38);
+  --accent: #0a86b8;
+  --accent-2: #0b62c4;
+  --accent-ink: #ffffff;
+  --glow: rgba(10, 134, 184, 0.2);
+  --selection: rgba(10, 134, 184, 0.2);
+  --danger: #c02c40;
+  --ok: #0b8a55;
+  --editor-bg: #ffffff;
+  color-scheme: light;
+}
+[data-theme="sepia"] {
+  --bg: #f3e9d6;
+  --bg-deep: #e8dac0;
+  --panel: #fbf3e3;
+  --panel-2: #f6ecd9;
+  --raised: #ecdfc6;
+  --fg: #3a2c1a;
+  --fg-soft: #56432a;
+  --faint: #82694a;
+  --line: rgba(94, 71, 40, 0.22);
+  --line-strong: rgba(94, 71, 40, 0.44);
+  --accent: #9a6a12;
+  --accent-2: #b3812a;
+  --accent-ink: #fffaf0;
+  --glow: rgba(154, 106, 18, 0.22);
+  --selection: rgba(154, 106, 18, 0.24);
+  --danger: #a13324;
+  --ok: #4f7a34;
+  --editor-bg: #fbf5e9;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(1100px 520px at 12% -10%, var(--glow), transparent 62%),
+    radial-gradient(900px 600px at 108% 6%, rgba(46, 168, 255, 0.16), transparent 58%),
+    var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  line-height: 1.6;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+::selection { background: var(--selection); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code, kbd, pre { font-family: var(--font-mono); }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 99px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-deep) 82%, transparent);
+  backdrop-filter: blur(10px);
+  z-index: 20;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: linear-gradient(145deg, var(--panel-2), var(--bg-deep));
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 900;
+  box-shadow: inset 0 0 14px var(--glow), 0 0 18px -6px var(--accent);
+}
+.brand small { color: var(--faint); font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: 0.1em; }
+.brand-mark svg { display: block; width: 22px; height: 22px; }
+.install-btn { border-color: color-mix(in srgb, var(--accent) 46%, transparent); color: var(--accent); }
+.install-btn[hidden] { display: none; }
+.topbar-spacer { flex: 1; }
+.topbar-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+}
+.topbar-note::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 9px var(--ok);
+}
+.topbar-link {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  color: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-decoration: none;
+  transition: 0.16s ease;
+}
+.topbar-link:hover { border-color: var(--line-strong); color: var(--accent); box-shadow: 0 0 16px -6px var(--accent); }
+
+/* ---------- shell ---------- */
+.app {
+  display: grid;
+  grid-template-columns: 268px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+body.sidebar-hidden .app { grid-template-columns: minmax(0, 1fr); }
+body.sidebar-hidden #sidebar { display: none; }
+
+/* ---------- sidebar ---------- */
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 74%, transparent);
+}
+.side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 15px 14px 11px;
+  border-bottom: 1px solid var(--line);
+}
+.side-head h2 {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+.side-head button {
+  display: inline-grid;
+  place-items: center;
+  width: 24px; height: 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--panel-2);
+  color: var(--accent);
+  font-size: 0.95rem;
+  line-height: 1;
+  transition: 0.15s ease;
+}
+.side-head button:hover { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 18px -4px var(--accent); }
+#doc-list { flex: 1; min-height: 0; overflow: auto; padding: 9px 9px 4px; }
+.doc-row {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 6px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  transition: 0.15s ease;
+}
+.doc-row:hover { border-color: var(--line); background: color-mix(in srgb, var(--panel-2) 70%, transparent); }
+.doc-row.active {
+  border-color: var(--line-strong);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent) 15%, var(--panel-2)), var(--panel-2));
+  box-shadow: inset 2px 0 0 var(--accent), 0 0 22px -10px var(--accent);
+}
+.doc-open {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 8px 8px 9px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  border-radius: 9px;
+}
+.doc-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 26px; height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--bg-deep);
+  color: var(--accent);
+  font-size: 0.68rem;
+}
+.doc-info { min-width: 0; }
+.doc-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+.doc-meta {
+  display: block;
+  margin-top: 1px;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.02em;
+}
+.doc-remove {
+  width: 26px;
+  border: 0;
+  border-radius: 0 9px 9px 0;
+  background: transparent;
+  color: var(--faint);
+  font-size: 0.86rem;
+  opacity: 0;
+  transition: 0.15s ease;
+}
+.doc-row:hover .doc-remove, .doc-row.active .doc-remove { opacity: 1; }
+.doc-remove:hover { background: color-mix(in srgb, var(--danger) 24%, transparent); color: var(--danger); }
+.storage-note {
+  margin: 0 12px 8px;
+  padding: 9px 10px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  line-height: 1.6;
+}
+.side-foot {
+  padding: 4px 14px 14px;
+  color: var(--faint);
+  font-size: 0.6rem;
+  line-height: 1.7;
+}
+.side-foot kbd {
+  padding: 1px 4px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg-deep);
+  font-size: 0.54rem;
+  white-space: nowrap;
+}
+
+/* ---------- stage ---------- */
+.stage {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: color-mix(in srgb, var(--bg-deep) 42%, transparent);
+}
+.docbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 52%, transparent);
+}
+.icon-btn, .tool-btn, .mode-btn, .text-btn, .primary-btn {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  transition: 0.15s ease;
+}
+.icon-btn { padding: 6px 10px; }
+.icon-btn:hover, .tool-btn:hover, .mode-btn:hover, .text-btn:hover {
+  border-color: var(--line-strong);
+  color: var(--accent);
+  box-shadow: 0 0 16px -7px var(--accent);
+}
+.primary-btn { padding: 6px 12px; border-color: transparent; background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.primary-btn:hover { box-shadow: 0 0 22px -4px var(--accent); }
+.docbar-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 1 1 240px;
+}
+.docbar-eyebrow {
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 0.53rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+#document-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: text;
+}
+.docbar-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.save-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--bg-deep);
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+.save-state::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.save-state[data-state="saved"] { border-color: color-mix(in srgb, var(--ok) 55%, transparent); color: var(--ok); }
+.save-state[data-state="dirty"] { color: var(--accent); }
+.save-state[data-state="error"] { border-color: var(--danger); color: var(--danger); }
+
+/* export menu */
+details.export { position: relative; }
+details.export > summary {
+  list-style: none;
+  padding: 6px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.15s ease;
+}
+details.export > summary::-webkit-details-marker { display: none; }
+details.export > summary:hover { box-shadow: 0 0 18px -6px var(--accent); }
+.export-menu {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  width: 208px;
+  padding: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 18px 46px -16px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 0, 0, 0.3);
+  z-index: 40;
+}
+.export-menu button {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg-soft);
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+}
+.export-menu button:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.export-menu hr { margin: 5px 3px; border: 0; border-top: 1px solid var(--line); }
+
+/* toolbar */
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 7px 16px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 34%, transparent);
+}
+.mode-group {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg-deep);
+}
+.mode-btn { padding: 4px 12px; border: 0; border-radius: 6px; background: transparent; }
+.mode-btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 700; box-shadow: 0 0 16px -6px var(--accent); }
+#toolbar { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+.tool-btn { min-width: 29px; height: 27px; padding: 0 6px; display: inline-grid; place-items: center; background: transparent; border-color: transparent; color: var(--fg-soft); }
+.tool-btn:hover { background: var(--panel-2); }
+.tool-btn.wide { padding: 0 8px; font-size: 0.62rem; }
+.tool-sep { width: 1px; height: 17px; background: var(--line); margin: 0 3px; }
+.toolbar-spacer { flex: 1; }
+.font-group { display: flex; gap: 3px; }
+
+/* ---------- editor ---------- */
+.editor-area {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 120px;
+  overflow: auto;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--editor-bg) 92%, transparent), var(--editor-bg));
+}
+#rich {
+  width: 100%;
+  max-width: 880px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 34px 40px 60px;
+  outline: none;
+  font-size: var(--editor-size);
+  line-height: 1.85;
+  color: var(--fg);
+  caret-color: var(--accent);
+  overflow-wrap: break-word;
+}
+#rich:empty::before {
+  content: "書き始める…";
+  color: var(--faint);
+  pointer-events: none;
+}
+#rich > *:first-child { margin-top: 0; }
+#rich h1, #rich h2, #rich h3, #rich h4, #rich h5, #rich h6 {
+  margin: 1.35em 0 0.5em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: 0.01em;
+  color: var(--fg);
+}
+#rich h1 {
+  padding-bottom: 0.32em;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.72em;
+  text-shadow: 0 0 28px var(--glow);
+}
+#rich h2 { font-size: 1.32em; color: var(--accent); }
+#rich h3 { font-size: 1.1em; }
+#rich p { margin: 0.75em 0; }
+#rich ul, #rich ol { margin: 0.7em 0; padding-left: 1.55em; }
+#rich li { margin: 0.22em 0; }
+#rich li::marker { color: var(--accent); }
+#rich blockquote {
+  margin: 1em 0;
+  padding: 0.6em 1.1em;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  color: var(--fg-soft);
+}
+#rich blockquote p { margin: 0.25em 0; }
+#rich pre {
+  margin: 1.1em 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg-deep);
+  overflow-x: auto;
+  font-size: 0.82em;
+  line-height: 1.65;
+  box-shadow: inset 0 0 30px -20px var(--accent);
+}
+#rich :not(pre) > code {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--bg-deep);
+  color: var(--accent);
+  font-size: 0.86em;
+}
+#rich hr { margin: 1.9em 0; border: 0; border-top: 1px solid var(--line-strong); }
+#rich a { color: var(--accent); text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+#rich del, #rich s { color: var(--faint); }
+#rich img { max-width: 100%; border-radius: 8px; }
+#rich mark { background: color-mix(in srgb, var(--accent) 30%, transparent); color: inherit; }
+#rich table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+#rich th, #rich td { padding: 6px 9px; border: 1px solid var(--line); text-align: left; }
+
+#source-editor {
+  display: block;
+  width: 100%;
+  max-width: 1000px;
+  height: 100%;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 30px 40px 60px;
+  border: 0;
+  background: transparent;
+  color: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: calc(var(--editor-size) - 1px);
+  line-height: 1.8;
+  resize: none;
+  tab-size: 2;
+  caret-color: var(--accent);
+}
+#source-editor:focus { outline: none; }
+
+/* ---------- source console ---------- */
+.source-console {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 clamp(140px, 30vh, 300px);
+  min-height: 0;
+  border-top: 1px solid var(--line-strong);
+  background: var(--bg-deep);
+  box-shadow: 0 -14px 40px -30px var(--accent);
+}
+.console-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 55%, transparent);
+}
+#source-title {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+#source-hint { color: var(--faint); font-family: var(--font-mono); font-size: 0.56rem; }
+#source-stats { margin-left: auto; color: var(--faint); font-family: var(--font-mono); font-size: 0.56rem; white-space: nowrap; }
+#source-view, #rendered-view {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px 18px 20px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.75;
+  color: var(--fg-soft);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+#source-view mark.source-hit {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: inherit;
+}
+#source-view mark.source-hit.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 0 12px var(--glow);
+}
+#rendered-view { font-family: var(--font-ui); font-size: 0.82rem; line-height: 1.7; }
+#rendered-view h1, #rendered-view h2, #rendered-view h3 { margin: 0.9em 0 0.4em; font-family: var(--font-display); }
+#rendered-view h1 { font-size: 1.3rem; color: var(--accent); }
+#rendered-view h2 { font-size: 1.08rem; }
+#rendered-view h3 { font-size: 0.96rem; }
+#rendered-view p { margin: 0.5em 0; }
+#rendered-view ul, #rendered-view ol { margin: 0.5em 0; padding-left: 1.4em; }
+#rendered-view blockquote { margin: 0.7em 0; padding: 0.4em 0.9em; border-left: 2px solid var(--accent); color: var(--faint); }
+#rendered-view pre { margin: 0.8em 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); overflow-x: auto; font-size: 0.76rem; }
+#rendered-view :not(pre) > code { color: var(--accent); }
+#rendered-view .empty-note { color: var(--faint); font-style: italic; }
+
+/* ---------- status ---------- */
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 6px 16px;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 62%, transparent);
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 0.57rem;
+  letter-spacing: 0.02em;
+}
+.statusbar .grow { margin-left: auto; }
+.statusbar b { color: var(--fg-soft); font-weight: 500; }
+#status-theme { text-transform: capitalize; color: var(--accent); }
+
+/* ---------- find ---------- */
+.find-panel {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(460px, calc(100% - 32px));
+  padding: 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 11px;
+  background: var(--panel);
+  box-shadow: 0 22px 50px -20px rgba(0, 0, 0, 0.85), 0 0 26px -14px var(--accent);
+}
+.find-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.find-row input[type="text"] {
+  flex: 1 1 150px;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--bg-deep);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+.find-row input[type="text"]:focus { border-color: var(--line-strong); outline: none; }
+.find-row button { padding: 5px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel-2); color: var(--fg-soft); font-family: var(--font-mono); font-size: 0.62rem; }
+.find-row button:hover { border-color: var(--line-strong); color: var(--accent); }
+.find-count { min-width: 52px; color: var(--faint); font-family: var(--font-mono); font-size: 0.6rem; text-align: center; }
+.find-options { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--faint); font-family: var(--font-mono); font-size: 0.58rem; }
+.find-options label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.find-options input { accent-color: var(--accent); }
+.find-panel.no-results input[type="text"] { border-color: var(--danger); }
+.find-panel .find-close { margin-left: auto; }
+.replace-row { display: none; }
+.find-panel.with-replace .replace-row { display: flex; }
+
+/* ---------- toast ---------- */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 34px;
+  transform: translate(-50%, 14px);
+  z-index: 70;
+  max-width: 90vw;
+  padding: 9px 15px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--accent);
+  box-shadow: 0 16px 40px -14px rgba(0, 0, 0, 0.8), 0 0 28px -10px var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+body.dragging::after {
+  content: "Markdown をここにドロップ";
+  position: fixed;
+  inset: 14px;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--accent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-deep) 84%, transparent);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+}
+
+/* ---------- dialog ---------- */
+dialog {
+  width: min(640px, calc(100vw - 28px));
+  max-height: 86vh;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--fg);
+  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.9), 0 0 40px -20px var(--accent);
+}
+dialog::backdrop { background: rgba(3, 10, 19, 0.72); backdrop-filter: blur(4px); }
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.dialog-head h2 {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.dialog-head button { padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel-2); font-family: var(--font-mono); font-size: 0.64rem; }
+.dialog-body { padding: 18px 20px 24px; overflow: auto; font-size: 0.8rem; }
+.dialog-body h3 { margin: 18px 0 7px; color: var(--accent); font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.dialog-body h3:first-child { margin-top: 0; }
+.dialog-body p { margin: 0.45em 0; color: var(--faint); }
+.dialog-body table { width: 100%; border-collapse: collapse; }
+.dialog-body th, .dialog-body td { padding: 5px 7px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.dialog-body th { color: var(--faint); font-family: var(--font-mono); font-size: 0.58rem; font-weight: 400; }
+.dialog-body kbd { padding: 1px 5px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg-deep); font-size: 0.62rem; white-space: nowrap; }
+
+/* ---------- intro ---------- */
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: radial-gradient(900px 600px at 50% 0%, rgba(46, 168, 255, 0.18), transparent 60%), rgba(3, 10, 19, 0.82);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.24s ease;
+}
+#intro.show { opacity: 1; }
+.intro-card {
+  width: min(620px, 100%);
+  max-height: min(720px, 92vh);
+  overflow: auto;
+  padding: 30px 32px 30px;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background:
+    radial-gradient(600px 300px at 88% -10%, var(--glow), transparent 62%),
+    linear-gradient(160deg, color-mix(in srgb, var(--panel-2) 94%, transparent), var(--panel));
+  box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.9), 0 0 60px -26px var(--accent);
+  transform: translateY(10px) scale(0.99);
+  transition: transform 0.26s ease;
+}
+#intro.show .intro-card { transform: none; }
+.intro-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.intro-kicker::before { content: ""; width: 22px; height: 1px; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.intro-card h2 {
+  margin: 12px 0 4px;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 34px var(--glow);
+}
+.intro-card h2 span { color: var(--accent); }
+.intro-lead { margin: 10px 0 18px; color: var(--fg-soft); font-size: 0.88rem; line-height: 1.75; }
+.intro-list { display: grid; gap: 8px; margin: 0 0 20px; padding: 0; list-style: none; }
+.intro-list li {
+  display: flex;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--bg-deep) 55%, transparent);
+  color: var(--fg-soft);
+  font-size: 0.78rem;
+}
+.intro-list li b { color: var(--accent); font-family: var(--font-mono); font-size: 0.7rem; font-weight: 500; }
+.intro-actions { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+.intro-actions .primary-btn { padding: 9px 18px; font-family: var(--font-ui); font-size: 0.8rem; }
+.intro-actions .text-btn { padding: 9px 14px; font-family: var(--font-ui); font-size: 0.78rem; background: transparent; }
+.intro-note { margin-top: 14px; color: var(--faint); font-family: var(--font-mono); font-size: 0.56rem; line-height: 1.7; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1080px) {
+  .app { grid-template-columns: 230px minmax(0, 1fr); }
+  #rich, #source-editor { padding: 26px 26px 50px; }
+}
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  #sidebar {
+    position: fixed;
+    top: 51px;
+    bottom: 0;
+    left: 0;
+    z-index: 25;
+    width: min(288px, 84vw);
+    border-right: 1px solid var(--line-strong);
+    background: color-mix(in srgb, var(--panel) 97%, transparent);
+    box-shadow: 22px 0 60px -30px rgba(0, 0, 0, 0.9);
+  }
+  body.sidebar-hidden #sidebar { display: none; }
+  body.sidebar-overlay::before {
+    content: "";
+    position: fixed;
+    inset: 51px 0 0;
+    z-index: 24;
+    background: rgba(2, 8, 15, 0.55);
+    backdrop-filter: blur(2px);
+  }
+  .topbar-note { display: none; }
+  .docbar { padding: 9px 12px; gap: 8px; }
+  .toolbar-row { padding: 6px 10px; gap: 6px; }
+  .source-console { flex-basis: 26vh; }
+}
+@media (max-width: 640px) {
+  .topbar { padding: 8px 12px; gap: 10px; }
+  .brand { font-size: 0.7rem; letter-spacing: 0.1em; }
+  .brand small { display: none; }
+  .topbar-link { display: none; }
+  .docbar-title { flex-basis: 100%; order: 2; }
+  .docbar-actions { order: 3; width: 100%; }
+  .docbar-actions .icon-btn .wide-label { display: none; }
+  #rich, #source-editor { padding: 20px 18px 44px; }
+  #rich { font-size: var(--editor-size); }
+  .tool-btn.wide { padding: 0 6px; }
+  .toolbar-spacer { display: none; }
+  .source-console { flex-basis: 24vh; }
+  #source-stats { display: none; }
+  .statusbar { gap: 9px; font-size: 0.53rem; padding: 6px 12px; }
+  .intro-card { padding: 24px 20px; border-radius: 14px; }
+  .find-panel { top: 8px; right: 8px; width: calc(100% - 16px); }
+}
+@media (max-width: 420px) {
+  .docbar-actions .icon-btn { padding: 6px 8px; }
+  #toolbar { gap: 1px; }
+  .tool-btn { min-width: 26px; height: 25px; }
+  .tool-sep { display: none; }
+  .intro-list li { font-size: 0.72rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #toast, #intro, .intro-card { transition: none; }
+}
+@media print {
+  .topbar, #sidebar, .docbar, .toolbar-row, .find-panel, .statusbar, #toast, #intro, .source-console { display: none !important; }
+  body { overflow: visible; background: #fff; color: #000; }
+  .app, .stage, .editor-area { display: block; overflow: visible; }
+  #rich { max-width: none; padding: 0; color: #000; }
+}
+</style>
+</head>
+<body class="mode-rich">
+
+<header class="topbar">
+  <a class="brand" href="../">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 512 512" role="presentation" focusable="false">
+        <defs>
+          <linearGradient id="markVane" x1="0.15" y1="0" x2="0.9" y2="1">
+            <stop offset="0" stop-color="#c9fbff"/>
+            <stop offset="0.42" stop-color="#57e8ff"/>
+            <stop offset="1" stop-color="#2ea8ff"/>
+          </linearGradient>
+        </defs>
+        <g transform="rotate(-16 256 256)">
+          <path d="M262 64C338 118 372 204 344 292c-16 52-48 100-82 146-36-46-70-96-86-150-26-86 12-172 86-224Z" fill="url(#markVane)"/>
+          <g stroke="#071526" stroke-width="9" stroke-linecap="round" opacity=".55" fill="none">
+            <path d="M262 150C230 164 206 188 192 216M262 232C228 248 204 272 192 302M262 312C240 326 224 346 216 370"/>
+            <path d="M266 180C296 194 318 216 330 244M266 262C298 276 320 298 330 328"/>
+          </g>
+          <path d="M262 64c6 114 4 248-4 388" stroke="#eaffff" stroke-width="18" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </span>
+    <span>Goose Editor<br><small>local-first workspace</small></span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <span class="topbar-note">端末内に自動保存 · 外部送信なし</span>
+  <a class="topbar-link" href="../">概要へ戻る</a>
+</header>
+
+<div class="app">
+  <aside id="sidebar" aria-label="文書一覧">
+    <div class="side-head">
+      <h2>Documents</h2>
+      <button type="button" id="btn-new-inline" title="新しい文書" aria-label="新しい文書">+</button>
+    </div>
+    <div id="doc-list"></div>
+    <div class="storage-note" id="storage-note">0 文書</div>
+    <div class="side-foot">
+      <kbd>⌘/Ctrl</kbd> + <kbd>S</kbd> 保存 · <kbd>⌘/Ctrl</kbd> + <kbd>F</kbd> 検索 · <kbd>⌘/Ctrl</kbd> + <kbd>\</kbd> 一覧
+    </div>
+  </aside>
+
+  <main class="stage">
+    <div class="docbar">
+      <button type="button" class="icon-btn" id="btn-sidebar" title="文書一覧の表示切替 (Ctrl/Cmd + \)" aria-label="文書一覧の表示切替">☰</button>
+      <div class="docbar-title">
+        <span class="docbar-eyebrow">Local-first workspace</span>
+        <h1 id="document-title" title="ダブルクリックで名前を変更">untitled.md</h1>
+      </div>
+      <div class="docbar-actions">
+        <span class="save-state" id="save-state" data-state="saved" title="最終保存">保存済み</span>
+        <button type="button" class="icon-btn" id="btn-new" title="新しい文書 (Ctrl/Cmd + N)">＋ <span class="wide-label">新規</span></button>
+        <button type="button" class="icon-btn" id="btn-open" title="Markdown を開く (Ctrl/Cmd + O)">開く</button>
+        <button type="button" class="primary-btn" id="btn-save" title="保存 (Ctrl/Cmd + S)">保存</button>
+        <details class="export" id="export-menu">
+          <summary>書き出す ▾</summary>
+          <div class="export-menu">
+            <button type="button" data-export="markdown">Markdown (.md)</button>
+            <button type="button" data-export="html">HTML (.html)</button>
+            <button type="button" data-export="json">JSON (.json)</button>
+            <button type="button" data-export="quarto">Quarto (.qmd)</button>
+            <button type="button" data-export="text">Plain Text (.txt)</button>
+            <hr>
+            <button type="button" id="copy-markdown">Markdown をコピー</button>
+          </div>
+        </details>
+        <button type="button" class="icon-btn" id="btn-theme" title="テーマを切り替える">◐ <span id="theme-label">Dark</span></button>
+        <button type="button" class="icon-btn install-btn" id="btn-install" title="アプリとしてインストール" hidden>⤓ <span class="wide-label">インストール</span></button>
+        <button type="button" class="icon-btn" id="btn-help" title="ショートカットと使い方" aria-label="ヘルプ">?</button>
+      </div>
+    </div>
+
+    <div class="toolbar-row">
+      <div class="mode-group" role="group" aria-label="編集モード">
+        <button type="button" class="mode-btn" data-mode="rich" aria-pressed="true" title="リッチテキストで編集">Rich</button>
+        <button type="button" class="mode-btn" data-mode="source" aria-pressed="false" title="Markdown ソースで編集">Source</button>
+      </div>
+      <div id="toolbar" role="toolbar" aria-label="書式">
+        <button type="button" class="tool-btn" data-command="bold" title="Bold (Ctrl/Cmd + B)"><b>B</b></button>
+        <button type="button" class="tool-btn" data-command="italic" title="Italic (Ctrl/Cmd + I)"><i>I</i></button>
+        <button type="button" class="tool-btn" data-command="strike" title="打ち消し線"><s>S</s></button>
+        <button type="button" class="tool-btn" data-command="code" title="インラインコード (Ctrl/Cmd + `)">&lt;/&gt;</button>
+        <button type="button" class="tool-btn wide" data-command="link" title="リンク (Ctrl/Cmd + K)">Link</button>
+        <span class="tool-sep" aria-hidden="true"></span>
+        <button type="button" class="tool-btn wide" data-command="h1" title="見出し 1 (Ctrl/Cmd + 1)">H1</button>
+        <button type="button" class="tool-btn wide" data-command="h2" title="見出し 2 (Ctrl/Cmd + 2)">H2</button>
+        <button type="button" class="tool-btn wide" data-command="h3" title="見出し 3 (Ctrl/Cmd + 3)">H3</button>
+        <button type="button" class="tool-btn wide" data-command="paragraph" title="段落に戻す (Ctrl/Cmd + 0)">¶</button>
+        <span class="tool-sep" aria-hidden="true"></span>
+        <button type="button" class="tool-btn wide" data-command="ul" title="箇条書き (Ctrl/Cmd + Shift + 8)">• リスト</button>
+        <button type="button" class="tool-btn wide" data-command="ol" title="番号付きリスト (Ctrl/Cmd + Shift + 7)">1. リスト</button>
+        <button type="button" class="tool-btn wide" data-command="quote" title="引用 (Ctrl/Cmd + Shift + &gt;)">❝</button>
+        <button type="button" class="tool-btn wide" data-command="codeblock" title="コードブロック">```</button>
+        <button type="button" class="tool-btn wide" data-command="hr" title="水平線">—</button>
+      </div>
+      <span class="toolbar-spacer"></span>
+      <div class="font-group">
+        <button type="button" class="tool-btn" id="font-smaller" title="文字を小さく">A−</button>
+        <button type="button" class="tool-btn" id="font-larger" title="文字を大きく">A+</button>
+      </div>
+    </div>
+
+    <section class="editor-area" aria-label="編集領域">
+      <div id="rich" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="リッチテキスト"></div>
+      <textarea id="source-editor" spellcheck="false" aria-label="Markdown ソース" placeholder="# ここから書き始める" hidden></textarea>
+
+      <div class="find-panel" id="find-panel" hidden>
+        <div class="find-row">
+          <input type="text" id="find-input" placeholder="検索" aria-label="検索語">
+          <span class="find-count" id="find-count">0 / 0</span>
+          <button type="button" id="find-prev" title="前へ (Shift + Enter)">↑</button>
+          <button type="button" id="find-next" title="次へ (Enter)">↓</button>
+          <button type="button" class="find-close" id="find-close" title="閉じる (Esc)">×</button>
+        </div>
+        <div class="find-row replace-row">
+          <input type="text" id="replace-input" placeholder="置換後" aria-label="置換後">
+          <button type="button" id="replace-one">置換</button>
+          <button type="button" id="replace-all">すべて置換</button>
+        </div>
+        <div class="find-options">
+          <label><input type="checkbox" data-find-option="caseSensitive"> 大文字小文字</label>
+          <label><input type="checkbox" data-find-option="regex"> 正規表現</label>
+          <label><input type="checkbox" data-find-option="normalizeWidth"> 全角半角</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="source-console" aria-label="Markdown ソースプレビュー">
+      <div class="console-head">
+        <span id="source-title">Source Preview</span>
+        <span id="source-hint">Markdown ソース · 読み取り専用</span>
+        <span id="source-stats">0 文字 · 0 語</span>
+      </div>
+      <pre id="source-view" aria-label="Markdown ソース"></pre>
+      <div id="rendered-view" aria-label="描画プレビュー" hidden></div>
+    </section>
+
+    <footer class="statusbar">
+      <span id="status-line">Ln 1, Col 1</span>
+      <span id="status-chars">0 文字</span>
+      <span id="status-words">0 語</span>
+      <span>UTF-8</span>
+      <span class="grow"></span>
+      <span id="status-save">保存済み · たった今</span>
+      <span>Theme: <b id="status-theme">dark</b></span>
+    </footer>
+  </main>
+</div>
+
+<dialog id="help-dialog">
+  <div class="dialog-head">
+    <h2>ショートカットと使い方</h2>
+    <button type="button" id="btn-close-help">閉じる</button>
+  </div>
+  <div class="dialog-body">
+    <h3>編集</h3>
+    <table>
+      <tr><th>操作</th><th>ショートカット</th></tr>
+      <tr><td>保存</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd></td></tr>
+      <tr><td>新しい文書</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>N</kbd></td></tr>
+      <tr><td>ファイルを開く</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>O</kbd></td></tr>
+      <tr><td>検索 / 置換</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>F</kbd> / <kbd>H</kbd></td></tr>
+      <tr><td>元に戻す / やり直す（Source）</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>Z</kbd> / <kbd>Shift</kbd> + <kbd>Z</kbd></td></tr>
+      <tr><td>文書一覧の表示切替</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>\</kbd></td></tr>
+    </table>
+    <h3>書式</h3>
+    <table>
+      <tr><td>Bold / Italic / コード</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>B</kbd> / <kbd>I</kbd> / <kbd>`</kbd></td></tr>
+      <tr><td>リンク</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>K</kbd></td></tr>
+      <tr><td>見出し 1〜3 / 段落</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>1</kbd>…<kbd>3</kbd> / <kbd>0</kbd></td></tr>
+      <tr><td>番号付き / 箇条書き</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>7</kbd> / <kbd>8</kbd></td></tr>
+      <tr><td>引用</td><td><kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>&gt;</kbd></td></tr>
+    </table>
+    <h3>データについて</h3>
+    <p>文書はこのブラウザの localStorage にのみ保存されます。書き出し（Markdown / HTML / JSON / Quarto / Plain Text）はすべて端末内で生成されます。</p>
+    <p>Rich と Source は同じ文書の別の面です。どちらで編集しても、もう一方へ即時に反映されます。</p>
+  </div>
+</dialog>
+
+<div id="intro" hidden>
+  <div class="intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    <span class="intro-kicker">Local-first Markdown workspace</span>
+    <h2 id="intro-title">思考を、すぐ<span>形</span>にする。</h2>
+    <p class="intro-lead">リッチテキストで書き、Markdown ソースを確認しながら、内容をこの端末内に自動保存できます。</p>
+    <ul class="intro-list">
+      <li><b>01</b> リッチテキストで自然に書く。見出し・リスト・引用・コードに対応。</li>
+      <li><b>02</b> 下部の Source Preview で Markdown をリアルタイムに確認。</li>
+      <li><b>03</b> Markdown / HTML / JSON / Quarto へローカルで書き出す。</li>
+    </ul>
+    <div class="intro-actions">
+      <button type="button" class="primary-btn" id="intro-start">案内文から始める</button>
+      <button type="button" class="text-btn" id="intro-new">新しい文書</button>
+    </div>
+    <p class="intro-note">データはこのブラウザ内だけに保存されます。サーバーへの送信はありません。</p>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept=".md,.markdown,.txt,.qmd" hidden>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="lib/model.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

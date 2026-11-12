@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Goose Editor — goose feather">
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="12%" r="92%">
+      <stop offset="0" stop-color="#113a5c"/>
+      <stop offset="1" stop-color="#04101d"/>
+    </radialGradient>
+    <linearGradient id="vane" x1="0.15" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#c9fbff"/>
+      <stop offset="0.42" stop-color="#57e8ff"/>
+      <stop offset="1" stop-color="#2ea8ff"/>
+    </linearGradient>
+    <linearGradient id="shaft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eaffff"/>
+      <stop offset="1" stop-color="#9beeff"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="#071526"/>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="188" fill="none" stroke="#57e8ff" stroke-opacity=".2" stroke-width="3"/>
+
+  <g transform="translate(256 256) scale(0.6) translate(-256 -256) rotate(-16 256 256)">
+    <path d="M262 64
+      C 338 118, 372 204, 344 292
+      C 328 344, 296 392, 262 438
+      C 226 392, 192 342, 176 288
+      C 150 202, 188 116, 262 64 Z"
+      fill="url(#vane)"/>
+    <g stroke="#071526" stroke-width="4.5" stroke-linecap="round" opacity=".62" fill="none">
+      <path d="M262 128 C 236 138, 214 154, 198 176"/>
+      <path d="M262 176 C 230 188, 206 208, 190 234"/>
+      <path d="M262 226 C 228 240, 204 262, 190 292"/>
+      <path d="M262 278 C 232 292, 212 314, 202 342"/>
+      <path d="M262 326 C 240 338, 224 356, 216 378"/>
+      <path d="M266 148 C 292 158, 312 175, 326 198"/>
+      <path d="M266 200 C 296 212, 318 232, 332 258"/>
+      <path d="M266 252 C 298 264, 320 286, 332 314"/>
+      <path d="M266 304 C 292 316, 310 336, 318 360"/>
+      <path d="M264 350 C 282 360, 294 376, 300 394"/>
+    </g>
+    <path d="M262 64 C 268 178, 266 312, 258 452" stroke="url(#shaft)" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M258 442 L 270 470 L 252 462 Z" fill="#57e8ff"/>
+  </g>
+</svg>

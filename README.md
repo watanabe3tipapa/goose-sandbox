@@ -18,6 +18,7 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 | 03 | [Process Sentinel](ProcessSentinel/) | Active | [LP](ProcessSentinel/) / [Viewer](ProcessSentinel/viewer/) / [README](ProcessSentinel/README.md) |
 | 04 | [Mobile Safety Kit](MobileSafetyKit/) | Active | [LP](MobileSafetyKit/) / [Dashboard](MobileSafetyKit/viewer/) / [README](MobileSafetyKit/README.md) |
 | 05 | [Bootprint](Bootprint/) | Active | [LP](Bootprint/) / [Viewer](Bootprint/viewer/) / [README](Bootprint/README.md) |
+| 06 | [Goose Editor](GooseEditor/) | Active | [LP](GooseEditor/) / [Editor](GooseEditor/editor/) / [README](GooseEditor/README.md) |
 
 ### Pipeline Viz
 
@@ -62,6 +63,15 @@ macOS の launchd ジョブを 4 つの配置レーンとベンダーで読み�
 - 提案資料: [Bootprint/bootprint_proposal.html](Bootprint/bootprint_proposal.html)
 - 収集: `tools/collect_launch_jobs.py`（`plutil` / `launchctl` / `codesign`、macOS のみ）
 
+### Goose Editor
+
+リッチテキストと Markdown を往復しながら、文章を端末内に保存するローカルファーストの軽量エディタです。Rich ⇄ Source を双方向同期し、検索置換・5 種類の書き出し・PWA オフライン起動に対応します。
+
+- LP: [https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/](https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/)
+- Editor: [https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/editor/](https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/editor/)
+- モデル: `editor/lib/model.js`（パース / シリアライズ / エクスポート、20 テスト）
+- 保存: `localStorage` のみ。Service Worker はアプリシェルのみをキャッシュ
+
 ## リポジトリ構成
 
 ```text
@@ -104,6 +114,16 @@ goose-sandbox/
 │   │   └── lib/                  # 検証・分類・差分・スケジュール
 │   ├── tools/                    # launchd コレクタ
 │   └── README.md
+├── GooseEditor/                  # プロジェクト 06
+│   ├── index.html                # プロジェクト LP
+│   ├── assets/                   # LP 用スクリーンショット
+│   ├── editor/                   # エディタ本体（PWA）
+│   │   ├── lib/                  # Markdown モデルとテスト
+│   │   ├── manifest.json
+│   │   └── sw.js
+│   ├── goose_editor_実装プラン.html
+│   ├── goose_editor_機能詳細仕様書.html
+│   └── README.md
 ├── .github/
 │   └── workflows/
 │       └── pages.yml             # GitHub Pages デプロイ
@@ -122,6 +142,8 @@ goose-sandbox/
 - Process Sentinel: [https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/](https://watanabe3tipapa.github.io/goose-sandbox/ProcessSentinel/)
 - Mobile Safety Kit: [https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/](https://watanabe3tipapa.github.io/goose-sandbox/MobileSafetyKit/)
 - Bootprint: [https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/](https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/)
+- Goose Editor: [https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/](https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/)
+- Goose Editor 本体: [https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/editor/](https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/editor/)
 
 初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。
 
@@ -144,6 +166,8 @@ python3 -m http.server 8000
 - Safety Dashboard: `http://localhost:8000/MobileSafetyKit/viewer/`
 - Bootprint: `http://localhost:8000/Bootprint/`
 - Bootprint Viewer: `http://localhost:8000/Bootprint/viewer/`
+- Goose Editor: `http://localhost:8000/GooseEditor/`
+- Goose Editor 本体: `http://localhost:8000/GooseEditor/editor/`
 
 ## 新しいプロジェクトを追加する
 
