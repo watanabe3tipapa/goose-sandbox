@@ -24,8 +24,6 @@ Markdown エディタは「書く」と「ソースを読む」が分かれが�
 
 - ランディングページ: [https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/](https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/)
 - エディタ: [https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/editor/](https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/editor/)
-- 実装計画: [goose_editor_実装プラン.html](goose_editor_実装プラン.html)
-- 機能詳細仕様: [goose_editor_機能詳細仕様書.html](goose_editor_機能詳細仕様書.html)
 
 ## 機能
 
@@ -88,8 +86,6 @@ node --test GooseEditor/editor/lib/model.test.js
 GooseEditor/
 ├── index.html                  # プロジェクト LP
 ├── README.md                   # このファイル
-├── goose_editor_実装プラン.html
-├── goose_editor_機能詳細仕様書.html
 ├── assets/
 │   └── editor-preview.webp     # LP 用スクリーンショット
 └── editor/

@@ -121,8 +121,6 @@ goose-sandbox/
 │   │   ├── lib/                  # Markdown モデルとテスト
 │   │   ├── manifest.json
 │   │   └── sw.js
-│   ├── goose_editor_実装プラン.html
-│   ├── goose_editor_機能詳細仕様書.html
 │   └── README.md
 ├── .github/
 │   └── workflows/
