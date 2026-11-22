@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23ffffff'/%3E%3Crect x='6' y='6' width='20' height='20' fill='%2300e5a8' stroke='%230b0b0b' stroke-width='4'/%3E%3Cpath d='M8 16c3-4 5.5-6 8-6s5 2 8 6c-3 4-5.5 6-8 6s-5-2-8-6Z' fill='none' stroke='%230b0b0b' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%230b0b0b'/%3E%3C/svg%3E">
+<title>Atlas — Gander</title>
+<meta name="description" content="goose-sandbox の 7 つの展示を、問い・パイプライン・7 つの仕組みで横断して読むアトラス。検索とフィルタで展示と仕組みを行き来できます。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="gander.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <a class="brand" href="../">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 12c3-5 6.5-7 9-7s6 2 9 7c-3 5-6.5 7-9 7s-6-2-9-7Z" fill="none" stroke="#0b0b0b" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="#0b0b0b"/></svg>
+      </span>
+      <span><strong>Gander</strong><small>exhibit atlas / 07</small></span>
+    </a>
+    <nav class="topnav" aria-label="サイト内">
+      <a href="../">LP</a>
+      <a class="primary" href="./">Atlas</a>
+      <a href="../goose/">Goose</a>
+      <a href="lab.html">KeyLint Lab</a>
+      <a href="../README.md">README</a>
+      <a href="../../">Sandbox</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div>
+        <span class="kicker">Gander / Atlas</span>
+        <h1>Atlas<span>7 exhibits / 7 mechanisms</span></h1>
+        <p class="lead">
+          展示を問いから読み、パイプラインと入出力を確認し、最後に使われている仕組みへ進みます。
+          検索とフィルタは URL に残るので、気になった見方をそのまま共有できます。
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="#exhibits">展示を絞り込む</a>
+          <a class="btn ghost" href="#mechanisms">仕組みから探す</a>
+          <a class="btn ghost" href="lab.html">KeyLint Lab</a>
+        </div>
+      </div>
+      <aside class="hero-map" aria-label="アトラスの読み方">
+        <span class="map-label">ATLAS MAP</span>
+        <div class="flow">
+          <div class="flow-row"><span class="idx">01</span><span><b>Question</b><small>展示が立てた問いを読む</small></span></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row"><span class="idx">02</span><span><b>Pipeline</b><small>どこで採取し、どこで判定するか</small></span></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row"><span class="idx">03</span><span><b>Mechanism</b><small>繰り返し現れる型で横断する</small></span></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row"><span class="idx">04</span><span><b>Lab</b><small>KeyLint Lab で手を動かす</small></span></div>
+        </div>
+        <div class="map-foot">
+          <span>static / data-driven</span>
+          <span>updated 2026-11-22</span>
+        </div>
+      </aside>
+    </section>
+
+    <p id="data-banner" class="empty" hidden></p>
+
+    <section class="section" id="exhibits" aria-labelledby="exhibits-heading">
+      <div class="section-head">
+        <span class="section-no">01 — EXHIBITS</span>
+        <h2 id="exhibits-heading">展示</h2>
+        <p>名前・問い・要約・パイプラインの語で検索できます。仕組みで絞ると、同じ型を使う展示だけが残ります。</p>
+      </div>
+      <div class="controls" role="search" aria-label="展示の絞り込み">
+        <label for="exhibit-search">検索</label>
+        <input id="exhibit-search" type="search" placeholder="問い・名前・パイプライン…" autocomplete="off" spellcheck="false">
+        <label for="exhibit-mechanism">仕組み</label>
+        <select id="exhibit-mechanism">
+          <option value="">すべて</option>
+        </select>
+        <button id="exhibit-reset" class="btn ghost small" type="button">リセット</button>
+        <span class="count" id="exhibit-count">7 / 7</span>
+      </div>
+      <div id="exhibit-grid" class="grid-3"></div>
+      <p id="exhibit-empty" class="empty" hidden>条件に合う展示がありません。検索語や仕組みを変えてください。</p>
+    </section>
+
+    <section class="section" id="mechanisms" aria-labelledby="mechanisms-heading">
+      <div class="section-head">
+        <span class="section-no">02 — MECHANISMS</span>
+        <h2 id="mechanisms-heading">仕組み</h2>
+        <p>定義・トレードオフ・使っている展示を横断して読みます。展示で絞ると、その展示が依存している型だけが残ります。</p>
+      </div>
+      <div class="controls" role="search" aria-label="仕組みの絞り込み">
+        <label for="mechanism-search">検索</label>
+        <input id="mechanism-search" type="search" placeholder="定義・トレードオフ・シグナル…" autocomplete="off" spellcheck="false">
+        <label for="mechanism-exhibit">展示</label>
+        <select id="mechanism-exhibit">
+          <option value="">すべて</option>
+        </select>
+        <button id="mechanism-reset" class="btn ghost small" type="button">リセット</button>
+        <span class="count" id="mechanism-count">7 / 7</span>
+      </div>
+      <div id="mechanism-grid" class="grid-3"></div>
+      <p id="mechanism-empty" class="empty" hidden>条件に合う仕組みがありません。検索語や展示を変えてください。</p>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <span>Gander / Atlas · 2026</span>
+    <span><a href="../">LP</a> · <a href="../goose/">Goose</a> · <a href="lab.html">KeyLint Lab</a> · <a href="../README.md">README</a> · <a href="../../">Sandbox</a></span>
+  </footer>
+
+</div>
+<script src="../lib/atlas.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

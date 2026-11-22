@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23ffffff'/%3E%3Crect x='6' y='6' width='20' height='20' fill='%2300e5a8' stroke='%230b0b0b' stroke-width='4'/%3E%3Cpath d='M8 16c3-4 5.5-6 8-6s5 2 8 6c-3 4-5.5 6-8 6s-5-2-8-6Z' fill='none' stroke='%230b0b0b' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%230b0b0b'/%3E%3C/svg%3E">
+<title>Goose Language Corner — ヒープなし・GCなし・ライフタイム注釈なし</title>
+<meta name="description" content="Goose プログラミング言語の特色を、データスタック・安定した参照・インライン配置・相対参照・共有メモリなしのスレッドから読むコーナー。データスタックの解放を試せるモデル付き。">
+<meta property="og:title" content="Goose Language Corner — ヒープなし・GCなし・ライフタイム注釈なし">
+<meta property="og:description" content="Goose の 8 つの特色をコードと対話モデルで読む。goose-sandbox の言語コーナー。">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../atlas/gander.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <a class="brand" href="../">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 12c3-5 6.5-7 9-7s6 2 9 7c-3 5-6.5 7-9 7s-6-2-9-7Z" fill="none" stroke="#0b0b0b" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="#0b0b0b"/></svg>
+      </span>
+      <span><strong>Gander</strong><small>goose language corner</small></span>
+    </a>
+    <nav class="topnav" aria-label="サイト内">
+      <a href="../">LP</a>
+      <a href="../atlas/">Atlas</a>
+      <a class="primary" href="./">Goose</a>
+      <a href="../atlas/lab.html">KeyLint Lab</a>
+      <a href="../README.md">README</a>
+      <a href="../../">Sandbox</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div>
+        <span class="kicker">Language corner / Goose</span>
+        <h1>Goose<span>no heap / no GC / no lifetimes</span></h1>
+        <p class="lead">
+          Goose は、ヒープアロケータもガベージコレクタもライフタイム注釈も持たないシステムプログラミング言語です。
+          値はデータスタックにインラインで置かれ、<strong>スコープの終了がそのまま解放</strong>になります。
+          ここでは 8 つの特色を、実際のコード片と小さなモデルで読みます。
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="#features">8 つの特色を読む</a>
+          <a class="btn ghost" href="#stack">Data stack を試す</a>
+          <a class="btn ghost" href="../../GooseSamples/explorer/">公式サンプルを探す</a>
+        </div>
+        <div class="stat-row">
+          <span class="stat"><b>8</b><span>features</span></span>
+          <span class="stat"><b>0</b><span>heap</span></span>
+          <span class="stat"><b>0</b><span>gc</span></span>
+          <span class="stat"><b>0</b><span>lifetime annotations</span></span>
+        </div>
+      </div>
+
+      <aside class="hero-map" aria-label="Goose のデータスタック">
+        <span class="map-label">DATA STACK</span>
+        <div class="flow">
+          <div class="flow-row">
+            <span class="idx">01</span>
+            <span><b>Push</b><small>値をデータスタックへインラインで積む</small></span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row">
+            <span class="idx">02</span>
+            <span><b>Grow</b><small>成長はポインタの前進。要素は移動しない</small></span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row">
+            <span class="idx">03</span>
+            <span><b>Scope end</b><small>スコープの終了位置までポインタを戻す</small></span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row">
+            <span class="idx">04</span>
+            <span><b>Release</b><small>1 回のストアでまとめて解放する</small></span>
+          </div>
+        </div>
+        <div class="map-foot">
+          <span>source: aardappel/goose @ 64d62fc</span>
+          <span>Apache-2.0</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" id="features" aria-labelledby="features-heading">
+      <div class="section-head">
+        <span class="section-no">01 — LANGUAGE FEATURES</span>
+        <h2 id="features-heading">8 つの特色</h2>
+        <p>メモリモデルからスレッドまで、Goose が C++ や Rust と違う点をコードと一緒に並べます。各カードのサンプルリンクから実物へ移動できます。</p>
+      </div>
+      <div id="feature-grid" class="grid-2" aria-live="polite">
+        <p class="empty">特色を読み込んでいます…</p>
+      </div>
+      <p id="feature-error" class="empty" hidden></p>
+      <noscript>
+        <p class="empty">特色の一覧には JavaScript が必要です。<a href="../../PipelineViz/goose_language_guide.html">Goose 言語ガイド</a> を直接読んでください。</p>
+      </noscript>
+    </section>
+
+    <section class="section" id="stack" aria-labelledby="stack-heading">
+      <div class="section-head">
+        <span class="section-no">02 — DATA STACK MODEL</span>
+        <h2 id="stack-heading">解放を目で見る</h2>
+        <p>Goose のデータスタックを単純化したモデルです。スコープに入り、バイトを積み、スコープを抜けると、内側の領域が 1 回の巻き戻しで解放されることを確認できます。</p>
+      </div>
+      <div class="lab-grid">
+        <div class="lab-form">
+          <div class="form-head">
+            <span>DATA STACK / MODEL</span>
+            <span id="stack-state">main</span>
+          </div>
+          <div class="field">
+            <label>operations</label>
+            <div class="preset-row">
+              <button id="push-small" type="button">push 1,000 B</button>
+              <button id="push-large" type="button">push 100,000 B</button>
+              <button id="enter-scope" type="button">enter loop scope</button>
+              <button id="leave-scope" type="button">leave scope</button>
+              <button id="reset-stack" type="button">reset</button>
+            </div>
+            <p class="hint">実際のコンパイラ出力ではなく、ポインタの前進と巻き戻しだけを表した説明用モデルです。</p>
+          </div>
+          <div class="field">
+            <label>frames</label>
+            <div id="stack-frames" class="stack-frames" aria-live="polite"></div>
+          </div>
+          <div class="field">
+            <label>release log</label>
+            <p id="stack-log" class="hint" aria-live="polite">main スコープから開始します。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="kicker">live model</span>
+          <h3>スコープを抜けると、まとめて戻る</h3>
+          <p>内側のスコープで積んだバイトは、抜けるときにまとめて解放されます。個別の free は呼ばれず、デストラクタも走りません。</p>
+          <div class="stack-meter" aria-hidden="true"><span id="stack-bar"></span></div>
+          <div class="stack-stats">
+            <div class="stack-stat"><span>used</span><b id="stack-used">0 B</b></div>
+            <div class="stack-stat"><span>high water</span><b id="stack-high">0 B</b></div>
+            <div class="stack-stat"><span>released</span><b id="stack-released">0 B</b></div>
+            <div class="stack-stat"><span>release stores</span><b id="stack-releases">0</b></div>
+          </div>
+          <div class="lab-note">このモデルはページ内だけで動きます。入力も状態も保存・送信しません。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="samples" aria-labelledby="samples-heading">
+      <div class="section-head">
+        <span class="section-no">03 — READ THE CODE</span>
+        <h2 id="samples-heading">実物を読む</h2>
+        <p>特色を確認したら、Goose サンプル探訪の実コードへ進みます。ここからは公式サンプル（Apache-2.0、コミット固定）をそのまま読めます。</p>
+      </div>
+      <div id="sample-grid" class="grid-3" aria-live="polite">
+        <p class="empty">サンプルを読み込んでいます…</p>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <span class="kicker">source note</span>
+        <p>コード片は <a href="../../GooseSamples/README.md">Goose サンプル探訪</a> の収録元と <a href="../../PipelineViz/goose_language_guide.html">Goose 言語ガイド</a> から、特徴を説明する最小限の範囲で引用しています。Goose 本体は <a href="https://github.com/aardappel/goose">aardappel/goose</a>（Apache-2.0）です。</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <span>Goose Language Corner / Gander · 2026</span>
+    <span><a href="../">Gander</a> · <a href="../atlas/">Atlas</a> · <a href="../atlas/lab.html">KeyLint Lab</a> · <a href="../../">Sandbox</a></span>
+  </footer>
+
+</div>
+<script src="../lib/goose.js"></script>
+<script src="goose.js"></script>
+</body>
+</html>

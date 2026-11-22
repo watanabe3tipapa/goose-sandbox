@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23ffffff'/%3E%3Crect x='6' y='6' width='20' height='20' fill='%2300e5a8' stroke='%230b0b0b' stroke-width='4'/%3E%3Cpath d='M8 16c3-4 5.5-6 8-6s5 2 8 6c-3 4-5.5 6-8 6s-5-2-8-6Z' fill='none' stroke='%230b0b0b' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%230b0b0b'/%3E%3C/svg%3E">
+<title>KeyLint Lab — 秘密検出の 7 段階を試す</title>
+<meta name="description" content="秘密検出を Pattern → Context → Entropy → Allowlist → Mask → Risk → Baseline の 7 段階で展示する実験台。ダミー文字列で、どこで拾われ、どこで外され、どうマスクされるかを試せます。">
+<meta property="og:title" content="KeyLint Lab — 秘密検出の 7 段階を試す">
+<meta property="og:description" content="ダミーの秘密を入れて、検出の通過・停止・マスク・リスクを段階ごとに読む。入力はページ内だけで処理します。">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="gander.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <a class="brand" href="../">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 12c3-5 6.5-7 9-7s6 2 9 7c-3 5-6.5 7-9 7s-6-2-9-7Z" fill="none" stroke="#0b0b0b" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="#0b0b0b"/></svg>
+      </span>
+      <span><strong>Gander</strong><small>keylint lab / exhibit 07</small></span>
+    </a>
+    <nav class="topnav" aria-label="サイト内">
+      <a href="../">LP</a>
+      <a href="./">Atlas</a>
+      <a href="../goose/">Goose</a>
+      <a class="primary" href="lab.html">KeyLint Lab</a>
+      <a href="../README.md">README</a>
+      <a href="../../">Sandbox</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div>
+        <span class="kicker">Exhibit 07 / KeyLint Lab</span>
+        <h1>KeyLint Lab<span>7-stage secret detection</span></h1>
+        <p class="lead">
+          秘密情報は、どの段階で「危ない」と判定されるのか。
+          ダミーの文字列を入れると、<strong>Pattern → Context → Entropy → Allowlist → Mask → Risk → Baseline</strong> の
+          どこで拾われ、どこで外され、どうマスクされるかが見えます。
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="#lab">判定を試す</a>
+          <a class="btn ghost" href="exhibit.html?id=keylint-lab">展示として読む</a>
+          <a class="btn ghost" href="./">Atlas</a>
+        </div>
+        <div class="stat-row">
+          <span class="stat"><b>7</b><span>stages</span></span>
+          <span class="stat"><b>0</b><span>upload</span></span>
+          <span class="stat"><b>0</b><span>storage</span></span>
+          <span class="stat"><b>8</b><span>dummy samples</span></span>
+        </div>
+      </div>
+
+      <aside class="hero-map" aria-label="KeyLint Lab の判定フロー">
+        <span class="map-label">PIPELINE</span>
+        <div class="flow">
+          <div class="flow-row"><span class="idx">01</span><span><b>Pattern / Context</b><small>形式と文脈で候補を拾う</small></span></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row"><span class="idx">02</span><span><b>Entropy / Allowlist</b><small>ランダム性で補強し、サンプル値を外す</small></span></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row"><span class="idx">03</span><span><b>Mask / Risk</b><small>値を残さず、強さと露出度で優先度を決める</small></span></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row"><span class="idx">04</span><span><b>Baseline</b><small>前回レポートとの差分で新規を判定する</small></span></div>
+        </div>
+        <div class="map-foot">
+          <span>client-side only</span>
+          <span>no network after load</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" id="lab" aria-labelledby="lab-heading">
+      <div class="section-head">
+        <span class="section-no">LAB — INTERACTIVE</span>
+        <h2 id="lab-heading">ダミーで試す</h2>
+        <p>サンプルを選ぶか、自由に入力してください。入力はページ内だけで処理し、保存も送信もしません。実際の秘密情報は入れないでください。</p>
+      </div>
+
+      <div class="lab-grid">
+        <form class="lab-form" id="lab-form" autocomplete="off">
+          <div class="form-head">
+            <span>INPUT / DUMMY SECRET</span>
+            <span id="lab-mode">local only</span>
+          </div>
+
+          <div class="field">
+            <label>サンプル</label>
+            <div class="preset-row" id="presets">
+              <span class="hint">サンプルを読み込んでいます…</span>
+            </div>
+            <p class="hint">すべて展示用のダミー値です。実在する資格情報ではありません。</p>
+          </div>
+
+          <div class="field">
+            <label for="secret">値</label>
+            <textarea id="secret" name="secret" rows="4" spellcheck="false" placeholder="検査するダミー文字列を入力"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="key">変数名</label>
+            <input id="key" name="key" type="text" spellcheck="false" placeholder="GITHUB_TOKEN">
+          </div>
+
+          <div class="field">
+            <label for="file">ファイルパス</label>
+            <input id="file" name="file" type="text" spellcheck="false" placeholder="~/src/app/.env.local">
+          </div>
+
+          <div class="field">
+            <label>露出のフラグ</label>
+            <div class="check-row">
+              <label><input id="tracked" type="checkbox"> Git 管理下</label>
+              <label><input id="world-readable" type="checkbox"> 誰でも読める</label>
+              <label><input id="known" type="checkbox"> 前回レポートに既知</label>
+            </div>
+            <p class="hint">Baseline は「既知」フラグだけを使う展示用の簡易判定です。</p>
+          </div>
+
+          <div class="field">
+            <div class="hero-actions" style="margin-top:0">
+              <button class="btn" type="submit">判定する</button>
+              <button class="btn ghost" type="button" id="lab-reset">クリア</button>
+            </div>
+            <p class="hint">入力に応じて自動でも再判定します。ページを再読み込みすると消えます。</p>
+          </div>
+        </form>
+
+        <div>
+          <div class="result">
+            <div class="result-head">
+              <b>PIPELINE / 7 STAGES</b>
+              <span class="badge muted" id="lab-verdict">待機</span>
+            </div>
+            <div class="result-body">
+              <div class="stages" id="stages"></div>
+            </div>
+          </div>
+
+          <div class="result" id="finding-result">
+            <div class="result-head">
+              <b>FINDING</b>
+              <span class="badge muted" id="finding-level">—</span>
+              <span class="badge tag" id="finding-provider">—</span>
+            </div>
+            <div class="result-body" id="finding-body">
+              <p class="result-empty">入力すると、マスク済みの表示とリスクの内訳が出ます。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p id="lab-error" class="empty" hidden></p>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <span>Gander / KeyLint Lab · 2026</span>
+    <span><a href="../">LP</a> · <a href="./">Atlas</a> · <a href="../goose/">Goose</a> · <a href="exhibit.html?id=keylint-lab">展示</a> · <a href="../../">Sandbox</a></span>
+  </footer>
+
+</div>
+<script src="../lib/lab.js"></script>
+<script src="lab-page.js"></script>
+</body>
+</html>

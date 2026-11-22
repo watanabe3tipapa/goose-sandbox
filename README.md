@@ -19,6 +19,7 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 | 04 | [Mobile Safety Kit](MobileSafetyKit/) | Active | [LP](MobileSafetyKit/) / [Dashboard](MobileSafetyKit/viewer/) / [README](MobileSafetyKit/README.md) |
 | 05 | [Bootprint](Bootprint/) | Active | [LP](Bootprint/) / [Viewer](Bootprint/viewer/) / [README](Bootprint/README.md) |
 | 06 | [Goose Editor](GooseEditor/) | Active | [LP](GooseEditor/) / [Editor](GooseEditor/editor/) / [README](GooseEditor/README.md) |
+| 07 | [Gander](Gander/) | Active | [LP](Gander/) / [Atlas](Gander/atlas/) / [KeyLint Lab](Gander/atlas/lab.html) / [Goose](Gander/goose/) / [README](Gander/README.md) |
 
 ### Pipeline Viz
 
@@ -72,6 +73,17 @@ macOS の launchd ジョブを 4 つの配置レーンとベンダーで読み�
 - モデル: `editor/lib/model.js`（パース / シリアライズ / エクスポート、20 テスト）
 - 保存: `localStorage` のみ。Service Worker はアプリシェルのみをキャッシュ
 
+### Gander
+
+7 つの実験展示を、問い・パイプライン・7 つの仕組みで横断して読むアトラスです。07 自身は秘密検出の 7 段階を試せる KeyLint Lab として内包し、Goose 言語の特色をコードとデータスタックモデルで読むコーナーも併設しています。
+
+- LP: [https://watanabe3tipapa.github.io/goose-sandbox/Gander/](https://watanabe3tipapa.github.io/goose-sandbox/Gander/)
+- Atlas: [https://watanabe3tipapa.github.io/goose-sandbox/Gander/atlas/](https://watanabe3tipapa.github.io/goose-sandbox/Gander/atlas/)
+- KeyLint Lab: [https://watanabe3tipapa.github.io/goose-sandbox/Gander/atlas/lab.html](https://watanabe3tipapa.github.io/goose-sandbox/Gander/atlas/lab.html)
+- Goose 言語コーナー: [https://watanabe3tipapa.github.io/goose-sandbox/Gander/goose/](https://watanabe3tipapa.github.io/goose-sandbox/Gander/goose/)
+- データ: `data/exhibits.json` / `data/mechanisms.json` / `data/lab-samples.json` / `data/goose-features.json`
+- ロジック: `lib/atlas.js` / `lib/lab.js` / `lib/goose.js`（Node テスト付き）
+
 ## リポジトリ構成
 
 ```text
@@ -122,6 +134,13 @@ goose-sandbox/
 │   │   ├── manifest.json
 │   │   └── sw.js
 │   └── README.md
+├── Gander/                       # プロジェクト 07
+│   ├── index.html                # プロジェクト LP
+│   ├── atlas/                    # 展示・仕組みの一覧と詳細、KeyLint Lab
+│   ├── goose/                    # Goose 言語コーナー
+│   ├── data/                     # 展示・仕組み・Lab サンプル・言語特色
+│   ├── lib/                      # 検索・判定・データスタックモデルとテスト
+│   └── README.md
 ├── .github/
 │   └── workflows/
 │       └── pages.yml             # GitHub Pages デプロイ
@@ -142,6 +161,10 @@ goose-sandbox/
 - Bootprint: [https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/](https://watanabe3tipapa.github.io/goose-sandbox/Bootprint/)
 - Goose Editor: [https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/](https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/)
 - Goose Editor 本体: [https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/editor/](https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/editor/)
+- Gander: [https://watanabe3tipapa.github.io/goose-sandbox/Gander/](https://watanabe3tipapa.github.io/goose-sandbox/Gander/)
+- Gander Atlas: [https://watanabe3tipapa.github.io/goose-sandbox/Gander/atlas/](https://watanabe3tipapa.github.io/goose-sandbox/Gander/atlas/)
+- KeyLint Lab: [https://watanabe3tipapa.github.io/goose-sandbox/Gander/atlas/lab.html](https://watanabe3tipapa.github.io/goose-sandbox/Gander/atlas/lab.html)
+- Goose 言語コーナー: [https://watanabe3tipapa.github.io/goose-sandbox/Gander/goose/](https://watanabe3tipapa.github.io/goose-sandbox/Gander/goose/)
 
 初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。
 
@@ -166,6 +189,10 @@ python3 -m http.server 8000
 - Bootprint Viewer: `http://localhost:8000/Bootprint/viewer/`
 - Goose Editor: `http://localhost:8000/GooseEditor/`
 - Goose Editor 本体: `http://localhost:8000/GooseEditor/editor/`
+- Gander: `http://localhost:8000/Gander/`
+- Gander Atlas: `http://localhost:8000/Gander/atlas/`
+- KeyLint Lab: `http://localhost:8000/Gander/atlas/lab.html`
+- Goose 言語コーナー: `http://localhost:8000/Gander/goose/`
 
 ## 新しいプロジェクトを追加する
 

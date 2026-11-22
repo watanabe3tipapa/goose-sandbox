@@ -1,0 +1,277 @@
+{
+  "schema": 1,
+  "updated": "2026-11-22",
+  "exhibits": [
+    {
+      "id": "pipeline-viz",
+      "no": "01",
+      "name": "Pipeline Viz",
+      "kicker": "流れと健康状態",
+      "status": "Active",
+      "question": "パイプラインは、どこで詰まり、どこが不健康なのか。",
+      "summary": "Goose の実行時メトリクスと oh-my-mermaid の Perspective 構造を接合し、データ処理の流れと健康状態を 1 画面で読む静的プロトタイプ。",
+      "pipeline": [
+        { "label": "Ingest", "detail": "Goose の実行時メトリクスを読み込む" },
+        { "label": "Join", "detail": "Perspective の工程構造とメトリクスを対応づける" },
+        { "label": "Evaluate", "detail": "遅延・失敗・飽和を工程ごとに評価する" },
+        { "label": "Render", "detail": "流れ図と健康状態を同時に描く" }
+      ],
+      "core": [
+        { "title": "構造と計測の接合", "body": "工程図だけでは「遅い」が分からず、メトリクスだけでは「どこか」が分からない。2 つを同じ ID で結び、流れの上に状態を載せる。" },
+        { "title": "健康状態の色分け", "body": "正常・注意・異常を工程の色として表現し、数字を読まなくても詰まりの位置が分かるようにする。" },
+        { "title": "静的プロトタイプ", "body": "サーバーを持たず、固定したデータで表現と構造を検証する。ライブ接続は次の課題として切り離す。" }
+      ],
+      "inputs": ["Goose 実行時メトリクス", "oh-my-mermaid の Perspective 定義"],
+      "outputs": ["工程ごとの流れ図", "健康状態の可視化", "遅延・失敗の着眼点"],
+      "limits": [
+        { "title": "固定データ", "body": "ライブの実行を監視するものではなく、読み込んだスナップショットの構造を読むプロトタイプ。" },
+        { "title": "評価は近似", "body": "健康状態は指標の組み合わせによる近似で、原因を確定するものではない。" }
+      ],
+      "decisions": [
+        { "title": "図を先に、数字を後に", "body": "最初に流れの形を見せ、詳細は工程を選んだ人だけが読む。全体の把握を優先した。" },
+        { "title": "静的サイトにした理由", "body": "GitHub Pages だけで配布でき、環境依存のセットアップなしに構造の議論ができる。" }
+      ],
+      "mechanisms": ["normalize-classify", "score-judge"],
+      "links": [
+        { "label": "LP", "href": "PipelineViz/" },
+        { "label": "Dashboard", "href": "PipelineViz/viewer/" },
+        { "label": "README", "href": "PipelineViz/README.md" },
+        { "label": "Goose 解説", "href": "PipelineViz/goose_language_guide.html" }
+      ],
+      "reviewed": "2026-11-22"
+    },
+    {
+      "id": "goose-samples",
+      "no": "02",
+      "name": "Goose サンプル探訪",
+      "kicker": "読む順番の設計",
+      "status": "Active",
+      "question": "31 本のサンプルを、どこから、どの順で読むべきか。",
+      "summary": "Goose 公式サンプルをカテゴリ・難易度・必要な環境で整理し、解説とソースを 1 画面で読む静的サイト。",
+      "pipeline": [
+        { "label": "Freeze", "detail": "公式リポジトリを特定のコミットで固定する" },
+        { "label": "Index", "detail": "カテゴリ・難易度・環境要件を付与する" },
+        { "label": "Curate", "detail": "読む順番と前提知識を編集する" },
+        { "label": "Explore", "detail": "一覧と詳細を同じ画面で行き来する" }
+      ],
+      "core": [
+        { "title": "コミット固定", "body": "サンプルは動く前提が変わりやすい。参照元を 1 つのコミットに固定し、解説とソースがずれないようにする。" },
+        { "title": "メタデータによる探索", "body": "カテゴリ・難易度・必要環境を付けることで、目的から逆引きできる。コードを全部読む前に入口を選べる。" },
+        { "title": "解説とソースの同居", "body": "詳細画面で説明とコードを並べ、外部へ移動せずに理解を完結させる。" }
+      ],
+      "inputs": ["Goose 公式サンプル 31 本", "カテゴリ・難易度・環境の編集情報"],
+      "outputs": ["探訪ビュー", "サンプル別の解説", "読む順番の手がかり"],
+      "limits": [
+        { "title": "スナップショット", "body": "上流の変更を自動追従しない。更新はコミットを選び直す明示的な作業。" },
+        { "title": "実行はしない", "body": "コードを読むためのサイトで、サンプルを実行・検証する環境ではない。" }
+      ],
+      "decisions": [
+        { "title": "網羅より編集", "body": "全ファイルを機械的に並べず、読む順番と前提を編集情報として持たせた。" },
+        { "title": "ライセンスを保持", "body": "Apache-2.0 の表示と出典を維持し、無改変のソースを同梱した。" }
+      ],
+      "mechanisms": ["collect-freeze", "normalize-classify"],
+      "links": [
+        { "label": "LP", "href": "GooseSamples/" },
+        { "label": "探訪ビュー", "href": "GooseSamples/explorer/" },
+        { "label": "README", "href": "GooseSamples/README.md" }
+      ],
+      "reviewed": "2026-11-22"
+    },
+    {
+      "id": "process-sentinel",
+      "no": "03",
+      "name": "Process Sentinel",
+      "kicker": "プロセスの観測",
+      "status": "Active",
+      "question": "今動いているプロセスのうち、どれが普段と違うのか。",
+      "summary": "macOS のプロセスを親子ツリーとして描き、署名・CPU・メモリ・ネットワーク・前回差分から不審な動きを読む静的ビューア。",
+      "pipeline": [
+        { "label": "Collect", "detail": "ps / codesign / lsof でプロセスの姿を採取する" },
+        { "label": "Normalize", "detail": "親子関係・署名・接続を共通の形に揃える" },
+        { "label": "Classify", "detail": "システム・ユーザー・未署名などに分類する" },
+        { "label": "Diff", "detail": "前回スナップショットと比較する" },
+        { "label": "Read", "detail": "ツリーと差分をビューアで読む" }
+      ],
+      "core": [
+        { "title": "親子ツリーとして読む", "body": "プロセスを単独で見るのではなく、誰が起動したかの系譜で見る。同じ名前でも文脈で意味が変わる。" },
+        { "title": "署名と接続の重ね合わせ", "body": "署名の有無、外部接続、実行パスを同じ行に置き、単独では判断できない兆候を組み合わせる。" },
+        { "title": "前回との差分", "body": "絶対値ではなく「増えた・消えた・変わった」を見ることで、常駐ノイズを除外して変化に集中する。" }
+      ],
+      "inputs": ["ps のプロセス一覧", "codesign の署名情報", "lsof のネットワーク接続", "前回スナップショット"],
+      "outputs": ["プロセスツリー", "署名・接続・負荷の注釈", "前回差分", "不審候補の一覧"],
+      "limits": [
+        { "title": "採取時点の断面", "body": "短命なプロセスは取り逃がす。連続監視ではなく、スナップショットの比較で読む。" },
+        { "title": "macOS 専用", "body": "ps / codesign / lsof の出力形式に依存し、他 OS ではそのまま動かない。" },
+        { "title": "断定はしない", "body": "不審「候補」を提示するに留まり、マルウェア判定を行うものではない。" }
+      ],
+      "decisions": [
+        { "title": "収集と表示を分離", "body": "Python コレクタが JSON を作り、ビューアは静的ファイルだけを読む。採取環境と閲覧環境を切り離せる。" },
+        { "title": "差分を第一級に", "body": "初回スナップショットをベースラインとして保存し、2 回目以降の比較を主役にした。" }
+      ],
+      "mechanisms": ["collect-freeze", "normalize-classify", "baseline-diff", "score-judge"],
+      "links": [
+        { "label": "LP", "href": "ProcessSentinel/" },
+        { "label": "Viewer", "href": "ProcessSentinel/viewer/" },
+        { "label": "README", "href": "ProcessSentinel/README.md" }
+      ],
+      "reviewed": "2026-11-22"
+    },
+    {
+      "id": "mobile-safety-kit",
+      "no": "04",
+      "name": "Mobile Safety Kit",
+      "kicker": "端末の自己診断",
+      "status": "Active",
+      "question": "この端末は、何を外に見せ、何を守れているのか。",
+      "summary": "スマホの OS・通信・権限・追跡防止をブラウザ標準 API だけで診断し、Device → Network → Privacy → Risk Judge の流れで表示する静的ダッシュボード。",
+      "pipeline": [
+        { "label": "Device", "detail": "OS・画面・機能対応をブラウザから読む" },
+        { "label": "Network", "detail": "接続情報・公開 IP・通信の手がかりを集める" },
+        { "label": "Privacy", "detail": "権限・追跡防止・ストレージの状態を確認する" },
+        { "label": "Judge", "detail": "重み付きスコアでリスクを判定する" }
+      ],
+      "core": [
+        { "title": "ブラウザだけで完結", "body": "ネイティブアプリもサーバーも使わず、標準 API で取得できる範囲だけを診断する。端末外へデータを送らない。" },
+        { "title": "Unknown を除外", "body": "API が使えず判定できない項目を「安全」にも「危険」にも数えず、スコアから除外して過大評価を防ぐ。" },
+        { "title": "8 チェックの重み付き判定", "body": "項目ごとの重要度を重みとして持ち、合計点から Risk Judge を出す。内訳を開けば理由が分かる。" }
+      ],
+      "inputs": ["ブラウザ標準 API の応答", "8 項目のチェック定義", "項目ごとの重み"],
+      "outputs": ["Device / Network / Privacy の状態", "重み付きリスクスコア", "改善のためのチェック一覧"],
+      "limits": [
+        { "title": "API の可視範囲", "body": "ブラウザから見えない設定や OS 内部の状態は判定できない。Unknown として残る。" },
+        { "title": "点は絶対ではない", "body": "スコアは設定の傾向を示すもので、実際の攻撃可能性を保証しない。" }
+      ],
+      "decisions": [
+        { "title": "端末から出さない", "body": "診断結果をサーバーへ送らず、画面内で完結させることで、安全を調べる行為自体のリスクを下げた。" },
+        { "title": "デモを同梱", "body": "実機で API が制限される環境でも構造を確認できるよう、合成レポートを用意した。" }
+      ],
+      "mechanisms": ["client-side-only", "normalize-classify", "score-judge"],
+      "links": [
+        { "label": "LP", "href": "MobileSafetyKit/" },
+        { "label": "Dashboard", "href": "MobileSafetyKit/viewer/" },
+        { "label": "デモ", "href": "MobileSafetyKit/viewer/?demo=1" },
+        { "label": "README", "href": "MobileSafetyKit/README.md" }
+      ],
+      "reviewed": "2026-11-22"
+    },
+    {
+      "id": "bootprint",
+      "no": "05",
+      "name": "Bootprint",
+      "kicker": "起動の系譜",
+      "status": "Active",
+      "question": "この Mac は、起動時に何を、どこから動かしているのか。",
+      "summary": "macOS の launchd ジョブを 4 つの配置レーンとベンダーで読み、トリガー・署名・前回差分・24 時間スケジュールを可視化する静的ビューア。",
+      "pipeline": [
+        { "label": "Collect", "detail": "plutil / launchctl / codesign でジョブを採取する" },
+        { "label": "Lane", "detail": "配置場所から 4 つのレーンに分ける" },
+        { "label": "Schedule", "detail": "トリガーを 24 時間の帯に写す" },
+        { "label": "Diff", "detail": "前回との追加・削除・変更を比べる" },
+        { "label": "Read", "detail": "常駐の輪郭をビューアで読む" }
+      ],
+      "core": [
+        { "title": "配置レーンで読む", "body": "LaunchDaemons / LaunchAgents / ユーザー / ベンダーなど、置き場所によって起動条件と権限が変わる。場所を分類の第一軸にした。" },
+        { "title": "トリガーを時間に写す", "body": "RunAtLoad・StartInterval・CalendarInterval などを 24 時間のリボンに変換し、いつ動くかを一目で見せる。" },
+        { "title": "差分で常駐を追う", "body": "ジョブは静かに増える。ベースラインとの差分を並べ、新しい常駐と消えた常駐を目立たせる。" }
+      ],
+      "inputs": ["launchd の plist", "launchctl の読み込み状態", "codesign の署名", "前回スナップショット"],
+      "outputs": ["4 レーンの永続化マップ", "24 時間スケジュール", "署名・トリガー・ベンダー注釈", "前回差分"],
+      "limits": [
+        { "title": "launchd のみ", "body": "cron・ログイン項目・カーネル拡張など、launchd 以外の永続化は対象外。" },
+        { "title": "読み込み状態に依存", "body": "plist が存在しても実際に読み込まれているとは限らない。両方を並べて読む必要がある。" },
+        { "title": "macOS 専用", "body": "plutil / launchctl に依存するため、他 OS では動かない。" }
+      ],
+      "decisions": [
+        { "title": "4 レーンを先に固定", "body": "ジョブを一覧で並べる前に、置き場所の意味を固定した。分類が先、詳細が後。" },
+        { "title": "時間軸を可視化", "body": "トリガーの種別を文章で説明するのではなく、24 時間の帯として見せることで衝突と空白を読めるようにした。" }
+      ],
+      "mechanisms": ["collect-freeze", "normalize-classify", "baseline-diff"],
+      "links": [
+        { "label": "LP", "href": "Bootprint/" },
+        { "label": "Viewer", "href": "Bootprint/viewer/" },
+        { "label": "README", "href": "Bootprint/README.md" },
+        { "label": "提案資料", "href": "Bootprint/bootprint_proposal.html" }
+      ],
+      "reviewed": "2026-11-22"
+    },
+    {
+      "id": "goose-editor",
+      "no": "06",
+      "name": "Goose Editor",
+      "kicker": "書く環境の自給",
+      "status": "Active",
+      "question": "書いたものを、外部に預けずに持ち続けられるか。",
+      "summary": "リッチテキストと Markdown を往復し、端末内へ自動保存するローカルファーストのエディタ。PWA としてオフラインでも開ける。",
+      "pipeline": [
+        { "label": "Edit", "detail": "リッチ編集面で書く" },
+        { "label": "Convert", "detail": "HTML と Markdown を双方向に変換する" },
+        { "label": "Persist", "detail": "localStorage へ自動保存する" },
+        { "label": "Preview", "detail": "Markdown ソースを常時表示する" },
+        { "label": "Shell", "detail": "Service Worker がアプリの殻をキャッシュする" }
+      ],
+      "core": [
+        { "title": "単一の文書モデル", "body": "リッチ面とソース面は同じ Markdown モデルを共有する。どちらで編集しても、もう一方へ即時に反映される。" },
+        { "title": "端末内だけに保存", "body": "文書は localStorage に置き、サーバーへ送らない。Service Worker はアプリシェルだけをキャッシュし、文書はキャッシュしない。" },
+        { "title": "純粋ロジックの分離", "body": "パース・シリアライズ・エクスポートを DOM 非依存の model.js に切り出し、Node のテストで守る。" }
+      ],
+      "inputs": ["リッチテキストの編集操作", "Markdown ソース", "ローカル文書一覧"],
+      "outputs": ["Markdown / HTML / JSON / Quarto / Text", "自動保存された文書", "オフラインで起動するアプリ"],
+      "limits": [
+        { "title": "端末に閉じる", "body": "同期も共同編集もない。同じブラウザ・同じ端末の localStorage が唯一の保存先。" },
+        { "title": "ブラウザ依存", "body": "localStorage の消去やブラウザ変更で文書が失われる可能性がある。重要な文書は書き出す必要がある。" }
+      ],
+      "decisions": [
+        { "title": "サーバーを作らない", "body": "アカウントも同期も持たず、静的ファイルだけで完結させた。保存の責任を端末側に寄せる代わりに、外部送信をゼロにした。" },
+        { "title": "シェルだけをキャッシュ", "body": "オフライン起動はアプリのコードに限定し、利用者の文書を Service Worker のキャッシュに残さない。" }
+      ],
+      "mechanisms": ["client-side-only", "local-persistence", "offline-shell"],
+      "links": [
+        { "label": "LP", "href": "GooseEditor/" },
+        { "label": "Editor", "href": "GooseEditor/editor/" },
+        { "label": "README", "href": "GooseEditor/README.md" }
+      ],
+      "reviewed": "2026-11-22"
+    },
+    {
+      "id": "keylint-lab",
+      "no": "07",
+      "name": "KeyLint Lab",
+      "kicker": "秘密検出の実験台",
+      "status": "Lab",
+      "question": "秘密情報は、どの段階で「危ない」と判定されるのか。",
+      "summary": "秘密検出を 7 段階のパイプラインとして展示するインタラクティブな実験台。ダミー文字列を入れると、どこで拾われ、どこで外され、どうマスクされるかが見える。",
+      "pipeline": [
+        { "label": "Pattern", "detail": "既知プロバイダの形式で拾う" },
+        { "label": "Context", "detail": "変数名・ファイル名で補強する" },
+        { "label": "Entropy", "detail": "見慣れない高エントロピーを拾う" },
+        { "label": "Allowlist", "detail": "サンプル値・展開式を外す" },
+        { "label": "Mask", "detail": "値を残さず存在だけにする" },
+        { "label": "Risk", "detail": "強さと露出度から優先度を決める" },
+        { "label": "Baseline", "detail": "前回との差分で新規を判定する" }
+      ],
+      "core": [
+        { "title": "判定を 7 段階に分ける", "body": "1 つの正規表現で決めず、形式・文脈・エントロピー・除外・マスク・リスク・差分を順に通す。どこで止まったかが説明できる。" },
+        { "title": "値を保存しない", "body": "入力は画面内だけで処理し、保存も送信もしない。レポートに残るのはマスク後の表示とハッシュだけという設計を体験できる。" },
+        { "title": "誤検知を展示する", "body": "サンプル値やプレースホルダが除外される例も並べ、検出器の限界を隠さない。" }
+      ],
+      "inputs": ["ダミーの文字列", "変数名とファイルパス", "Git 管理・公開範囲・既知かどうかのフラグ"],
+      "outputs": ["段階ごとの判定", "マスク済みプレビュー", "リスクスコア", "新規 / 既知の区分"],
+      "limits": [
+        { "title": "実験台であってスキャナではない", "body": "実ファイルを走査しない。実運用のコレクタは将来の独立プロジェクトとして切り出す。" },
+        { "title": "規則は固定", "body": "プロバイダの形式変更や新しいサービスには追従しない。展示用の最小規則セット。" },
+        { "title": "スコアは相対値", "body": "リスク点は優先順位づけのための相対値で、実際の漏えい被害を保証しない。" }
+      ],
+      "decisions": [
+        { "title": "ハブ内の実験展示にした", "body": "実スキャナを先に作らず、仕組みを理解するための実験台として 07 に内包した。" },
+        { "title": "7 段階を可視化", "body": "結果だけを見せず、各段階の通過・停止を並べることで、検出の説明可能性を主役にした。" }
+      ],
+      "mechanisms": ["baseline-diff", "client-side-only", "score-judge"],
+      "links": [
+        { "label": "Lab を開く", "href": "Gander/atlas/lab.html" },
+        { "label": "Gander", "href": "Gander/" },
+        { "label": "README", "href": "Gander/README.md" }
+      ],
+      "reviewed": "2026-11-22"
+    }
+  ]
+}

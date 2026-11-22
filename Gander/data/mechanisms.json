@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "updated": "2026-11-22",
+  "mechanisms": [
+    {
+      "id": "collect-freeze",
+      "name": "Collect & Freeze",
+      "ja": "採取して固定する",
+      "definition": "観測したい対象から一度だけデータを採取し、出典と時点を固定してから読む。",
+      "why": "対象は刻々と変わる。読みながら対象も変わると、観測したのか推測したのか分からなくなる。まず断面を固定し、その上で比較する。",
+      "tradeoffs": [
+        "鮮度は落ちる。更新は明示的な再採取として扱う必要がある。",
+        "採取スクリプトが OS やツールの出力形式に依存する。",
+        "固定したデータと現在の実態がずれるため、最終確認日が要る。"
+      ],
+      "signals": ["スナップショット", "出典コミット", "採取時刻", "ベースライン"],
+      "used_by": ["goose-samples", "process-sentinel", "bootprint"]
+    },
+    {
+      "id": "normalize-classify",
+      "name": "Normalize & Classify",
+      "ja": "正規化して分類する",
+      "definition": "異なる形式の入力を共通の形に揃え、意味のある軸で分類してから比較する。",
+      "why": "生の出力はツールごとにバラバラで、そのままでは並べられない。共通の形に揃え、分類軸を固定することで、初めて差分と優先順位が意味を持つ。",
+      "tradeoffs": [
+        "分類軸の選択が結論を左右する。軸を変えれば見え方も変わる。",
+        "正規化で失われる情報がある。原データへの参照を残す必要がある。",
+        "未知のカテゴリは「その他」に落ち、見落としにつながる。"
+      ],
+      "signals": ["レーン", "カテゴリ", "署名", "難易度", "正規化キー"],
+      "used_by": ["pipeline-viz", "goose-samples", "process-sentinel", "mobile-safety-kit", "bootprint"]
+    },
+    {
+      "id": "baseline-diff",
+      "name": "Baseline Diff",
+      "ja": "前回と比べる",
+      "definition": "前回の観測結果をベースラインとして保存し、追加・削除・変更だけを浮かび上がらせる。",
+      "why": "常に存在するノイズの中から変化を見つけるには、絶対値より差分が強い。新しい常駐、消えたプロセス、増えた秘密は、差分でこそ目立つ。",
+      "tradeoffs": [
+        "ベースラインが汚れていると、差分も汚れる。",
+        "初回は比較対象がなく、全体が「新規」に見える。",
+        "比較キーの設計を誤ると、同じものが別物として扱われる。"
+      ],
+      "signals": ["new", "resolved", "unchanged", "changed"],
+      "used_by": ["process-sentinel", "bootprint", "keylint-lab"]
+    },
+    {
+      "id": "client-side-only",
+      "name": "Client-side Only",
+      "ja": "端末から出さない",
+      "definition": "取得・判定・表示をすべてブラウザ内で完結させ、データをサーバーへ送らない。",
+      "why": "安全や秘密を調べる行為そのものがリスクになることがある。診断対象を外部へ送らなければ、調査のための新しい露出を作らずに済む。",
+      "tradeoffs": [
+        "ブラウザから見える範囲しか観測できない。",
+        "端末ごとに結果が異なり、中央集約や比較がしにくい。",
+        "保存はブラウザのストレージに依存し、消去の影響を受ける。"
+      ],
+      "signals": ["no network", "in-memory", "no upload", "Unknown"],
+      "used_by": ["mobile-safety-kit", "goose-editor", "keylint-lab"]
+    },
+    {
+      "id": "local-persistence",
+      "name": "Local Persistence",
+      "ja": "端末に残す",
+      "definition": "利用者のデータを端末内のストレージへ保存し、アカウントや同期なしで継続性を持たせる。",
+      "why": "書いたものが消えると道具にならない。一方で、サーバーを持つと運用とプライバシーの負担が増える。端末内保存は、その中間を取る。",
+      "tradeoffs": [
+        "端末を変えるとデータを持ち出せない。",
+        "ブラウザの消去や容量制限で失われる可能性がある。",
+        "バックアップと書き出しの導線を別に用意する必要がある。"
+      ],
+      "signals": ["localStorage", "autosave", "export", "single device"],
+      "used_by": ["goose-editor"]
+    },
+    {
+      "id": "offline-shell",
+      "name": "Offline Shell",
+      "ja": "アプリの殻をキャッシュする",
+      "definition": "Service Worker でアプリのコードと静的資源だけをキャッシュし、ネットワークなしでも起動できるようにする。",
+      "why": "ローカルファーストを名乗るなら、通信が切れたときにも開けなければならない。一方で、利用者のデータまでキャッシュすると削除や同期の責任が曖昧になる。",
+      "tradeoffs": [
+        "キャッシュの更新戦略を誤ると古い画面が残る。",
+        "アプリシェルとデータの境界を間違えると、意図しない保存が起きる。",
+        "初回訪問時は結局ネットワークが必要。"
+      ],
+      "signals": ["manifest", "service worker", "app shell", "cache version"],
+      "used_by": ["goose-editor"]
+    },
+    {
+      "id": "score-judge",
+      "name": "Score & Judge",
+      "ja": "重み付きで判定する",
+      "definition": "複数の観測値を重み付きで合算し、単一の判定や優先順位に変換する。内訳は必ず開けるようにする。",
+      "why": "項目が増えると、全部を同じ重さで並べても判断できない。重みを与えて上位の結論を出しつつ、根拠を辿れるようにする。",
+      "tradeoffs": [
+        "重みの設計に恣意性が入る。",
+        "合計点は個別の重大な一項目を埋もれさせることがある。",
+        "Unknown を 0 点として扱うと、過小評価につながる。"
+      ],
+      "signals": ["severity", "confidence", "weight", "Unknown exclusion"],
+      "used_by": ["pipeline-viz", "process-sentinel", "mobile-safety-kit", "keylint-lab"]
+    }
+  ]
+}

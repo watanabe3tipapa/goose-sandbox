@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23ffffff'/%3E%3Crect x='6' y='6' width='20' height='20' fill='%2300e5a8' stroke='%230b0b0b' stroke-width='4'/%3E%3Cpath d='M8 16c3-4 5.5-6 8-6s5 2 8 6c-3 4-5.5 6-8 6s-5-2-8-6Z' fill='none' stroke='%230b0b0b' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%230b0b0b'/%3E%3C/svg%3E">
+<title>Gander — 実験展示を、仕組みで読み解くアトラス</title>
+<meta name="description" content="goose-sandbox の 7 つの実験展示を、問い・パイプライン・7 つの仕組みで横断して読むアトラス。KeyLint Lab では秘密検出の判定過程を試せる。">
+<meta property="og:title" content="Gander — 実験展示を、仕組みで読み解くアトラス">
+<meta property="og:description" content="7 つの展示を、問いと仕組みで横断する。秘密検出の 7 段階を試す KeyLint Lab を同梱。">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Roboto+Mono:wght@400;700&amp;family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="atlas/gander.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 12c3-5 6.5-7 9-7s6 2 9 7c-3 5-6.5 7-9 7s-6-2-9-7Z" fill="none" stroke="#0b0b0b" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="#0b0b0b"/></svg>
+      </span>
+      <span><strong>Gander</strong><small>exhibit atlas / 07</small></span>
+    </a>
+    <nav class="topnav" aria-label="サイト内">
+      <a class="primary" href="atlas/">Atlas</a>
+      <a href="goose/">Goose</a>
+      <a href="atlas/lab.html">KeyLint Lab</a>
+      <a href="README.md">README</a>
+      <a href="../">Sandbox</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="hero">
+      <div>
+        <span class="kicker">Project 07 / exhibit atlas</span>
+        <h1>Gander<span>look closer at the sandbox</span></h1>
+        <p class="lead">
+          goose-sandbox の 7 つの実験展示を、<strong>問い・パイプライン・仕組み</strong>の 3 つの軸で横断して読むアトラスです。
+          個別の成果物を並べるのではなく、何を観測し、どう正規化し、どこで判定しているのかを比べます。
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="atlas/">Atlas を開く</a>
+          <a class="btn ghost" href="goose/">Goose 言語コーナー</a>
+          <a class="btn ghost" href="atlas/lab.html">KeyLint Lab を試す</a>
+          <a class="btn ghost" href="README.md">README</a>
+        </div>
+        <div class="stat-row">
+          <span class="stat"><b>7</b><span>exhibits</span></span>
+          <span class="stat"><b>7</b><span>mechanisms</span></span>
+          <span class="stat"><b>8</b><span>goose features</span></span>
+          <span class="stat"><b>1</b><span>lab</span></span>
+          <span class="stat"><b>0</b><span>server</span></span>
+        </div>
+      </div>
+
+      <aside class="hero-map" aria-label="Gander の読み方">
+        <span class="map-label">READING MAP</span>
+        <div class="flow">
+          <div class="flow-row">
+            <span class="idx">01</span>
+            <span><b>Question</b><small>展示ごとの問いを読む</small></span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row">
+            <span class="idx">02</span>
+            <span><b>Structure</b><small>パイプラインと入出力を見る</small></span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row">
+            <span class="idx">03</span>
+            <span><b>Mechanism</b><small>7 つの仕組みで横断する</small></span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row">
+            <span class="idx">04</span>
+            <span><b>Lab</b><small>KeyLint Lab で手を動かす</small></span>
+          </div>
+        </div>
+        <div class="map-foot">
+          <span>static / client-side</span>
+          <span>updated 2026-11-22</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" id="exhibits" aria-labelledby="exhibits-heading">
+      <div class="section-head">
+        <span class="section-no">01 — EXHIBITS</span>
+        <h2 id="exhibits-heading">展示を読む</h2>
+        <p>問いから入り、パイプラインと入出力を確認してから、使われている仕組みへ進みます。</p>
+      </div>
+      <div class="grid-3">
+
+        <article class="card click exhibit-card">
+          <span class="no">01</span>
+          <span class="badge mint">Active</span>
+          <h3>Pipeline Viz</h3>
+          <p class="question">パイプラインは、どこで詰まり、どこが不健康なのか。</p>
+          <p class="summary">Goose の実行時メトリクスと Perspective 構造を接合し、流れと健康状態を 1 画面で読む静的プロトタイプ。</p>
+          <div class="tag-row">
+            <span class="badge tag">Normalize &amp; Classify</span>
+            <span class="badge tag">Score &amp; Judge</span>
+          </div>
+          <div class="card-links">
+            <a href="atlas/exhibit.html?id=pipeline-viz">構造を読む</a>
+            <a href="../PipelineViz/">LP</a>
+          </div>
+        </article>
+
+        <article class="card click exhibit-card">
+          <span class="no">02</span>
+          <span class="badge mint">Active</span>
+          <h3>Goose サンプル探訪</h3>
+          <p class="question">31 本のサンプルを、どこから、どの順で読むべきか。</p>
+          <p class="summary">Goose 公式サンプルをカテゴリ・難易度・必要な環境で整理し、解説とソースを 1 画面で読む静的サイト。</p>
+          <div class="tag-row">
+            <span class="badge tag">Collect &amp; Freeze</span>
+            <span class="badge tag">Normalize &amp; Classify</span>
+          </div>
+          <div class="card-links">
+            <a href="atlas/exhibit.html?id=goose-samples">構造を読む</a>
+            <a href="../GooseSamples/">LP</a>
+          </div>
+        </article>
+
+        <article class="card click exhibit-card">
+          <span class="no">03</span>
+          <span class="badge mint">Active</span>
+          <h3>Process Sentinel</h3>
+          <p class="question">今動いているプロセスのうち、どれが普段と違うのか。</p>
+          <p class="summary">macOS のプロセスを親子ツリーとして描き、署名・CPU・メモリ・接続・前回差分から不審な動きを読むビューア。</p>
+          <div class="tag-row">
+            <span class="badge tag">Collect &amp; Freeze</span>
+            <span class="badge tag">Normalize &amp; Classify</span>
+            <span class="badge tag">Baseline Diff</span>
+            <span class="badge tag">Score &amp; Judge</span>
+          </div>
+          <div class="card-links">
+            <a href="atlas/exhibit.html?id=process-sentinel">構造を読む</a>
+            <a href="../ProcessSentinel/">LP</a>
+          </div>
+        </article>
+
+        <article class="card click exhibit-card">
+          <span class="no">04</span>
+          <span class="badge mint">Active</span>
+          <h3>Mobile Safety Kit</h3>
+          <p class="question">この端末は、何を外に見せ、何を守れているのか。</p>
+          <p class="summary">スマホの OS・通信・権限・追跡防止をブラウザ標準 API だけで診断し、Device → Network → Privacy → Risk Judge で表示。</p>
+          <div class="tag-row">
+            <span class="badge tag">Client-side Only</span>
+            <span class="badge tag">Normalize &amp; Classify</span>
+            <span class="badge tag">Score &amp; Judge</span>
+          </div>
+          <div class="card-links">
+            <a href="atlas/exhibit.html?id=mobile-safety-kit">構造を読む</a>
+            <a href="../MobileSafetyKit/">LP</a>
+          </div>
+        </article>
+
+        <article class="card click exhibit-card">
+          <span class="no">05</span>
+          <span class="badge mint">Active</span>
+          <h3>Bootprint</h3>
+          <p class="question">この Mac は、起動時に何を、どこから動かしているのか。</p>
+          <p class="summary">macOS の launchd ジョブを 4 つの配置レーンとベンダーで読み、トリガー・署名・差分・24 時間スケジュールを可視化。</p>
+          <div class="tag-row">
+            <span class="badge tag">Collect &amp; Freeze</span>
+            <span class="badge tag">Normalize &amp; Classify</span>
+            <span class="badge tag">Baseline Diff</span>
+          </div>
+          <div class="card-links">
+            <a href="atlas/exhibit.html?id=bootprint">構造を読む</a>
+            <a href="../Bootprint/">LP</a>
+          </div>
+        </article>
+
+        <article class="card click exhibit-card">
+          <span class="no">06</span>
+          <span class="badge mint">Active</span>
+          <h3>Goose Editor</h3>
+          <p class="question">書いたものを、外部に預けずに持ち続けられるか。</p>
+          <p class="summary">リッチテキストと Markdown を往復し、端末内へ自動保存するローカルファーストのエディタ。PWA としてオフラインでも開ける。</p>
+          <div class="tag-row">
+            <span class="badge tag">Client-side Only</span>
+            <span class="badge tag">Local Persistence</span>
+            <span class="badge tag">Offline Shell</span>
+          </div>
+          <div class="card-links">
+            <a href="atlas/exhibit.html?id=goose-editor">構造を読む</a>
+            <a href="../GooseEditor/">LP</a>
+          </div>
+        </article>
+
+        <article class="card click exhibit-card">
+          <span class="no">07</span>
+          <span class="badge warn">Lab</span>
+          <h3>KeyLint Lab</h3>
+          <p class="question">秘密情報は、どの段階で「危ない」と判定されるのか。</p>
+          <p class="summary">秘密検出を 7 段階のパイプラインとして展示する実験台。ダミー文字列を入れると、どこで拾われ、どこで外され、どうマスクされるかが見える。</p>
+          <div class="tag-row">
+            <span class="badge tag">Baseline Diff</span>
+            <span class="badge tag">Client-side Only</span>
+            <span class="badge tag">Score &amp; Judge</span>
+          </div>
+          <div class="card-links">
+            <a href="atlas/exhibit.html?id=keylint-lab">構造を読む</a>
+            <a href="atlas/lab.html">Lab を開く</a>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="section" id="mechanisms" aria-labelledby="mechanisms-heading">
+      <div class="section-head">
+        <span class="section-no">02 — MECHANISMS</span>
+        <h2 id="mechanisms-heading">仕組みで横断する</h2>
+        <p>展示をまたいで繰り返し現れる 7 つの型。定義・トレードオフ・使っている展示を 1 か所に集めています。</p>
+      </div>
+      <div class="grid-3">
+
+        <article class="card click mechanism-card">
+          <span class="mid">MECHANISM / 01</span>
+          <h3>Collect &amp; Freeze</h3>
+          <p><strong>採取して固定する。</strong> 観測したい対象から一度だけデータを採取し、出典と時点を固定してから読む。</p>
+          <p class="used">3 exhibits / 4 signals</p>
+          <div class="card-links"><a href="atlas/mechanism.html?id=collect-freeze">定義を読む</a></div>
+        </article>
+
+        <article class="card click mechanism-card">
+          <span class="mid">MECHANISM / 02</span>
+          <h3>Normalize &amp; Classify</h3>
+          <p><strong>正規化して分類する。</strong> 異なる形式の入力を共通の形に揃え、意味のある軸で分類してから比較する。</p>
+          <p class="used">5 exhibits / 5 signals</p>
+          <div class="card-links"><a href="atlas/mechanism.html?id=normalize-classify">定義を読む</a></div>
+        </article>
+
+        <article class="card click mechanism-card">
+          <span class="mid">MECHANISM / 03</span>
+          <h3>Baseline Diff</h3>
+          <p><strong>前回と比べる。</strong> 前回の観測結果をベースラインとして保存し、追加・削除・変更だけを浮かび上がらせる。</p>
+          <p class="used">3 exhibits / 4 signals</p>
+          <div class="card-links"><a href="atlas/mechanism.html?id=baseline-diff">定義を読む</a></div>
+        </article>
+
+        <article class="card click mechanism-card">
+          <span class="mid">MECHANISM / 04</span>
+          <h3>Client-side Only</h3>
+          <p><strong>端末から出さない。</strong> 取得・判定・表示をすべてブラウザ内で完結させ、データをサーバーへ送らない。</p>
+          <p class="used">3 exhibits / 4 signals</p>
+          <div class="card-links"><a href="atlas/mechanism.html?id=client-side-only">定義を読む</a></div>
+        </article>
+
+        <article class="card click mechanism-card">
+          <span class="mid">MECHANISM / 05</span>
+          <h3>Local Persistence</h3>
+          <p><strong>端末に残す。</strong> 利用者のデータを端末内のストレージへ保存し、アカウントや同期なしで継続性を持たせる。</p>
+          <p class="used">1 exhibit / 4 signals</p>
+          <div class="card-links"><a href="atlas/mechanism.html?id=local-persistence">定義を読む</a></div>
+        </article>
+
+        <article class="card click mechanism-card">
+          <span class="mid">MECHANISM / 06</span>
+          <h3>Offline Shell</h3>
+          <p><strong>アプリの殻をキャッシュする。</strong> Service Worker でアプリのコードと静的資源だけをキャッシュし、ネットワークなしでも起動できるようにする。</p>
+          <p class="used">1 exhibit / 4 signals</p>
+          <div class="card-links"><a href="atlas/mechanism.html?id=offline-shell">定義を読む</a></div>
+        </article>
+
+        <article class="card click mechanism-card">
+          <span class="mid">MECHANISM / 07</span>
+          <h3>Score &amp; Judge</h3>
+          <p><strong>重み付きで判定する。</strong> 複数の観測値を重み付きで合算し、単一の判定や優先順位に変換する。内訳は必ず開けるようにする。</p>
+          <p class="used">4 exhibits / 4 signals</p>
+          <div class="card-links"><a href="atlas/mechanism.html?id=score-judge">定義を読む</a></div>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="section" id="goose" aria-labelledby="goose-heading">
+      <div class="section-head">
+        <span class="section-no">03 — LANGUAGE CORNER</span>
+        <h2 id="goose-heading">Goose 言語コーナー</h2>
+        <p>アトラスの土台にある Goose という言語そのものを読むコーナー。ヒープなし・GCなし・ライフタイム注釈なしの設計を、8 つの特色とデータスタックのモデルで確かめます。</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <span class="badge mint">8 features</span>
+          <h3>メモリモデルからスレッドまで</h3>
+          <p>データスタック、成長しても無効化されない参照、ルート推論、インライン配置、可変モードの ADT、相対参照、共有メモリなしのスレッド、階層を越える return。Goose の特色をコード片と一緒に並べています。</p>
+          <div class="tag-row">
+            <span class="badge tag">no heap</span>
+            <span class="badge tag">no GC</span>
+            <span class="badge tag">no lifetimes</span>
+            <span class="badge tag">data stack</span>
+          </div>
+          <div class="card-links">
+            <a class="btn small" href="goose/">Goose コーナーを開く</a>
+            <a class="btn ghost small" href="../PipelineViz/goose_language_guide.html">言語ガイド</a>
+          </div>
+        </div>
+        <div class="card">
+          <span class="kicker">data stack</span>
+          <pre class="code-block"><code>for round in 3 {
+    var scratch: u8[&gt;..] = [];
+    for i in 100000 { scratch.push((i % 256) as! u8); }
+    print("round ", round, ": ", scratch.len, " bytes");
+}   // スコープ終了で 1 ストアで解放</code></pre>
+          <p class="hint">成長はポインタの前進、解放はスコープ終了時の巻き戻し。個別の free もデストラクタもありません。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="lab" aria-labelledby="lab-heading">
+      <div class="section-head">
+        <span class="section-no">04 — LAB</span>
+        <h2 id="lab-heading">KeyLint Lab</h2>
+        <p>アトラスの 07 は、読むだけでなく試せる実験台です。ダミーの秘密を入れて、7 段階のどこで止まるかを観察できます。</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <span class="badge warn">Interactive</span>
+          <h3>判定の途中を見せる</h3>
+          <p>Pattern → Context → Entropy → Allowlist → Mask → Risk → Baseline の順に通過・停止を並べます。結果だけではなく、なぜその判定になったかを読むための Lab です。</p>
+          <div class="card-links">
+            <a class="btn small" href="atlas/lab.html">Lab を開く</a>
+            <a class="btn ghost small" href="atlas/exhibit.html?id=keylint-lab">展示として読む</a>
+          </div>
+        </div>
+        <div class="card">
+          <span class="kicker">7 stages</span>
+          <div class="flow">
+            <div class="flow-row"><span class="idx">01</span><span><b>Pattern</b><small>既知プロバイダの形式で拾う</small></span></div>
+            <div class="flow-row"><span class="idx">02</span><span><b>Context / Entropy</b><small>文脈とランダム性で補強する</small></span></div>
+            <div class="flow-row"><span class="idx">03</span><span><b>Allowlist / Mask</b><small>誤検知を外し、値を残さない</small></span></div>
+            <div class="flow-row"><span class="idx">04</span><span><b>Risk / Baseline</b><small>強さ・露出度・新規性で優先度を決める</small></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site">
+    <span>Gander / goose-sandbox · 2026</span>
+    <span><a href="atlas/">Atlas</a> · <a href="atlas/lab.html">KeyLint Lab</a> · <a href="README.md">README</a> · <a href="../">Sandbox</a></span>
+  </footer>
+
+</div>
+</body>
+</html>

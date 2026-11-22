@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "updated": "2026-11-22",
+  "meta": {
+    "title": "Goose",
+    "tagline": "no heap / no GC / no lifetimes",
+    "summary": "Goose は、ヒープアロケータもガベージコレクタもライフタイム注釈も持たないシステムプログラミング言語です。値はデータスタックにインラインで置かれ、スコープの終了がそのまま解放になります。",
+    "source": "aardappel/goose",
+    "sourceUrl": "https://github.com/aardappel/goose",
+    "commit": "64d62fc",
+    "license": "Apache-2.0",
+    "guide": "PipelineViz/goose_language_guide.html",
+    "samples": "GooseSamples/explorer/",
+    "note": "コード片は公式サンプルと PipelineViz の言語ガイドから、特徴を説明する最小限の範囲で引用しています。",
+    "reading": [
+      { "id": "02_memory", "why": "データスタック、参照の安定性、インライン配置を 1 本で確認する" },
+      { "id": "05_shapes", "why": "可変モードの ADT と match を読む" },
+      { "id": "23_mandelbrot_threads", "why": "共有メモリなしのワーカーと型付きキューを見る" },
+      { "id": "25_serialize", "why": "相対参照で構造体をそのままファイルにする" }
+    ]
+  },
+  "features": [
+    {
+      "id": "data-stack",
+      "no": "01",
+      "name": "Data Stack",
+      "ja": "スコープの終了が free",
+      "tagline": "ヒープを持たず、ポインタを戻して解放する",
+      "summary": "動的メモリはデータスタックにインラインで積まれます。成長はポインタの前進、解放はスコープを抜けたときのポインタの巻き戻しです。個別の free もデストラクタもありません。",
+      "points": [
+        "100 万要素でも、解放のコストは 1 回のストア",
+        "ループ本体で宣言したバッファは、反復ごとに新しく、閉じ括弧で消える",
+        "ヒープアロケータも GC も存在しない"
+      ],
+      "code": "for round in 3 {\n    var scratch: u8[>..] = [];\n    for i in 100000 { scratch.push((i % 256) as! u8); }\n    print(\"round \", round, \": \", scratch.len, \" bytes\");\n}   // スコープ終了で 1 ストアで解放",
+      "samples": ["02_memory"]
+    },
+    {
+      "id": "stable-refs",
+      "no": "02",
+      "name": "Stable References",
+      "ja": "成長しても参照が無効化されない",
+      "tagline": "要素が移動しないから、参照を保持できる",
+      "summary": "一般的な Vec や vector は再アロケーションで要素への参照を無効にします。Goose の成長専用配列は要素を移動しないため、最初に取った参照は push を重ねても有効なままです。",
+      "points": [
+        "要素はデータスタック上で動かない",
+        "参照は `.=` で束縛し、`.==` で比較する",
+        "100000 回の push 後でも、最初の要素を直接更新できる"
+      ],
+      "code": "var items: Item[>..] = [];\nlet first: Item& = items.push(Item { 1, 0.5 });\nfor i in 2..100001 { items.push(Item { i as i32, i * 0.5 }); }\nfirst.weight = 99.5;   // 100000 回の push 後も有効",
+      "samples": ["02_memory"]
+    },
+    {
+      "id": "no-lifetimes",
+      "no": "03",
+      "name": "No Lifetime Annotations",
+      "ja": "ルート推論で安全を証明する",
+      "tagline": "&'a も unsafe も書かない",
+      "summary": "Goose はすべての参照とスライスに静的な「ルート」を推論します。参照が所有者より長生きする可能性がある場合、コンパイラがエラーにします。ライフタイム注釈を書く必要はありません。",
+      "points": [
+        "参照の生存期間はコンパイラが推論する",
+        "所有者より長生きする参照はコンパイルエラー",
+        "安全のために unsafe ブロックを要求しない"
+      ],
+      "code": "fn longest(a: u8[:], b: u8[:]) -> u8[:] {\n    if a.len >= b.len { a } else { b }\n}\n\n// 内側の配列をルートとする参照を、\n// より長生きの変数へ格納しようとするとエラーになる",
+      "samples": ["01_tour", "02_memory"]
+    },
+    {
+      "id": "inline-nesting",
+      "no": "04",
+      "name": "Inline Nesting",
+      "ja": "ネストしたデータも 1 つのバイト列",
+      "tagline": "文字列の配列にも、要素ごとのポインタがない",
+      "summary": "文字列、文字列の配列、可変長フィールドを持つ構造体の配列まで、すべて 1 つの連続したバイト列として格納されます。ポインタによる間接参照が発生しません。",
+      "points": [
+        "文字列は u8 配列として扱われる",
+        "配列の配列は、長さとバイトが前後に並ぶ 1 ブロック",
+        "固定長の構造体は代入時にコピーされる"
+      ],
+      "code": "var words: u8[][>..] = [];\nfor i in 5 { words.push(str(\"word\", i)); }\n// 5 語でも、長さとバイトが 1 つのブロックに並ぶ\n// （要素ごとのアロケーションはない）",
+      "samples": ["02_memory", "03_strings"]
+    },
+    {
+      "id": "packed-enums",
+      "no": "05",
+      "name": "Packed Enums",
+      "ja": "バリアントの実サイズだけを使う",
+      "tagline": "ADT に固定幅を強制しない",
+      "summary": "代数データ型は Goose で唯一の動的ポリモーフィズムです。固定モードはタグと最大ペイロード領域を持ち、可変モード（`Shape..`）は各値がバリアントの実サイズだけを消費します。",
+      "points": [
+        "固定モードは最大サイズで揃える",
+        "可変モードは値ごとに実サイズで詰める",
+        "`match` でバリアントを取り出す"
+      ],
+      "code": "enum Shape { Circle { r: f64 }, Rect { w: f64, h: f64 }, Dot }\n\nvar packed: Shape..[>..] = [];\npacked.push(Shape.Circle { r: 1.0 });\npacked.push(Shape.Rect { w: 2.0, h: 3.0 });\npacked.push(Shape.Dot);   // 9, 17, 1 バイト",
+      "samples": ["05_shapes", "19_vm"]
+    },
+    {
+      "id": "relative-refs",
+      "no": "06",
+      "name": "Relative References",
+      "ja": "構造体をそのままファイルにする",
+      "tagline": "アドレスではなくオフセットを持つ",
+      "summary": "`T&<u32>` のような相対参照は、ターゲットへのオフセットを 1、2、4 バイトで持ちます。構造体はポジション非依存になり、保存はバイトの書き出し、読み込みは検証パスだけで済みます。",
+      "points": [
+        "リンクは自分からの相対オフセット",
+        "同じ構造体をそのままファイルへ保存できる",
+        "読み込み時に不正なリンクを検証できる"
+      ],
+      "code": "struct Node {\n    word: u8[..24],\n    count: i32,\n    left: Node&<u32>?,\n    right: Node&<u32>?\n}\n// left / right はアドレスではなく、自分のフィールドからの 4 バイトオフセット",
+      "samples": ["25_serialize", "16_records"]
+    },
+    {
+      "id": "threads",
+      "no": "07",
+      "name": "Threads Without Shared Memory",
+      "ja": "共有しないから競合しない",
+      "tagline": "ワーカーは別プログラム、交換は型付きキュー",
+      "summary": "ワーカーは独自のメモリ空間を持つ別プログラムとしてコンパイルされます。スレッド間のデータ交換は、型付きキューを通じた memcpy だけです。データ競合、ロック、アトミック、メモリオーダリングの概念が言語に存在しません。",
+      "points": [
+        "ワーカーはメモリを共有しない",
+        "ジョブと結果は型付きキューを 1 回コピーして渡す",
+        "ロックもアトミックも不要"
+      ],
+      "code": "thread_fn worker() {\n    loop {\n        let job = qget<Job>();\n        guard job.y >= 0 else { break; }\n        qput(Row { y: job.y, cells: render_row(job.y) });\n    }\n}",
+      "samples": ["23_mandelbrot_threads", "28_physics_boxes"]
+    },
+    {
+      "id": "long-return",
+      "no": "08",
+      "name": "Long-distance Return",
+      "ja": "階層を越えて一度に戻る",
+      "tagline": "Result 型も ? 演算子も要らない",
+      "summary": "`return err from load` は、任意の階層上の `load` 関数からリターンします。スタティックに検証され、アンワインディングも `Result` 型も `?` 演算子も不要です。",
+      "points": [
+        "エラーを返す関数名を明示する",
+        "呼び出し階層を飛び越えて戻れる",
+        "戻り先はコンパイル時に検証される"
+      ],
+      "code": "return err from load;   // load の呼び出し元まで一度に戻る\n\n// 呼び出しの途中で unwrap したり、\n// Result を引き回したりする必要はない",
+      "samples": ["04_errors", "17_calc"]
+    }
+  ]
+}

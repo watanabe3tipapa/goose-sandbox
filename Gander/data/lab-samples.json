@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "updated": "2026-11-22",
+  "samples": [
+    {
+      "id": "github-pat",
+      "label": "GitHub token",
+      "value": "ghp_9fQ2xLm4Tz8Vb1Nc6Rs3Kd7Yp0Wa5He2Jt8x",
+      "key": "GITHUB_TOKEN",
+      "file": "~/src/app/.env.local",
+      "tracked": true,
+      "worldReadable": false,
+      "known": false,
+      "note": "既知プロバイダの形式。文脈と露出度が重なって高リスクになる例。"
+    },
+    {
+      "id": "aws-key",
+      "label": "AWS access key",
+      "value": "AKIA4N7Q2X9LM3TZ8VBC",
+      "key": "AWS_ACCESS_KEY_ID",
+      "file": "~/.aws/credentials",
+      "tracked": false,
+      "worldReadable": false,
+      "known": true,
+      "note": "ホーム直下の資格情報。Git 管理外でも置き場所が敏感。"
+    },
+    {
+      "id": "stripe-test",
+      "label": "Stripe test key",
+      "valueParts": ["sk_", "test_", "51NxAbCdEfGhIjKlMnOpQrStUvWxYz012345"],
+      "key": "STRIPE_SECRET_KEY",
+      "file": "~/src/shop/.env.example",
+      "tracked": true,
+      "worldReadable": false,
+      "known": false,
+      "note": "test キーは検出するが、live より低い重みで扱う。"
+    },
+    {
+      "id": "private-key",
+      "label": "PEM private key",
+      "value": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAAB\nAAAAdwAAAAdzc2gtcnNhAAAAAwEAAQAAAYEA0demo\n-----END OPENSSH PRIVATE KEY-----",
+      "key": "id_ed25519",
+      "file": "~/.ssh/id_ed25519",
+      "tracked": false,
+      "worldReadable": true,
+      "known": false,
+      "note": "最上位の重大度。秘密鍵そのものはマスクし、ヘッダだけ残す。"
+    },
+    {
+      "id": "placeholder",
+      "label": "Example placeholder",
+      "value": "your_api_key_here_example",
+      "key": "API_KEY",
+      "file": "~/src/app/.env.example",
+      "tracked": true,
+      "worldReadable": false,
+      "known": false,
+      "note": "文脈には当たるが、除外規則で止まる。誤検知を抑える例。"
+    },
+    {
+      "id": "generic-token",
+      "label": "Generic high entropy",
+      "value": "Zx9Qm2Lp7Rt4Vb8Nc1Kd6Ws3Hf5Jg0Ya",
+      "key": "SERVICE_TOKEN",
+      "file": "~/src/api/config/local.json",
+      "tracked": true,
+      "worldReadable": false,
+      "known": false,
+      "note": "プロバイダ不明。文脈 + エントロピーで拾う。"
+    },
+    {
+      "id": "jwt",
+      "label": "JWT",
+      "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZW1vIn0.abcdefghijklmnopqrstuvwxyz",
+      "key": "SESSION_TOKEN",
+      "file": "~/src/web/.env",
+      "tracked": false,
+      "worldReadable": false,
+      "known": false,
+      "note": "形式で拾えるが、短命なセッション値はリスクを低めに見る。"
+    },
+    {
+      "id": "world-readable",
+      "label": "World-readable config",
+      "valueParts": ["sk_", "live_", "51NxAbCdEfGhIjKlMnOpQrStUvWxYz012345"],
+      "key": "STRIPE_SECRET_KEY",
+      "file": "~/shared/billing.env",
+      "tracked": false,
+      "worldReadable": true,
+      "known": false,
+      "note": "live キー + 誰でも読める場所。公開範囲の重みが効く例。"
+    }
+  ]
+}
