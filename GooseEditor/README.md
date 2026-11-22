@@ -87,6 +87,9 @@ GooseEditor/
 ├── index.html                  # プロジェクト LP
 ├── README.md                   # このファイル
 ├── assets/
+│   ├── goose-feather.webp      # ヒーロー用グースの羽
+│   ├── logo-mark.png           # ロゴマーク
+│   ├── og-goose-editor.jpg     # OGP 画像
 │   └── editor-preview.webp     # LP 用スクリーンショット
 └── editor/
     ├── index.html              # エディタ本体
@@ -96,10 +99,11 @@ GooseEditor/
     │   └── model.test.js       # 20 テスト
     ├── manifest.json           # PWA manifest
     ├── sw.js                   # Service Worker（シェルキャッシュ）
-    ├── icon.svg
     ├── icon-192.png
     ├── icon-512.png
     ├── icon-maskable-512.png
+    ├── logo-mark.png
+    ├── favicon-64.png
     └── apple-touch-icon.png
 ```
 

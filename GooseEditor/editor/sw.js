@@ -4,14 +4,15 @@
  * A small cache-first shell so the editor can reopen offline. Document data is
  * never cached here: it lives in localStorage and stays on the device.
  */
-const CACHE = "goose-editor-v4";
+const CACHE = "goose-editor-v5";
 const SHELL = [
   "./",
   "./index.html",
   "./app.js",
   "./lib/model.js",
   "./manifest.json",
-  "./icon.svg",
+  "./favicon-64.png",
+  "./logo-mark.png",
   "./icon-192.png",
   "./icon-512.png",
   "./icon-maskable-512.png",

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#071526">
 <meta name="description" content="Goose Editor は、リッチテキストと Markdown を往復しながら、文章を端末内に保存できるローカルファーストの軽量編集環境です。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23071526'/%3E%3Cpath d='M22 5c-6 3-9 8-9 13 0 3 1 6 3 8 3-4 6-9 6-13 0-3 0-6 0-8z' fill='%2357e8ff'/%3E%3Cpath d='M22 5c-1 8-2 14-5 20' stroke='%2304101d' stroke-width='1.3' fill='none'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
@@ -153,7 +153,7 @@ code, kbd, pre { font-family: var(--font-mono); }
   box-shadow: inset 0 0 14px var(--glow), 0 0 18px -6px var(--accent);
 }
 .brand small { color: var(--faint); font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: 0.1em; }
-.brand-mark svg { display: block; width: 22px; height: 22px; }
+.brand-mark img { display: block; width: 24px; height: 24px; border-radius: 6px; object-fit: cover; }
 .install-btn { border-color: color-mix(in srgb, var(--accent) 46%, transparent); color: var(--accent); }
 .install-btn[hidden] { display: none; }
 .topbar-spacer { flex: 1; }
@@ -917,23 +917,7 @@ dialog::backdrop { background: rgba(3, 10, 19, 0.72); backdrop-filter: blur(4px)
 <header class="topbar">
   <a class="brand" href="../">
     <span class="brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 512 512" role="presentation" focusable="false">
-        <defs>
-          <linearGradient id="markVane" x1="0.15" y1="0" x2="0.9" y2="1">
-            <stop offset="0" stop-color="#c9fbff"/>
-            <stop offset="0.42" stop-color="#57e8ff"/>
-            <stop offset="1" stop-color="#2ea8ff"/>
-          </linearGradient>
-        </defs>
-        <g transform="rotate(-16 256 256)">
-          <path d="M262 64C338 118 372 204 344 292c-16 52-48 100-82 146-36-46-70-96-86-150-26-86 12-172 86-224Z" fill="url(#markVane)"/>
-          <g stroke="#071526" stroke-width="9" stroke-linecap="round" opacity=".55" fill="none">
-            <path d="M262 150C230 164 206 188 192 216M262 232C228 248 204 272 192 302M262 312C240 326 224 346 216 370"/>
-            <path d="M266 180C296 194 318 216 330 244M266 262C298 276 320 298 330 328"/>
-          </g>
-          <path d="M262 64c6 114 4 248-4 388" stroke="#eaffff" stroke-width="18" fill="none" stroke-linecap="round"/>
-        </g>
-      </svg>
+      <img src="logo-mark.png" alt="" width="24" height="24">
     </span>
     <span>Goose Editor<br><small>local-first workspace</small></span>
   </a>

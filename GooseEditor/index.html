@@ -9,8 +9,16 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Goose Editor — 思考を、すぐ形にする">
 <meta property="og:description" content="リッチテキストと Markdown を往復。書いた内容は端末内に自動保存。PWA でオフライン編集。">
-<meta property="og:image" content="assets/editor-preview.webp">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23ffffff'/%3E%3Cpath d='M22 6c-5 3-8 7-8 12 0 3 1 5 2 7 3-4 6-8 6-12 0-3 0-5 0-7z' fill='%2300e5a8' stroke='%230b0b0b' stroke-width='2'/%3E%3Cpath d='M22 6c-1 7-2 13-5 19' stroke='%230b0b0b' stroke-width='1.6' fill='none'/%3E%3C/svg%3E">
+<meta property="og:url" content="https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/">
+<meta property="og:image" content="https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/assets/og-goose-editor.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="グースの羽をあしらった Goose Editor のキービジュアル">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://watanabe3tipapa.github.io/goose-sandbox/GooseEditor/assets/og-goose-editor.jpg">
+<link rel="icon" type="image/png" sizes="64x64" href="editor/favicon-64.png">
+<link rel="icon" type="image/png" sizes="192x192" href="editor/icon-192.png">
+<link rel="apple-touch-icon" href="editor/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -116,14 +124,15 @@ img { max-width: 100%; display: block; }
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border: 2px solid var(--border);
   border-radius: 2px;
-  background: var(--accent);
+  background: var(--bg);
   box-shadow: none;
+  overflow: hidden;
 }
-.brand-mark img { width: 16px; height: 16px; filter: grayscale(1) brightness(0); }
+.brand-mark img { width: 24px; height: 24px; object-fit: cover; filter: none; }
 .nav-spacer { flex: 1; }
 .nav-links { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .nav-links a {
@@ -222,6 +231,55 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.02em;
 }
 .badge b { color: var(--accent-ink); font-weight: 700; }
+
+/* hero visual */
+.hero-visual {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  aspect-ratio: 1 / 1.04;
+  border: 5px solid var(--border);
+  border-radius: var(--radius);
+  background: #04101d;
+}
+.hero-visual > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 58% 44%;
+}
+.hv-tags {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.hv-tag {
+  padding: 3px 9px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  background: var(--accent);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.hv-tag.plain { background: var(--bg); }
+.hv-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 18px 14px;
+  border-top: 4px solid var(--border);
+  background: var(--bg);
+}
+.hv-kicker { display: block; color: var(--accent-ink); font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; }
+.hv-title { display: block; margin-top: 4px; font-size: 1.12rem; font-weight: 700; line-height: 1.5; letter-spacing: -0.01em; }
+.hv-note { display: block; margin-top: 3px; color: var(--muted); font-family: var(--font-mono); font-size: 0.68rem; }
 
 /* screenshot frame */
 .shot {
@@ -436,6 +494,7 @@ td code { border: 0; background: var(--bg-deep); font-size: 0.8em; white-space: 
 @media (max-width: 940px) {
   .hero { grid-template-columns: minmax(0, 1fr); gap: 30px; padding: 8px 0 38px; }
   .shot { order: 2; max-width: 620px; }
+  .hero-visual { order: 2; max-width: 620px; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 16px; }
   .step:nth-child(2)::after { display: none; }
@@ -471,7 +530,7 @@ td code { border: 0; background: var(--bg-deep); font-size: 0.8em; white-space: 
 }
 @media print {
   body { background: #fff; }
-  .site-nav, .hero-actions, .shot { display: none; }
+  .site-nav, .hero-actions, .shot, .hero-visual { display: none; }
   .section, .hero, .step, .card, .callout { break-inside: avoid; }
 }
 </style>
@@ -481,12 +540,13 @@ td code { border: 0; background: var(--bg-deep); font-size: 0.8em; white-space: 
 
   <nav class="site-nav" aria-label="サイト内">
     <a class="brand" href="../">
-      <span class="brand-mark"><img src="editor/icon.svg" alt="" width="22" height="22"></span>
+      <span class="brand-mark"><img src="editor/logo-mark.png" alt="" width="24" height="24"></span>
       Goose Editor
     </a>
     <span class="nav-spacer"></span>
     <div class="nav-links">
       <a href="editor/">エディタを開く</a>
+      <a href="#workspace">画面</a>
       <a href="#features">機能</a>
       <a href="#flow">仕組み</a>
       <a href="#status">実装状況</a>
@@ -515,8 +575,28 @@ td code { border: 0; background: var(--bg-deep); font-size: 0.8em; white-space: 
           <span class="badge"><b>0</b> runtime deps</span>
         </div>
       </div>
+      <figure class="hero-visual">
+        <img src="assets/goose-feather.webp" alt="グースの羽をモチーフにした Goose Editor のキービジュアル。" width="1400" height="1280" loading="eager">
+        <div class="hv-tags">
+          <span class="hv-tag">GOOSE FEATHER</span>
+          <span class="hv-tag plain">LOCAL-FIRST</span>
+        </div>
+        <figcaption class="hv-caption">
+          <span class="hv-kicker">A QUIET PLACE TO WRITE</span>
+          <span class="hv-title">羽のように軽い、<br>書くためのワークスペース。</span>
+          <span class="hv-note">Rich ⇄ Markdown · 端末内に自動保存</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="section" id="workspace" aria-labelledby="workspace-title">
+      <div class="section-head">
+        <span class="no">00 / WORKSPACE</span>
+        <h2 id="workspace-title">実際の画面</h2>
+        <p>左に文書一覧、中央にリッチ編集、下部に Markdown の Source Preview。ひとつの文書を、二つの面から編集できます。</p>
+      </div>
       <figure class="shot">
-        <img src="assets/editor-preview.webp" alt="Goose Editor の画面。左に文書一覧、中央にリッチ編集、下部に Markdown の Source Preview が並ぶ。" width="1440" height="952" loading="eager">
+        <img src="assets/editor-preview.webp" alt="Goose Editor の画面。左に文書一覧、中央にリッチ編集、下部に Markdown の Source Preview が並ぶ。" width="1440" height="952" loading="lazy">
         <figcaption>Rich editing ⇄ Markdown source preview</figcaption>
       </figure>
     </section>
