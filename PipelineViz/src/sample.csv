@@ -1,0 +1,9 @@
+id,name,amount
+1001,alice,120.50
+1002,bob,80.00
+1003,carol,not-a-number
+1004,dave,42.25
+1005,eve,-5.00
+1006,frank,310.75
+1007,grace,15.00
+1008,heidi

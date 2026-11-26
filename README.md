@@ -7,13 +7,15 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-site-00e5a8.svg)](https://watanabe3tipapa.github.io/goose-sandbox/)
 
+> **このブランチは `goose`（開発用）です。** Goose の実装とメトリクス出力の検証を行います。公開用の静的サイトとダッシュボードは `main` ブランチにあり、GitHub Pages も `main` からのみデプロイします。このブランチでは `PipelineViz/viewer/`、`PipelineViz/index.html`、`.github/workflows/pages.yml` を削除しています。
+
 ---
 
 ## プロジェクト一覧
 
 | # | プロジェクト | 状態 | 入口 |
 |---|---|---|---|
-| 01 | [Pipeline Viz](PipelineViz/) | Active | [LP](PipelineViz/) / [Dashboard](PipelineViz/viewer/) / [README](PipelineViz/README.md) |
+| 01 | [Pipeline Viz](PipelineViz/) | Goose 実装 | [README](PipelineViz/README.md) / [LP（main）](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/) / [Dashboard（main）](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/) |
 | 02 | [Goose サンプル探訪](GooseSamples/) | Active | [LP](GooseSamples/) / [探訪ビュー](GooseSamples/explorer/) / [README](GooseSamples/README.md) |
 | 03 | [Process Sentinel](ProcessSentinel/) | Active | [LP](ProcessSentinel/) / [Viewer](ProcessSentinel/viewer/) / [README](ProcessSentinel/README.md) |
 | 04 | [Mobile Safety Kit](MobileSafetyKit/) | Active | [LP](MobileSafetyKit/) / [Dashboard](MobileSafetyKit/viewer/) / [README](MobileSafetyKit/README.md) |
@@ -23,12 +25,31 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 
 ### Pipeline Viz
 
-Goose の実行時メトリクスと oh-my-mermaid の Perspective 構造を接合し、データ処理パイプラインの「流れ」と「健康状態」を可視化する静的プロトタイプです。
+Goose で ETL を実行し、ダッシュボードが読む `metrics.json` を生成する開発ブランチです。ダッシュボードと LP は `main` ブランチで管理しており、このブランチには含まれません。
 
-- LP: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/)
-- Dashboard: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/)
+- 開発用 README: [PipelineViz/README.md](PipelineViz/README.md)
+- Goose 実装: `PipelineViz/src/{main,pipeline,metrics}.goose`
+- 検証: `scripts/build.sh` / `scripts/verify.sh`
 - Goose 言語ガイド: [PipelineViz/goose_language_guide.html](PipelineViz/goose_language_guide.html)
 - 実装提案資料: [PipelineViz/pipeline_viz_proposal.html](PipelineViz/pipeline_viz_proposal.html)
+
+```sh
+export GOOSE=/path/to/goose
+scripts/build.sh
+# -> PipelineViz/out/metrics.json を生成し、スキーマを検証
+```
+
+現在の状態:
+
+| 項目 | 状態 |
+|---|---|
+| Goose ETL / `StepMetrics` / `PipelineSnapshot` | 実装済み |
+| `metrics.json` の生成 | Goose v2026.4 で検証済み |
+| スキーマ検証 | 実装済み（Node.js） |
+| ダッシュボードでの表示 | 未マージ（`main` はデモモードのまま） |
+| oh-my-mermaid CLI 連携 | 未実施（`.omm/` は手書き） |
+
+`main` へマージする条件は [PipelineViz/README.md](PipelineViz/README.md#main-へのマージ条件) に記載しています。Goose での生成とスキーマ検証が通り、ダッシュボードで表示できることを確認するまでマージしません。
 
 ### Goose サンプル探訪
 
@@ -86,14 +107,18 @@ macOS の launchd ジョブを 4 つの配置レーンとベンダーで読み�
 
 ## リポジトリ構成
 
+以下は `goose` ブランチの構成です。`main` では `PipelineViz/viewer/` と `PipelineViz/index.html`、`.github/workflows/pages.yml` が残ります。
+
 ```text
 goose-sandbox/
 ├── index.html                    # Sandbox ホーム（プロジェクト一覧）
 ├── README.md                     # このファイル
-├── PipelineViz/                  # プロジェクト 01
-│   ├── index.html                # プロジェクト LP
-│   ├── viewer/                   # ダッシュボード
-│   ├── assets/                   # ドキュメント共通スタイル
+├── PipelineViz/                  # プロジェクト 01（Goose 実装）
+│   ├── src/
+│   │   ├── main.goose            # エントリーポイント
+│   │   ├── pipeline.goose        # ETL と measure()
+│   │   ├── metrics.goose         # データ構造と JSON 出力
+│   │   └── sample.csv            # 検証用入力
 │   ├── .omm/                     # oh-my-mermaid の Perspective 定義
 │   ├── goose_language_guide.html
 │   ├── pipeline_viz_proposal.html
@@ -141,9 +166,9 @@ goose-sandbox/
 │   ├── data/                     # 展示・仕組み・Lab サンプル・言語特色
 │   ├── lib/                      # 検索・判定・データスタックモデルとテスト
 │   └── README.md
-├── .github/
-│   └── workflows/
-│       └── pages.yml             # GitHub Pages デプロイ
+├── scripts/
+│   ├── build.sh                  # Goose 実行 + 検証
+│   └── verify.sh                 # スナップショットのスキーマ検証
 ├── .gitignore
 ├── .nojekyll
 └── LICENSE
@@ -151,7 +176,7 @@ goose-sandbox/
 
 ## GitHub Pages
 
-`.github/workflows/pages.yml` が `main` ブランチへの push でリポジトリ全体を GitHub Pages にデプロイします。Sandbox ホームをルートに置き、各プロジェクトはサブディレクトリで公開します。
+このブランチには `.github/workflows/pages.yml` がありません。公開は `main` ブランチからのみ行います。以下は `main` の公開先です。`.github/workflows/pages.yml` が `main` ブランチへの push でリポジトリ全体を GitHub Pages にデプロイします。Sandbox ホームをルートに置き、各プロジェクトはサブディレクトリで公開します。
 
 - Sandbox ホーム: [https://watanabe3tipapa.github.io/goose-sandbox/](https://watanabe3tipapa.github.io/goose-sandbox/)
 - Pipeline Viz: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/)
@@ -169,6 +194,8 @@ goose-sandbox/
 初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。
 
 ## ローカル確認
+
+`goose` ブランチには `viewer/` がないため、Dashboard の URL は 404 になります。Goose の実行と検証は `scripts/build.sh` を使ってください。
 
 ```sh
 git clone https://github.com/watanabe3tipapa/goose-sandbox.git
