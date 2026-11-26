@@ -96,6 +96,7 @@ scripts/verify.sh PipelineViz/out/metrics.json
 {
   "timestamp": "2026-11-26T01:01:39Z",
   "pipeline": "etl-main",
+  "source": "goose",
   "steps": [
     {
       "step_id": "Extract",
@@ -131,6 +132,7 @@ scripts/verify.sh PipelineViz/out/metrics.json
 `scripts/verify.sh` は次を確認します。
 
 - `timestamp` が ISO 8601 UTC、`pipeline` が非空
+- `source` が `goose` または `sample`（未指定はサンプル扱い）
 - `steps[]` が 1 件以上、`step_id` が一意
 - 件数が非負整数、`records_out <= records_in`
 - `status` が `Healthy` / `Warning` / `Error` / `External`

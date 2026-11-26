@@ -47,6 +47,11 @@ if (doc === null || typeof doc !== "object" || Array.isArray(doc)) {
   if (!isText(doc.pipeline)) {
     fail("pipeline must be a non-empty string");
   }
+  if (doc.source !== undefined && !["goose", "sample"].includes(doc.source)) {
+    fail('source must be "goose" or "sample" when present');
+  } else if (doc.source === undefined) {
+    warnings.push("source is missing; the viewer will treat this snapshot as a sample");
+  }
 
   const steps = doc.steps;
   if (!Array.isArray(steps) || steps.length === 0) {
@@ -141,7 +146,7 @@ if (problems.length > 0) {
 
 for (const warning of warnings) console.warn(`warning: ${warning}`);
 const stepSummary = doc.steps.map((step) => `${step.step_id} ${step.records_in}->${step.records_out}`).join(", ");
-console.log(`OK: ${doc.pipeline} at ${doc.timestamp}`);
+console.log(`OK: ${doc.pipeline} at ${doc.timestamp} (${doc.source || "sample"})`);
 console.log(`    steps: ${stepSummary}`);
 console.log(`    quarantine: ${doc.quarantine.records_in}, errors: ${doc.errors.length}`);
 JS

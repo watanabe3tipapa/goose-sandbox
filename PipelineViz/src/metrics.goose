@@ -32,6 +32,7 @@ struct ErrorEvent {
 struct PipelineSnapshot {
   timestamp: u8[varint],
   pipeline: u8[varint],
+  source: u8[varint],
   steps: StepMetrics[varint],
   quarantine: StepMetrics,
   errors: ErrorEvent[varint],
@@ -145,6 +146,8 @@ fn emit_snapshot(out: u8[>..]&, s: PipelineSnapshot&) {
   json::format_key(out, "timestamp"); json::format_string(out, s.timestamp);
   out.push(',');
   json::format_key(out, "pipeline"); json::format_string(out, s.pipeline);
+  out.push(',');
+  json::format_key(out, "source"); json::format_string(out, s.source);
   out.push(',');
   json::format_key(out, "steps"); out.push('[');
   for st, i in s.steps {

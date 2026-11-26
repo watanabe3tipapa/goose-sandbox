@@ -138,6 +138,7 @@ fn run_etl(text: u8[:], now_ns: i64) -> metrics::PipelineSnapshot {
   return metrics::PipelineSnapshot {
     timestamp: metrics::timestamp_text(now_ns),
     pipeline: "etl-main",
+    source: "goose",
     steps: steps,
     quarantine: quarantine,
     errors: errors,
