@@ -9,6 +9,7 @@ const PipelineData = require("./data-source.js");
 
 const metaPath = path.join(__dirname, "..", "..", ".omm", "data-pipeline", "meta.yaml");
 const metricsPath = path.join(__dirname, "..", "data", "metrics.json");
+const gooseMetricsPath = path.join(__dirname, "..", "data", "goose-metrics.json");
 const reportingPath = path.join(__dirname, "..", "data", "etl-reporting.json");
 
 const readJson = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
@@ -16,11 +17,12 @@ const readJson = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 test("parseYaml reads the project meta file", () => {
   const meta = PipelineData.parseYaml(fs.readFileSync(metaPath, "utf8"));
 
-  assert.equal(meta.git_commit, "a1b2c3d");
+  assert.equal(meta.git_commit, "goose@bc39953");
   assert.equal(meta.poll_interval_ms, 2500);
-  assert.equal(meta.default_pipeline, "etl-main");
-  assert.equal(meta.pipelines.length, 2);
-  assert.equal(meta.pipelines[1].id, "etl-reporting");
+  assert.equal(meta.default_pipeline, "goose-etl");
+  assert.equal(meta.pipelines.length, 3);
+  assert.equal(meta.pipelines[1].id, "etl-main");
+  assert.equal(meta.pipelines[2].id, "etl-reporting");
   assert.match(meta.status_map.Warning, /^classDef warning /);
   assert.match(meta.prev_diagram, /^graph LR/);
 });
@@ -54,14 +56,18 @@ test("normalizeConfig resolves URLs relative to meta.yaml", () => {
   const config = PipelineData.normalizeConfig(meta, metaUrl, "http://localhost/PipelineViz/viewer/");
 
   assert.equal(config.pollIntervalMs, 2500);
-  assert.equal(config.defaultPipeline, "etl-main");
-  assert.equal(config.pipelines.length, 2);
+  assert.equal(config.defaultPipeline, "goose-etl");
+  assert.equal(config.pipelines.length, 3);
   assert.equal(
     config.pipelines[0].metricsUrl,
-    "http://localhost/PipelineViz/viewer/data/metrics.json"
+    "http://localhost/PipelineViz/viewer/data/goose-metrics.json"
   );
   assert.equal(
     config.pipelines[1].prevUrl,
+    "http://localhost/PipelineViz/viewer/data/metrics-prev.json"
+  );
+  assert.equal(
+    config.pipelines[2].prevUrl,
     "http://localhost/PipelineViz/viewer/data/etl-reporting-prev.json"
   );
 });
@@ -86,13 +92,26 @@ test("normalizeConfig falls back to built-in defaults", () => {
 });
 
 test("sample snapshots pass schema validation", () => {
-  for (const file of [metricsPath, reportingPath]) {
+  for (const file of [metricsPath, gooseMetricsPath, reportingPath]) {
     const result = PipelineData.validateSnapshot(readJson(file));
     assert.deepEqual(result.issues, [], `${path.basename(file)} should be clean`);
     assert.equal(result.summary.ok, true);
     assert.ok(result.snapshot.steps.length >= 3);
     assert.equal(result.snapshot.quarantine.status, "External");
   }
+});
+
+test("validateSnapshot preserves the goose source", () => {
+  const goose = PipelineData.validateSnapshot(readJson(gooseMetricsPath));
+  assert.equal(goose.snapshot.source, "goose");
+  const sample = PipelineData.validateSnapshot(readJson(metricsPath));
+  assert.equal(sample.snapshot.source, "sample");
+});
+
+test("validateSnapshot treats an unknown source as a sample", () => {
+  const result = PipelineData.validateSnapshot({ ...readJson(metricsPath), source: "other" });
+  assert.equal(result.snapshot.source, "sample");
+  assert.ok(result.issues.some((issue) => issue.path === "source"));
 });
 
 test("validateSnapshot reports and repairs invalid data", () => {

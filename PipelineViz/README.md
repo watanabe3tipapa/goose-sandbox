@@ -4,7 +4,7 @@
 
 Pipeline Viz は、**Goose によるデータ処理工程の「見える化」**を主題に、実行時メトリクスと **oh-my-mermaid** の Perspective 構造を接合し、データ処理パイプラインの「流れ」と「健康状態」を一枚のダッシュボードで可視化する試作プロジェクトです。静的なアーキテクチャ図を、実行状態を反映するライブ・ビューに変えることを目指しています。
 
-> **このブランチ（`main`）のダッシュボードはデモモードのみで動作します。** 表示しているのはサンプル JSON とクライアント側シミュレーションで、Goose ランタイムには接続していません。Goose での ETL 実行と `metrics.json` の生成は `goose` ブランチで開発しており、まだ `main` へマージしていません。
+> **既定のパイプライン `goose-etl` は REAL MODE です。** Goose が生成した `viewer/data/goose-metrics.json` を表示し、スナップショットの `source: "goose"` を確認して REAL MODE バッジを出します。`etl-main` / `etl-reporting` はサンプル JSON のデモモードです。Goose の生成コードとビルド手順は `goose` ブランチにあります。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 [![Version](https://img.shields.io/badge/version-v0.1.0-blue.svg)](https://github.com/watanabe3tipapa/goose-sandbox)
@@ -39,7 +39,8 @@ Pipeline Viz は、**Goose によるデータ処理工程の「見える化」**
 
 - **静的サイトだけで動作** — サーバーサイド処理なし。GitHub Pages にそのまま公開可能
 - **meta.yaml 駆動** — `.omm/data-pipeline/meta.yaml` からメトリクス URL、ポーリング間隔、ステータス色、パイプライン一覧を実行時に読み込み
-- **複数パイプライン切替** — サイドバーのセレクタと `?pipeline=` で ETL 本流 / 日次レポートを切替
+- **複数パイプライン切替** — サイドバーのセレクタと `?pipeline=` で Goose ETL / ETL 本流 / 日次レポートを切替
+- **REAL / DEMO モード表示** — スナップショットの `source` が `goose` なら REAL MODE、それ以外は DEMO MODE をツールバーに表示
 - **ファイルポーリング** — 表示中の `pipelines[].metrics_url`（未指定時は `live_metrics_url`）を一定間隔で再取得し、更新を検知したら表示へ反映。更新がなければクライアント側シミュレーションで動きを継続
 - **スキーマ検証** — 必須フィールド、数値、ステータス、前段との件数整合、隔離件数を検証し、結果を Meta カードに表示
 - **4 つの Perspective ナビゲーション** — `.omm/config.yaml` の Perspective 名を画面切替に割り当て（各ビューはダッシュボード内の固定実装）
@@ -57,7 +58,7 @@ Pipeline Viz は、**Goose によるデータ処理工程の「見える化」**
 
 ### ダッシュボード
 
-`viewer/` を開くと、サンプルスナップショットが読み込まれます。サイドバーで Perspective を切り替え、ノードをクリックすると詳細が表示されます。
+`viewer/` を開くと、既定の `goose-etl` が読み込まれ、Goose が生成したスナップショットを REAL MODE で表示します。デモに切り替えるには、サイドバーのセレクタで `ETL 本流` または `日次レポート` を選びます。
 
 ```text
 https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/
@@ -67,6 +68,8 @@ https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/
 
 ```text
 ?persp=performance-metrics     # 時系列指標を開く
+?pipeline=goose-etl            # Goose 生成スナップショット（REAL MODE）
+?pipeline=etl-main             # サンプルの ETL 本流（DEMO MODE）
 ?pipeline=etl-reporting        # 日次レポートのパイプラインを表示
 ?diff=1                        # Diff モードを有効化
 ?live=0                        # ライブ更新を停止
@@ -108,12 +111,16 @@ node --test PipelineViz/viewer/lib/data-source.test.js
 表示設定は `PipelineViz/.omm/data-pipeline/meta.yaml`、スナップショットは `PipelineViz/viewer/data/*.json` にあります。ビューアは起動時に `meta.yaml` を読み、`pipelines[]` の `metrics_url` を解決して JSON を取得します。取得に失敗した場合は `viewer/index.html` 内の `FALLBACK_SNAPSHOT`（ETL 本流の埋め込みサンプル）が使われます。
 
 ```yaml
-updated: 2026-10-27T09:15:02Z
-git_commit: a1b2c3d
+updated: 2026-11-26T01:12:33Z
+git_commit: goose@bc39953
 live_metrics_url: ../../viewer/data/metrics.json
 poll_interval_ms: 2500
-default_pipeline: etl-main
+default_pipeline: goose-etl
 pipelines:
+  - id: goose-etl
+    label: Goose ETL（REAL）
+    metrics_url: ../../viewer/data/goose-metrics.json
+    prev_url: ../../viewer/data/goose-metrics-prev.json
   - id: etl-main
     label: ETL 本流
     metrics_url: ../../viewer/data/metrics.json
@@ -164,6 +171,7 @@ status_map:
 - 本流の減少件数と `quarantine.records_in` が一致するか
 - `errors[]` の参照先 `step_id` が実在するか、`count` が数値か
 - `timestamp` / `pipeline` / `label` / `quarantine` などの必須項目が揃っているか
+- `source` が `goose` または `sample` か（未指定・未知の値は `sample` として扱う）
 
 修復可能な問題（未知のステータス、欠損値など）は安全な値に置き換えたうえで警告として表示します。負の値・数値でない値・重複 ID・`steps` の欠落などはエラーとして表示します（数値は 0、欠けた `step_id` は連番で補完します）。
 
@@ -173,6 +181,7 @@ status_map:
 {
   "timestamp": "2026-10-27T09:15:02Z",
   "pipeline": "etl-main",
+  "source": "sample",
   "steps": [
     {
       "step_id": "Extract",
@@ -220,6 +229,7 @@ status_map:
 |---|---|---|
 | `timestamp` | string | スナップショット生成時刻（ISO 8601） |
 | `pipeline` | string | パイプライン識別子 |
+| `source` | string | `goose`（Goose 生成）または `sample`（サンプル・シミュレーション） |
 | `steps[]` | array | 本流の処理ステップ（表示順） |
 | `steps[].step_id` | string | 一意なステップ ID |
 | `steps[].label` | string | 表示名 |
@@ -254,6 +264,8 @@ goose-sandbox/
 │   │   └── data/
 │   │       ├── metrics.json      # ETL 本流の現在スナップショット
 │   │       ├── metrics-prev.json # 同・Diff 用
+│   │       ├── goose-metrics.json      # Goose 生成の現在スナップショット（REAL MODE）
+│   │       ├── goose-metrics-prev.json # 同・Diff 用
 │   │       ├── etl-reporting.json      # 日次レポートの現在スナップショット
 │   │       └── etl-reporting-prev.json # 同・Diff 用
 │   ├── .omm/
@@ -315,18 +327,18 @@ AI コーディングツール内で `/omm-scan` を実行すると、コード�
 
 | 項目 | `main` | `goose` |
 |---|---|---|
-| ダッシュボード UI / 4 Perspective | 実装済み（デモ） | 対象外 |
+| ダッシュボード UI / 4 Perspective | 実装済み（REAL + デモ） | 対象外 |
 | サンプル JSON / クライアント側シミュレーション | 実装済み | 対象外 |
-| Goose ETL / `StepMetrics` / `PipelineSnapshot` | 未実装 | 実装済み |
-| `metrics.json` の生成 | 未実装（サンプルのみ） | Goose v2026.4 で検証済み |
-| ダッシュボードの REAL MODE 表示 | 未実装 | 未マージ |
+| Goose ETL / `StepMetrics` / `PipelineSnapshot` | 生成物を同梱 | 実装済み |
+| `metrics.json` の生成 | 検証済みスナップショットを同梱 | Goose v2026.4 で検証済み |
+| ダッシュボードの REAL MODE 表示 | 実装済み（静的スナップショット） | 対象外 |
 | oh-my-mermaid CLI 連携 | 手書き `.omm/` | 調査のみ（CLI 未導入） |
 
-`goose` ブランチの詳細（ビルド手順・スキーマ検証・マージ条件）は、そのブランチの `PipelineViz/README.md` に記載しています。
+`goose` ブランチの詳細（ビルド手順・スキーマ検証・マージ条件）は、そのブランチの `PipelineViz/README.md` に記載しています。`main` の REAL MODE は Goose が生成した JSON を同梱して表示するもので、ライブ接続ではありません。スナップショットを更新するには `goose` ブランチで再生成し、`viewer/data/goose-metrics.json` と `goose-metrics-prev.json` を差し替えます。
 
 ## 現在の制限
 
-- メトリクスはサンプルデータおよびクライアント側シミュレーションであり、Goose ランタイムとの実接続は未実装
+- メトリクスはサンプルデータ、クライアント側シミュレーション、および Goose が生成した静的スナップショットであり、Goose ランタイムとのライブ接続は未実装
 - バックエンド、SSE、WebSocket は未実装（静的 JSON のポーリングとクライアント側シミュレーションのみ）
 - スキーマ検証は構造と整合性の最小チェックであり、業務固有のルールは未実装
 - ファイルポーリングはブラウザからの `fetch` に依存するため、`file://` では動作しない

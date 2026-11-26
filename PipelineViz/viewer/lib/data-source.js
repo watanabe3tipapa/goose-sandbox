@@ -342,6 +342,7 @@
     const empty = {
       timestamp: new Date().toISOString(),
       pipeline: "unknown",
+      source: "sample",
       steps: [],
       quarantine: {
         step_id: "error-handler",
@@ -363,6 +364,7 @@
     const snapshot = {
       timestamp: "",
       pipeline: "",
+      source: "sample",
       steps: [],
       quarantine: { ...empty.quarantine },
       errors: []
@@ -383,6 +385,15 @@
     } else {
       snapshot.pipeline = "unknown";
       addIssue(issues, "warn", "pipeline", "pipeline 識別子がありません。");
+    }
+
+    if (typeof data.source === "string" && data.source.trim()) {
+      const source = data.source.trim();
+      if (source === "goose" || source === "sample") {
+        snapshot.source = source;
+      } else {
+        addIssue(issues, "warn", "source", `未知の source です (${source})。sample として扱います。`);
+      }
     }
 
     const seen = new Set();

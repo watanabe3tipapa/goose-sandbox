@@ -1,12 +1,16 @@
 # Pipeline Viz runtime config
 # - paths are resolved relative to this file
 # - prev_diagram is kept for oh-my-mermaid compatibility (not used by the viewer)
-updated: 2026-10-27T09:15:02Z
-git_commit: a1b2c3d
+updated: 2026-11-26T01:12:33Z
+git_commit: goose@bc39953
 live_metrics_url: ../../viewer/data/metrics.json
 poll_interval_ms: 2500
-default_pipeline: etl-main
+default_pipeline: goose-etl
 pipelines:
+  - id: goose-etl
+    label: Goose ETL（REAL）
+    metrics_url: ../../viewer/data/goose-metrics.json
+    prev_url: ../../viewer/data/goose-metrics-prev.json
   - id: etl-main
     label: ETL 本流
     metrics_url: ../../viewer/data/metrics.json

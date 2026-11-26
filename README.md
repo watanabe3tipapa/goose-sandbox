@@ -11,10 +11,10 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 
 | ブランチ | 役割 | GitHub Pages |
 |---|---|---|
-| `main` | 静的サイト・ダッシュボードの公開用。Goose 実装は含みません | 公開する |
-| `goose` | Goose 実装・メトリクス出力・データフロー検証の開発用。ダッシュボードは含みません | 公開しない |
+| `main` | 静的サイト・ダッシュボードの公開用。Goose が生成したスナップショットを同梱 | 公開する |
+| `goose` | Goose 実装・メトリクス生成・データフロー検証の開発用。ダッシュボードは含みません | 公開しない |
 
-`goose` ブランチで動作確認が済んだ機能だけを `main` へマージします。現在 `goose` ブランチの実装はまだ `main` へマージしていません。
+`goose` ブランチで生成・検証した `metrics.json` を `main` の `PipelineViz/viewer/data/goose-metrics.json` に取り込み、ダッシュボードの REAL MODE で表示します。ただし同梱物は静的スナップショットで、公開サイトから Goose ランタイムへ接続するわけではありません。
 
 ---
 
@@ -34,7 +34,7 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 
 Goose の実行時メトリクスと oh-my-mermaid の Perspective 構造を接合し、データ処理パイプラインの「流れ」と「健康状態」を可視化する静的プロトタイプです。
 
-> **このブランチのダッシュボードはデモモードのみで動作します。** 表示しているのはサンプル JSON とクライアント側シミュレーションで、Goose ランタイムには接続していません。Goose でのメトリクス生成は `goose` ブランチで開発しています。
+> **既定の `goose-etl` は REAL MODE、`etl-main` / `etl-reporting` はデモモードです。** REAL MODE が表示するのは `goose` ブランチで Goose v2026.4 を実行して生成した `viewer/data/goose-metrics.json` です。静的スナップショットであり、公開サイトから Goose ランタイムへライブ接続しているわけではありません。
 
 - LP: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/)
 - Dashboard: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/)
@@ -102,16 +102,16 @@ macOS の launchd ジョブを 4 つの配置レーンとベンダーで読み�
 
 | 機能 | `main` | `goose` | 備考 |
 |---|---|---|---|
-| ダッシュボード UI | 実装済み（デモ） | 対象外 | `main` で管理 |
+| ダッシュボード UI | 実装済み | 対象外 | `main` で管理 |
 | サンプル JSON / クライアント側シミュレーション | 実装済み | 対象外 | `viewer/data/*.json` |
-| Goose ETL（Extract → Transform → Load） | 未実装 | 実装済み | `PipelineViz/src/` |
-| `StepMetrics` / `PipelineSnapshot` | 未実装 | 実装済み | `PipelineViz/src/metrics.goose` |
-| `metrics.json` の生成 | 未実装（サンプルのみ） | 検証済み | Goose v2026.4 で実行 |
+| Goose ETL（Extract → Transform → Load） | 生成物を同梱 | 実装済み | `PipelineViz/src/` |
+| `StepMetrics` / `PipelineSnapshot` | 生成物を同梱 | 実装済み | `PipelineViz/src/metrics.goose` |
+| `metrics.json` の生成 | 検証済みスナップショットを同梱 | 検証済み | Goose v2026.4 で実行 |
 | スキーマ検証 | 実装済み（閲覧時） | 実装済み（生成後） | `data-source.js` / `verify.sh` |
-| ダッシュボードの REAL MODE 表示 | 未実装 | 未マージ | `main` 側の対応待ち |
+| ダッシュボードの REAL MODE 表示 | 実装済み（静的スナップショット） | 対象外 | `source: "goose"` で判定 |
 | oh-my-mermaid CLI 連携 | 手書き `.omm/` | 調査のみ | CLI 未導入 |
 
-「実装済み」はコードが存在することを、「検証済み」は実際に実行して確認したことを指します。`goose` ブランチの生成物はまだ `main` に取り込んでいないため、公開サイトの表示はデモモードのままです。
+「実装済み」はコードが存在することを、「検証済み」は実際に実行して確認したことを指します。`main` の REAL MODE は Goose が生成した JSON を同梱して表示するもので、ライブ接続ではありません。スナップショットを更新するには `goose` ブランチで再生成し、`viewer/data/goose-metrics.json` を差し替えます。
 
 ## リポジトリ構成
 
@@ -122,6 +122,7 @@ goose-sandbox/
 ├── PipelineViz/                  # プロジェクト 01
 │   ├── index.html                # プロジェクト LP
 │   ├── viewer/                   # ダッシュボード
+│   │   └── data/                 # サンプル JSON と Goose 生成スナップショット
 │   ├── assets/                   # ドキュメント共通スタイル
 │   ├── .omm/                     # oh-my-mermaid の Perspective 定義
 │   ├── goose_language_guide.html
