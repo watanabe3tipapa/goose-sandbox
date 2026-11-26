@@ -7,6 +7,15 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-site-00e5a8.svg)](https://watanabe3tipapa.github.io/goose-sandbox/)
 
+## ブランチ構成
+
+| ブランチ | 役割 | GitHub Pages |
+|---|---|---|
+| `main` | 静的サイト・ダッシュボードの公開用。Goose 実装は含みません | 公開する |
+| `goose` | Goose 実装・メトリクス出力・データフロー検証の開発用。ダッシュボードは含みません | 公開しない |
+
+`goose` ブランチで動作確認が済んだ機能だけを `main` へマージします。現在 `goose` ブランチの実装はまだ `main` へマージしていません。
+
 ---
 
 ## プロジェクト一覧
@@ -25,10 +34,13 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 
 Goose の実行時メトリクスと oh-my-mermaid の Perspective 構造を接合し、データ処理パイプラインの「流れ」と「健康状態」を可視化する静的プロトタイプです。
 
+> **このブランチのダッシュボードはデモモードのみで動作します。** 表示しているのはサンプル JSON とクライアント側シミュレーションで、Goose ランタイムには接続していません。Goose でのメトリクス生成は `goose` ブランチで開発しています。
+
 - LP: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/)
 - Dashboard: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/)
 - Goose 言語ガイド: [PipelineViz/goose_language_guide.html](PipelineViz/goose_language_guide.html)
 - 実装提案資料: [PipelineViz/pipeline_viz_proposal.html](PipelineViz/pipeline_viz_proposal.html)
+- 実装状況: 下記「実装状態」を参照
 
 ### Goose サンプル探訪
 
@@ -83,6 +95,23 @@ macOS の launchd ジョブを 4 つの配置レーンとベンダーで読み�
 - Goose 言語コーナー: [https://watanabe3tipapa.github.io/goose-sandbox/Gander/goose/](https://watanabe3tipapa.github.io/goose-sandbox/Gander/goose/)
 - データ: `data/exhibits.json` / `data/mechanisms.json` / `data/lab-samples.json` / `data/goose-features.json`
 - ロジック: `lib/atlas.js` / `lib/lab.js` / `lib/goose.js`（Node テスト付き）
+
+## 実装状態
+
+### Pipeline Viz
+
+| 機能 | `main` | `goose` | 備考 |
+|---|---|---|---|
+| ダッシュボード UI | 実装済み（デモ） | 対象外 | `main` で管理 |
+| サンプル JSON / クライアント側シミュレーション | 実装済み | 対象外 | `viewer/data/*.json` |
+| Goose ETL（Extract → Transform → Load） | 未実装 | 実装済み | `PipelineViz/src/` |
+| `StepMetrics` / `PipelineSnapshot` | 未実装 | 実装済み | `PipelineViz/src/metrics.goose` |
+| `metrics.json` の生成 | 未実装（サンプルのみ） | 検証済み | Goose v2026.4 で実行 |
+| スキーマ検証 | 実装済み（閲覧時） | 実装済み（生成後） | `data-source.js` / `verify.sh` |
+| ダッシュボードの REAL MODE 表示 | 未実装 | 未マージ | `main` 側の対応待ち |
+| oh-my-mermaid CLI 連携 | 手書き `.omm/` | 調査のみ | CLI 未導入 |
+
+「実装済み」はコードが存在することを、「検証済み」は実際に実行して確認したことを指します。`goose` ブランチの生成物はまだ `main` に取り込んでいないため、公開サイトの表示はデモモードのままです。
 
 ## リポジトリ構成
 

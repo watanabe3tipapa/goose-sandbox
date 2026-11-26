@@ -4,6 +4,8 @@
 
 Pipeline Viz は、**Goose によるデータ処理工程の「見える化」**を主題に、実行時メトリクスと **oh-my-mermaid** の Perspective 構造を接合し、データ処理パイプラインの「流れ」と「健康状態」を一枚のダッシュボードで可視化する試作プロジェクトです。静的なアーキテクチャ図を、実行状態を反映するライブ・ビューに変えることを目指しています。
 
+> **このブランチ（`main`）のダッシュボードはデモモードのみで動作します。** 表示しているのはサンプル JSON とクライアント側シミュレーションで、Goose ランタイムには接続していません。Goose での ETL 実行と `metrics.json` の生成は `goose` ブランチで開発しており、まだ `main` へマージしていません。
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 [![Version](https://img.shields.io/badge/version-v0.1.0-blue.svg)](https://github.com/watanabe3tipapa/goose-sandbox)
 [![Goose](https://img.shields.io/badge/Goose-language-00e5a8.svg)](https://aardappel.github.io/goose/)
@@ -308,6 +310,19 @@ AI コーディングツール内で `/omm-scan` を実行すると、コード�
 - PipelineViz: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/)
 - ダッシュボード: [https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/)
 - デプロイ対象: リポジトリルート（Actions デプロイ。`.nojekyll` も同梱）
+
+## 実装状態
+
+| 項目 | `main` | `goose` |
+|---|---|---|
+| ダッシュボード UI / 4 Perspective | 実装済み（デモ） | 対象外 |
+| サンプル JSON / クライアント側シミュレーション | 実装済み | 対象外 |
+| Goose ETL / `StepMetrics` / `PipelineSnapshot` | 未実装 | 実装済み |
+| `metrics.json` の生成 | 未実装（サンプルのみ） | Goose v2026.4 で検証済み |
+| ダッシュボードの REAL MODE 表示 | 未実装 | 未マージ |
+| oh-my-mermaid CLI 連携 | 手書き `.omm/` | 調査のみ（CLI 未導入） |
+
+`goose` ブランチの詳細（ビルド手順・スキーマ検証・マージ条件）は、そのブランチの `PipelineViz/README.md` に記載しています。
 
 ## 現在の制限
 
