@@ -46,10 +46,10 @@ scripts/build.sh
 | Goose ETL / `StepMetrics` / `PipelineSnapshot` | 実装済み |
 | `metrics.json` の生成 | Goose v2026.4 で検証済み |
 | スキーマ検証 | 実装済み（Node.js） |
-| ダッシュボードでの表示 | 未マージ（`main` はデモモードのまま） |
+| ダッシュボードでの表示 | 反映済み（`main` の REAL MODE で表示） |
 | oh-my-mermaid CLI 連携 | 未実施（`.omm/` は手書き） |
 
-`main` へマージする条件は [PipelineViz/README.md](PipelineViz/README.md#main-へのマージ条件) に記載しています。Goose での生成とスキーマ検証が通り、ダッシュボードで表示できることを確認するまでマージしません。
+生成物を `main` へ反映する条件は [PipelineViz/README.md](PipelineViz/README.md#main-への反映条件) に記載しています。Goose での生成とスキーマ検証が通り、ダッシュボードで表示できることを確認してから反映します。このブランチは `viewer/` を持たないため、ブランチごとマージするのではなく、生成した `metrics.json` を `main` の `viewer/data/` へコピーします。
 
 ### Goose サンプル探訪
 

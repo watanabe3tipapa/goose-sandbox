@@ -17,10 +17,12 @@
 | `StepMetrics` / `PipelineSnapshot` | 実装済み | `PipelineViz/src/metrics.goose` |
 | `metrics.json` の生成 | 検証済み | Goose v2026.4 / macOS arm64 で実行 |
 | スキーマ検証 | 実装済み | `scripts/verify.sh`（Node.js） |
-| ダッシュボードでの表示 | 未マージ | `main` の `viewer/` はデモモードのまま |
+| ダッシュボードでの表示 | 反映済み | `main` の `viewer/data/goose-metrics.json` を REAL MODE で表示（静的スナップショット） |
 | oh-my-mermaid CLI 連携 | 未実施 | CLI 未導入。`.omm/` は手書きで維持 |
 
 「検証済み」は、このリポジトリのサンプル CSV に対して `scripts/build.sh` を実行し、`scripts/verify.sh` が成功したことを指します。Goose コンパイラはリポジトリに含めていません。
+
+> このブランチは `viewer/` と `index.html` を持たないため、そのまま `main` にマージすると公開サイトが消えます。実装のマージではなく、生成した `metrics.json` を `main` の `viewer/data/` へ反映する運用にしています。
 
 ## 構成
 
@@ -146,17 +148,17 @@ scripts/verify.sh PipelineViz/out/metrics.json
 
 現状は手書きの `config.yaml` と `data-pipeline/meta.yaml` を維持し、Goose 側は `metrics.json` の生成だけを担当します。`.omm/` の生成・更新をツールに任せるのは、CLI の入出力を実際に確認できてからにします。
 
-`meta.yaml` の `live_metrics_url` は `main` の `viewer/data/metrics.json` を指しています。`main` へマージする際は、生成した JSON をそのパスへ置くか、`meta.yaml` のパスを更新してください。
+`meta.yaml` の `live_metrics_url` は `main` の `viewer/data/metrics.json` を指しています。Goose 生成のスナップショットは `main` の `viewer/data/goose-metrics.json` に置き、`pipelines[]` の `goose-etl` から参照します。
 
-## main へのマージ条件
+## main への反映条件
 
-すべて満たすまで `main` へマージしません。
+生成物を `main` へ反映する前に、次を確認します。
 
 - [x] `PipelineViz/src/` にコンパイル可能な Goose ファイルがある
 - [x] `metrics.json` を Goose プログラムの実行で生成できる
 - [x] 生成した `metrics.json` がダッシュボードのスキーマと一致する
-- [ ] ダッシュボードで「REAL MODE」として表示できる（`main` 側の対応待ち）
-- [ ] `main` の README 実装状態マトリクスを更新する
+- [x] ダッシュボードで「REAL MODE」として表示できる（`main` の `10744e9` で反映）
+- [x] `main` の README 実装状態マトリクスを更新する
 
 ## ドキュメント
 
