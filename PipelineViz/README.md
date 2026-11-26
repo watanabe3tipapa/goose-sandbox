@@ -32,6 +32,7 @@ PipelineViz/
 │   ├── metrics.goose     # データ構造・時刻整形・JSON 出力
 │   └── sample.csv        # 検証用の入力（正常 5 件 / 隔離 3 件）
 ├── .omm/                 # oh-my-mermaid の Perspective 定義（手書き）
+├── assets/               # ドキュメント共通スタイル
 ├── goose_language_guide.html
 ├── pipeline_viz_proposal.html
 └── README.md
@@ -139,7 +140,9 @@ scripts/verify.sh PipelineViz/out/metrics.json
 
 ## oh-my-mermaid について
 
-`omm` CLI はこの環境に導入されておらず、`.omm/` をツールで再生成できるかは未確認です。現状は手書きの `config.yaml` と `data-pipeline/meta.yaml` を維持し、Goose 側は `metrics.json` の生成だけを担当します。
+`omm` CLI はこの環境に導入されておらず、`.omm/` をツールで再生成できるかは未確認です。上流の手順では `npm install -g oh-my-mermaid`、`omm setup`、`omm view` を使い、AI コーディングツール内の `/omm-scan` で `.omm/` を生成するとされていますが、このリポジトリでは実行していません。
+
+現状は手書きの `config.yaml` と `data-pipeline/meta.yaml` を維持し、Goose 側は `metrics.json` の生成だけを担当します。`.omm/` の生成・更新をツールに任せるのは、CLI の入出力を実際に確認できてからにします。
 
 `meta.yaml` の `live_metrics_url` は `main` の `viewer/data/metrics.json` を指しています。`main` へマージする際は、生成した JSON をそのパスへ置くか、`meta.yaml` のパスを更新してください。
 
