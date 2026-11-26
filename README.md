@@ -15,7 +15,7 @@ Goose をはじめとする実験プロジェクトを、プロジェクトご�
 
 | # | プロジェクト | 状態 | 入口 |
 |---|---|---|---|
-| 01 | [Pipeline Viz](PipelineViz/) | Goose 実装 | [README](PipelineViz/README.md) / [LP（main）](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/) / [Dashboard（main）](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/) |
+| 01 | [Pipeline Viz](PipelineViz/README.md) | Goose 実装 | [README](PipelineViz/README.md) / [LP（main）](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/) / [Dashboard（main）](https://watanabe3tipapa.github.io/goose-sandbox/PipelineViz/viewer/) |
 | 02 | [Goose サンプル探訪](GooseSamples/) | Active | [LP](GooseSamples/) / [探訪ビュー](GooseSamples/explorer/) / [README](GooseSamples/README.md) |
 | 03 | [Process Sentinel](ProcessSentinel/) | Active | [LP](ProcessSentinel/) / [Viewer](ProcessSentinel/viewer/) / [README](ProcessSentinel/README.md) |
 | 04 | [Mobile Safety Kit](MobileSafetyKit/) | Active | [LP](MobileSafetyKit/) / [Dashboard](MobileSafetyKit/viewer/) / [README](MobileSafetyKit/README.md) |
